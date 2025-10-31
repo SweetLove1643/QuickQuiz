@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h3 class="card-title mb-3">Tải lên tài liệu (ảnh hoặc PDF)</h3>
+
+    <form method="post" enctype="multipart/form-data" class="mb-3">
+      {% csrf_token %}
+      <div class="mb-3">
+        <input class="form-control" type="file" name="file" required>
+      </div>
+      <button class="btn btn-primary" type="submit">Xử lý OCR</button>
+    </form>
+
+    <p class="text-muted">
+      Hệ thống sẽ: OCR → tóm tắt → tạo câu hỏi kiểm tra.
+    </p>
+  </div>
+</div>
+{% endblock %}

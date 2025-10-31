@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h3 class="mb-4">Quiz cho tài liệu: {{ doc.original_filename }}</h3>
+    <form method="post" action="{% url 'submit_quiz' doc.id %}">
+      {% csrf_token %}
+
+      {% for q in questions %}
+        <div class="mb-4">
+          <label class="form-label fw-bold">{{ forloop.counter }}. {{ q.question_text|linebreaksbr }}</label>
+          <textarea class="form-control" rows="3"
+                    name="answer_{{ q.id }}"
+                    required></textarea>
+        </div>
+      {% empty %}
+        <p class="text-muted">Không có câu hỏi nào.</p>
+      {% endfor %}
+
+      <button class="btn btn-primary" type="submit">Nộp bài</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

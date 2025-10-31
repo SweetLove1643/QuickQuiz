@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h3>Kết quả Quiz</h3>
+    <p><strong>Điểm trung bình:</strong> {{ avg_score }} / 100</p>
+  </div>
+</div>
+
+{% for row in qa_pairs %}
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <p><strong>Câu hỏi:</strong><br>{{ row.question|linebreaksbr }}</p>
+    <p><strong>Câu trả lời mẫu:</strong><br>{{ row.ideal|linebreaksbr }}</p>
+    <p><strong>Câu trả lời của bạn:</strong><br>{{ row.user|linebreaksbr }}</p>
+    <p><strong>Điểm:</strong> {{ row.score|floatformat:1 }} / 100</p>
+    <p><strong>Nhận xét:</strong> {{ row.feedback }}</p>
+  </div>
+</div>
+{% endfor %}
+
+<a class="btn btn-secondary" href="{% url 'document_detail' doc.id %}">Quay lại tài liệu</a>
+{% endblock %}
