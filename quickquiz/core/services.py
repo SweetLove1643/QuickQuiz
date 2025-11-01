@@ -1,67 +1,182 @@
 import io
 from paddleocr import PaddleOCR
 from PyPDF2 import PdfReader
+import unicodedata
 from PIL import Image
 import numpy as np
+from transformers import (
+    TrOCRProcessor, 
+    VisionEncoderDecoderModel,
+    AutoTokenizer,
+    AutoModelForSeq2SeqLM,
+)
+from pdf2image import convert_from_bytes
+from peft import PeftModel
+import torch
+import re
+#=========================================================#
+# Cấu hình OCR với TrOCR + PaddleOCR cho trích xuất text
+#=========================================================#
 
-ocr_model = PaddleOCR(lang='vi')  # nếu bạn muốn vi: lang='vi' (cần model vi)
+# ✅ PaddleOCR chỉ dùng để detect bbox
+paddleocr = PaddleOCR(lang="vi")
+
+# ✅ Model TrOCR dành cho text in
+TROCR_MODEL = "microsoft/trocr-base-printed"
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print("Device:", device)
+
+# ✅ Load TrOCR – thêm trust_remote_code nếu version mới
+TrOCR_processor = TrOCRProcessor.from_pretrained(
+    TROCR_MODEL,
+    trust_remote_code=True
+)
+
+TrOCR_model = VisionEncoderDecoderModel.from_pretrained(
+    TROCR_MODEL,
+    trust_remote_code=True
+).to(device)
+
+#=========================================================#
+# Cấu hình Tóm tắt với ViT5 + LoRA
+#=========================================================#
+
+# ==== Cấu hình cơ bản ====
+BASE_MODEL = "VietAI/vit5-base"
+LORA_PATH = "./Models/ViT5_checkpoint_epochs4"
+
+summarize_base_model = AutoModelForSeq2SeqLM.from_pretrained(BASE_MODEL)
+summarize_model = PeftModel.from_pretrained(summarize_base_model, LORA_PATH)
+summarize_tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, use_fast=True)
+summarize_tokenizer.padding_side = "right"
+
 
 def extract_text_from_image(file_obj):
-    img = Image.open(file_obj).convert("RGB")
-    np_img = np.array(img)
-    result = ocr_model.ocr(np_img)
+    def detect_text_boxes(image_path):
+        """
+        Nhận đầu vào: path ảnh
+        Trả về: list bbox dạng [x1, y1, x2, y2]
+        """
 
-    lines = []
+        # Chạy detect
+        result = paddleocr.predict(image_path)
 
-    # result là danh sách batch; mỗi batch là danh sách dòng OCR
-    if not result or not result[0]:
-        return ""
+        bboxes = []
 
-    for line in result[0]:
-        # mỗi line thường có dạng: [ [box], [text, conf] ]
-        if len(line) < 2:
-            continue
-        text_part = line[1]
+        #debug
+        # print(file_obj)
+        # print("Kết quả detect:", result)
 
-        if isinstance(text_part, (list, tuple)):
-            text = text_part[0] if len(text_part) > 0 else ""
-            conf = text_part[1] if len(text_part) > 1 else None
-        elif isinstance(text_part, str):
-            text = text_part
-            conf = None
+        if result and "rec_boxes" in result[0]:
+            for box in result[0]["rec_boxes"]:
+                bboxes.append(box)
         else:
-            text = str(text_part)
-            conf = None
+            print("Không phát hiện được vùng chữ nào.")
+            return []
 
-        if text.strip():
-            lines.append(text.strip())
+        return bboxes
+    
+    def crop_boxes(image_path, bboxes):
+        """
+        Input:
+            image_path: đường dẫn ảnh gốc
+            bboxes: list bbox dạng [x1, y1, x2, y2]
+        Output:
+            list các ảnh crop (PIL.Image)
+        """
+        img = Image.open(image_path).convert("RGB")
+        crops = []
 
-    return "\n".join(lines)
+        for (x1, y1, x2, y2) in bboxes:
+            crop = img.crop((x1, y1, x2, y2))
+            crops.append(crop)
+
+        return crops
+    
+    def normalize_case(text):
+        text = text.lower()  # toàn bộ lower
+        text = re.sub(r'([.!?]\s+)([a-z])', lambda m: m.group(1) + m.group(2).upper(), text)  # viết hoa đầu câu
+        if text: text = text[0].upper() + text[1:]
+        return text
+    
+    def trocr_read(image):
+        # image: PIL.Image crop
+        
+        inputs = TrOCR_processor(image, return_tensors="pt").pixel_values.to(device)
+
+        with torch.no_grad():
+            generated_ids = TrOCR_model.generate(
+                inputs,
+                max_new_tokens=256,
+                num_beams=4,
+                early_stopping=True
+            )
+
+        text = TrOCR_processor.batch_decode(generated_ids, skip_special_tokens=True)[0].strip()
+        return normalize_case(text)
+
+    
+    bboxes = detect_text_boxes(file_obj)
+    crops = crop_boxes(file_obj, bboxes)
+    texts = [trocr_read(c) for c in crops]
+
+    return "\n".join(texts)
 
 def extract_text_from_pdf(file_obj):
-    # cố gắng đọc text layer trước
+    def normalize_pdf_text(text):
+        # xoá space thừa
+        text = re.sub(r"\s{2,}", " ", text)
+
+        # xoá space giữa chữ + dấu tiếng Việt (phần lớn các case)
+        text = re.sub(r"(\w)\s+(?=[\u0300-\u036f])", r"\1", text)
+
+        # xoá space giữa phụ âm Việt (th- ng- qu- gi-... cực kỳ thường gặp)
+        patterns = [
+            r"t\s*h", r"n\s*g", r"n\s*h", r"c\s*h", r"q\s*u", r"g\s*i",
+            r"t\s*r", r"d\s*đ"
+        ]
+        for p in patterns:
+            text = re.sub(p, p.replace(r"\s*", ""), text, flags=re.IGNORECASE)
+
+        return text
+
     reader = PdfReader(file_obj)
     full_text = []
-    for page in reader.pages:
-        full_text.append(page.extract_text() or "")
-    text_joined = "\n".join(full_text).strip()
 
-    if text_joined:
-        return text_joined
+    for i, page in enumerate(reader.pages):
+        txt = page.extract_text()
+        if txt and txt.strip():
+            txt = normalize_pdf_text(txt)
+            full_text.append(txt)
+        else:
+            # OCR fallback
+            pages = convert_from_bytes(file_obj.read(), first_page=i+1, last_page=i+1)
+            img = pages[0]
+            full_text.append(extract_text_from_image(img))
 
-    # fallback: render trang -> OCR từng trang (phức tạp hơn vì cần convert PDF page -> image)
-    # để đơn giản trong bản MVP ta tạm coi PDF có text layer
-    # (Bạn có thể dùng pdf2image + PaddleOCR cho bản nâng cao)
-    return text_joined
+    return "\n".join(full_text)
 
-def summarize_text(raw_text, max_sentences=3):
+def summarize_text(text):
     """
-    MVP: tóm tắt thô = lấy các câu đầu tiên.
-    Sau này bạn thay bằng LLM.
+    Sử dụng model summaries để tóm tắt văn bản.
+    Model: mT5, ViT5,...
     """
-    sentences = raw_text.split(".")
-    summary = ". ".join(sentences[:max_sentences]).strip()
-    return summary
+    inputs = summarize_tokenizer(
+        f'''Tóm tắt: {text}''',
+        return_tensors="pt",
+        truncation=True,
+        max_length=512
+    ).to(device)
+
+    outputs = summarize_model.generate(
+        **inputs,
+        max_length=256,
+        num_beams=5,
+        early_stopping=True,
+    )
+
+    return summarize_tokenizer.decode(outputs[0], skip_special_tokens=True)
 
 def generate_questions(raw_text, num_questions=3):
     """

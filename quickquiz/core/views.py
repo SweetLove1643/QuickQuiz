@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.files.storage import default_storage
+from django.conf import settings
+import os
 from .models import Document
 from .services import (
     extract_text_from_image,
@@ -21,12 +23,11 @@ def upload_document_view(request):
 
         # OCR / extract
         content_type = f.content_type  # ví dụ "image/png", "application/pdf"
+        full_path = os.path.join(settings.MEDIA_ROOT, saved_path)
         if content_type.startswith("image/"):
-            with default_storage.open(saved_path, 'rb') as imgf:
-                text = extract_text_from_image(imgf)
+            text = extract_text_from_image(full_path)
         elif content_type == "application/pdf":
-            with default_storage.open(saved_path, 'rb') as pdff:
-                text = extract_text_from_pdf(pdff)
+            text = extract_text_from_pdf(full_path)
         else:
             text = ""
 
