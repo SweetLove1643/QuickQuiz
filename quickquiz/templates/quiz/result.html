@@ -10,11 +10,10 @@
 {% for row in qa_pairs %}
 <div class="card shadow-sm mb-3">
   <div class="card-body">
-    <p><strong>Câu hỏi:</strong><br>{{ row.question|linebreaksbr }}</p>
-    <p><strong>Câu trả lời mẫu:</strong><br>{{ row.ideal|linebreaksbr }}</p>
-    <p><strong>Câu trả lời của bạn:</strong><br>{{ row.user|linebreaksbr }}</p>
-    <p><strong>Điểm:</strong> {{ row.score|floatformat:1 }} / 100</p>
-    <p><strong>Nhận xét:</strong> {{ row.feedback }}</p>
+    <p><strong>Câu hỏi: </strong>{{ row.question|linebreaksbr }}</p>
+    <p><strong>Câu trả lời đúng: </strong>{{ row.ideal|linebreaksbr }}</p>
+    <p><strong>Câu trả lời của bạn: </strong>{{ row.user|linebreaksbr }}</p>
+    <p><strong>Điểm: </strong> {{ row.score|floatformat:1 }} / 100</p>
   </div>
 </div>
 {% endfor %}

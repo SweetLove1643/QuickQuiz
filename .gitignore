@@ -1,1 +1,6 @@
 venv/
+archive/
+dataset/
+data/
+DeepSeek-OCR/
+.env

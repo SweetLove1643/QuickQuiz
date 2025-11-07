@@ -17,41 +17,46 @@ def submit_quiz_view(request, doc_id):
     questions = Question.objects.filter(document=doc)
 
     if request.method == "POST":
-        for q in questions:
-            user_resp = request.POST.get(f"answer_{q.id}", "")
-            score, feedback = score_answer(user_resp, q.ideal_answer)
 
+        for q in questions:
+            user_resp = request.POST.get(f"answer_{q.id}", "").strip()
+
+            # CHẤM ĐIỂM MULTIPLE-CHOICE
+            if user_resp == q.correct_answer:
+                score = 100
+            else:
+                score = 0
+
+            # Tạo bản ghi
             UserAnswer.objects.create(
                 question=q,
                 user_response=user_resp,
                 score=score,
-                feedback=feedback,
             )
 
-        return redirect("quiz_result", doc_id=doc_id)
+        return redirect("quiz_result", doc_id=doc.id)
 
-    # fallback nếu truy cập GET
     return redirect("take_quiz", doc_id=doc_id)
+
 
 def result_view(request, doc_id):
     doc = get_object_or_404(Document, id=doc_id)
     questions = Question.objects.filter(document=doc)
 
-    # gom kết quả để render
     qa_pairs = []
     total = 0
     count = 0
+
     for q in questions:
-        # lấy câu trả lời mới nhất của user (ở đây đơn giản: cái cuối cùng)
         ans = q.user_answers.order_by('-created_at').first()
         if ans:
             qa_pairs.append({
                 "question": q.question_text,
-                "ideal": q.ideal_answer,
+                "ideal": q.correct_answer,     # ✅ sửa tại đây
                 "user": ans.user_response,
                 "score": ans.score,
-                "feedback": ans.feedback,
             })
+
             if ans.score is not None:
                 total += ans.score
                 count += 1
@@ -63,3 +68,4 @@ def result_view(request, doc_id):
         "qa_pairs": qa_pairs,
         "avg_score": avg_score,
     })
+

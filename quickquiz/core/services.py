@@ -1,9 +1,8 @@
-import io
+import os
+from dotenv import load_dotenv
 from paddleocr import PaddleOCR
 from PyPDF2 import PdfReader
-import unicodedata
 from PIL import Image
-import numpy as np
 from transformers import (
     TrOCRProcessor, 
     VisionEncoderDecoderModel,
@@ -14,6 +13,7 @@ from pdf2image import convert_from_bytes
 from peft import PeftModel
 import torch
 import re
+import requests
 #=========================================================#
 # Cấu hình OCR với TrOCR + PaddleOCR cho trích xuất text
 #=========================================================#
@@ -216,3 +216,91 @@ def score_answer(user_resp, ideal):
 
     # bạn có thể map thành thang 0-100
     return score_ratio * 100.0, feedback
+
+def summarize_and_generate(raw_text, number_of_questions=5):
+    """
+    Hàm tổng hợp: tóm tắt + sinh câu hỏi
+    Trả về dict {
+        "summary": str,
+        "questions": list of {question_text, ideal_answer}
+    }
+    """
+    API_URL = "https://router.huggingface.co/v1/chat/completions"
+    load_dotenv()
+    HF_Token = os.getenv("HF_TOKEN")
+
+    headers = {
+        "Authorization": f"Bearer {HF_Token}",
+        "Content-Type": "application/json"
+    }
+
+    def query(prompt):
+        payload = {
+            "model": "deepseek-ai/DeepSeek-V3.2-Exp:novita",
+            "messages": [
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.2,   
+        }
+
+        response = requests.post(API_URL, headers=headers, json=payload)
+        return response.json()
+
+
+    # =========== DỮ LIỆU NGỮ CẢNH ===============
+    text = raw_text
+
+    # =========== NHÚNG PROMPT TỐI ƯU ===============
+    prompt = f"""
+    Bạn là DeepSeek, một mô hình phân tích logic và ngôn ngữ tiếng Việt cực mạnh.
+    Hãy thực hiện CHÍNH XÁC 2 nhiệm vụ sau trên cùng một văn bản:
+
+    ======================
+    NHIỆM VỤ 1: TÓM TẮT
+    ======================
+    - Rút ra các ý chính quan trọng nhất.
+    - Viết ngắn gọn, đúng trọng tâm.
+    - Không thêm thông tin không tồn tại.
+
+    ==============================
+    NHIỆM VỤ 2: TẠO CÂU HỎI + ĐÁP ÁN
+    ==============================
+    - Tạo {number_of_questions} câu hỏi trắc nghiệm A/B/C/D.
+    - Mỗi câu phải kiểm tra hiểu nội dung.
+    - Mỗi câu phải có đúng 1 đáp án đúng.
+    - Không tạo câu hỏi mơ hồ hoặc không có trong văn bản.
+
+    ======================
+    RÀNG BUỘC
+    ======================
+    - Không bịa đặt.
+    - Chỉ dựa trên văn bản.
+    - Trả về đúng JSON.
+
+    ======================
+    VĂN BẢN
+    ======================
+    {text}
+
+    ======================
+    JSON OUTPUT
+    ======================
+    {{
+    "summary": [],
+    "questions": [
+        {{
+            "question": "...",
+            "options_answer": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
+            "correct_answer": "A"
+        }},
+        ...
+    ],
+    }}
+    """
+
+    # =========== GỌI MODEL ===============
+    result = query(prompt)
+
+    # =========== IN KẾT QUẢ ===============
+    return result["choices"][0]["message"]["content"]
+        

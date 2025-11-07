@@ -23,12 +23,28 @@
       <div class="card-body">
         <h5>Câu hỏi đã tạo</h5>
         <ul class="list-group">
-          {% for q in questions %}
-          <li class="list-group-item small">{{ q.question_text|linebreaksbr }}</li>
-          {% empty %}
-          <li class="list-group-item small text-muted">Chưa có câu hỏi</li>
-          {% endfor %}
-        </ul>
+        {% for q in questions %}
+        <li class="list-group-item small">
+
+          <!-- Câu hỏi -->
+          <strong>Câu {{ forloop.counter }}:</strong>
+          <div>{{ q.question_text|linebreaksbr }}</div>
+
+          <!-- Các đáp án -->
+          <!-- <ul class="mt-2 mb-1 ps-3">
+            <li class="list-group-item">A. {{ q.options_answer.A }}</li>
+            <li class="list-group-item">B. {{ q.options_answer.B }}</li>
+            <li class="list-group-item">C. {{ q.options_answer.C }}</li>
+            <li class="list-group-item">D. {{ q.options_answer.D }}</li>          
+          </ul> -->
+
+        </li>
+        {% empty %}
+        <li class="list-group-item small text-muted">
+          Chưa có câu hỏi
+        </li>
+        {% endfor %}
+      </ul>
 
         <a class="btn btn-success w-100 mt-3"
            href="{% url 'take_quiz' doc.id %}">
