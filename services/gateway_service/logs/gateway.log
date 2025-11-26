@@ -1,0 +1,32 @@
+[INFO] 2025-11-26 10:20:43,395 django.utils.autoreload 15404 7096 Watching for file changes with StatReloader
+[WARNING] 2025-11-26 10:21:02,575 django.request 15404 1336 Method Not Allowed: /api/quiz/generate/
+[WARNING] 2025-11-26 10:21:02,576 django.server 15404 1336 "GET /api/quiz/generate/ HTTP/1.1" 405 69
+[WARNING] 2025-11-26 10:21:03,158 django.request 15404 1336 Not Found: /favicon.ico
+[WARNING] 2025-11-26 10:21:03,158 django.server 15404 1336 "GET /favicon.ico HTTP/1.1" 404 2859
+[INFO] 2025-11-26 10:21:14,430 django.server 15404 1336 "GET / HTTP/1.1" 200 359
+[INFO] 2025-11-26 10:21:41,090 django.utils.autoreload 15404 7096 E:\QuickQuiz\services\gateway_service\api\__init__.py changed, reloading.
+[INFO] 2025-11-26 10:21:42,281 django.utils.autoreload 2016 11748 Watching for file changes with StatReloader
+[INFO] 2025-11-26 10:23:03,724 django.utils.autoreload 12400 3120 Watching for file changes with StatReloader
+[INFO] 2025-11-26 10:23:10,658 django.server 12400 9776 "GET /api/ HTTP/1.1" 200 230
+[DEBUG] 2025-11-26 10:23:30,044 api.service_clients 12400 9776 [quiz_generator] GET http://localhost:8003/health
+[INFO] 2025-11-26 10:23:44,528 django.server 12400 10444 "GET /api/health HTTP/1.1" 301 0
+[DEBUG] 2025-11-26 10:23:44,535 api.service_clients 12400 4564 [quiz_generator] GET http://localhost:8003/health
+[ERROR] 2025-11-26 10:23:52,314 api.service_clients 12400 9776 [quiz_generator] Connection failed to quiz_generator: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000270E633B650>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[DEBUG] 2025-11-26 10:23:52,314 api.service_clients 12400 9776 [quiz_evaluator] GET http://localhost:8005/health
+[ERROR] 2025-11-26 10:24:06,860 api.service_clients 12400 4564 [quiz_generator] Connection failed to quiz_generator: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000270E635F650>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[DEBUG] 2025-11-26 10:24:06,861 api.service_clients 12400 4564 [quiz_evaluator] GET http://localhost:8005/health
+[ERROR] 2025-11-26 10:24:14,518 api.service_clients 12400 9776 [quiz_evaluator] Connection failed to quiz_evaluator: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000270E635D590>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[INFO] 2025-11-26 10:24:14,519 django.server 12400 9776 - Broken pipe from ('127.0.0.1', 53555)
+[ERROR] 2025-11-26 10:24:29,117 api.service_clients 12400 4564 [quiz_evaluator] Connection failed to quiz_evaluator: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000270E63F40D0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[INFO] 2025-11-26 10:24:29,119 django.server 12400 4564 "GET /api/health/ HTTP/1.1" 200 204
+[DEBUG] 2025-11-26 10:28:14,784 api.service_clients 12400 4564 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-11-26 10:28:16,837 api.service_clients 12400 4564 [quiz_evaluator] GET http://localhost:8005/health
+[INFO] 2025-11-26 10:28:18,888 django.server 12400 4564 "GET /api/health/ HTTP/1.1" 200 204
+[INFO] 2025-11-26 10:40:47,665 django.utils.autoreload 18556 18532 Watching for file changes with StatReloader
+[INFO] 2025-11-26 10:41:04,516 django.server 18556 14804 "GET / HTTP/1.1" 200 359
+[WARNING] 2025-11-26 10:41:05,223 django.request 18556 14804 Not Found: /favicon.ico
+[WARNING] 2025-11-26 10:41:05,223 django.server 18556 14804 "GET /favicon.ico HTTP/1.1" 404 2859
+[INFO] 2025-11-26 10:44:11,212 django.utils.autoreload 2936 13688 Watching for file changes with StatReloader
+[INFO] 2025-11-26 10:44:42,738 django.server 2936 15428 "GET / HTTP/1.1" 200 359
+[INFO] 2025-11-26 10:56:10,313 django.utils.autoreload 4124 16508 Watching for file changes with StatReloader
+[INFO] 2025-11-26 11:04:29,370 django.utils.autoreload 13748 7312 Watching for file changes with StatReloader

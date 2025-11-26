@@ -1,0 +1,400 @@
+"""
+Enhanced Service Clients for QuickQuiz Gateway.
+
+Improved HTTP clients with better error handling, retry logic, and monitoring.
+"""
+
+import requests
+import logging
+import time
+from typing import Dict, Any, Optional, List
+from dataclasses import dataclass
+from enum import Enum
+from django.conf import settings
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
+logger = logging.getLogger(__name__)
+
+
+class ServiceStatus(Enum):
+    """Service health status enumeration."""
+
+    HEALTHY = "healthy"
+    UNHEALTHY = "unhealthy"
+    DEGRADED = "degraded"
+    UNKNOWN = "unknown"
+
+
+@dataclass
+class ServiceResponse:
+    """Standardized service response."""
+
+    success: bool
+    data: Optional[Dict[str, Any]]
+    error: Optional[str]
+    status_code: int
+    response_time: float
+    service_name: str
+
+
+class ServiceClientError(Exception):
+    """Custom exception for service client errors."""
+
+    def __init__(self, message: str, status_code: int = None, service_name: str = None):
+        super().__init__(message)
+        self.status_code = status_code
+        self.service_name = service_name
+
+
+class BaseServiceClient:
+    """Enhanced base class for service clients."""
+
+    def __init__(self, service_name: str):
+        self.service_name = service_name
+        self.config = settings.MICROSERVICES.get(service_name)
+
+        if not self.config:
+            raise ValueError(f"Service '{service_name}' not configured in settings")
+
+        self.base_url = self.config["base_url"]
+        self.timeout = self.config.get("timeout", 30)
+        self.retry_count = self.config.get("retry_count", 3)
+
+        # Setup session with retry strategy
+        self.session = self._create_session()
+
+    def _create_session(self) -> requests.Session:
+        """Create requests session with retry strategy."""
+        session = requests.Session()
+
+        # Retry strategy
+        retry_strategy = Retry(
+            total=self.retry_count,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["HEAD", "GET", "OPTIONS"],
+            backoff_factor=1,
+        )
+
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
+
+        return session
+
+    def _make_request(
+        self,
+        method: str,
+        endpoint: str,
+        data: Optional[Dict] = None,
+        params: Optional[Dict] = None,
+        **kwargs,
+    ) -> ServiceResponse:
+        """Make HTTP request to the service with enhanced error handling."""
+        url = f"{self.base_url}{endpoint}"
+        start_time = time.time()
+
+        try:
+            logger.debug(f"[{self.service_name}] {method} {url}")
+
+            response = self.session.request(
+                method=method,
+                url=url,
+                json=data,
+                params=params,
+                headers={"Content-Type": "application/json"},
+                timeout=self.timeout,
+                **kwargs,
+            )
+
+            response_time = time.time() - start_time
+
+            # Log slow requests
+            if response_time > 5.0:
+                logger.warning(
+                    f"[{self.service_name}] Slow request: {response_time:.2f}s"
+                )
+
+            response.raise_for_status()
+
+            try:
+                response_data = response.json()
+            except ValueError:
+                response_data = {"raw_content": response.text}
+
+            return ServiceResponse(
+                success=True,
+                data=response_data,
+                error=None,
+                status_code=response.status_code,
+                response_time=response_time,
+                service_name=self.service_name,
+            )
+
+        except requests.exceptions.ConnectionError as e:
+            error_msg = f"Connection failed to {self.service_name}"
+            logger.error(f"[{self.service_name}] {error_msg}: {e}")
+
+            return ServiceResponse(
+                success=False,
+                data=None,
+                error=error_msg,
+                status_code=503,
+                response_time=time.time() - start_time,
+                service_name=self.service_name,
+            )
+
+        except requests.exceptions.HTTPError as e:
+            response_time = time.time() - start_time
+            status_code = e.response.status_code if e.response else 500
+
+            try:
+                error_data = e.response.json() if e.response else {}
+                error_msg = error_data.get("error", str(e))
+            except ValueError:
+                error_msg = e.response.text if e.response else str(e)
+
+            logger.error(f"[{self.service_name}] HTTP {status_code}: {error_msg}")
+
+            return ServiceResponse(
+                success=False,
+                data=None,
+                error=f"HTTP {status_code}: {error_msg}",
+                status_code=status_code,
+                response_time=response_time,
+                service_name=self.service_name,
+            )
+
+        except requests.exceptions.Timeout as e:
+            error_msg = f"Request timeout after {self.timeout}s"
+            logger.error(f"[{self.service_name}] {error_msg}")
+
+            return ServiceResponse(
+                success=False,
+                data=None,
+                error=error_msg,
+                status_code=408,
+                response_time=self.timeout,
+                service_name=self.service_name,
+            )
+
+        except Exception as e:
+            error_msg = f"Unexpected error: {str(e)}"
+            logger.error(f"[{self.service_name}] {error_msg}")
+
+            return ServiceResponse(
+                success=False,
+                data=None,
+                error=error_msg,
+                status_code=500,
+                response_time=time.time() - start_time,
+                service_name=self.service_name,
+            )
+
+    def health_check(self) -> Dict[str, Any]:
+        """Check service health with detailed status."""
+        health_endpoint = self.config.get("health_endpoint", "/health")
+        response = self._make_request("GET", health_endpoint)
+
+        if response.success:
+            health_data = response.data or {}
+            return {
+                "status": ServiceStatus.HEALTHY.value,
+                "service": self.service_name,
+                "version": health_data.get("version", "unknown"),
+                "response_time": round(response.response_time, 3),
+                **health_data,
+            }
+        else:
+            return {
+                "status": ServiceStatus.UNHEALTHY.value,
+                "service": self.service_name,
+                "error": response.error,
+                "response_time": round(response.response_time, 3),
+            }
+
+    def get_service_info(self) -> Dict[str, Any]:
+        """Get service configuration and status."""
+        return {
+            "name": self.service_name,
+            "base_url": self.base_url,
+            "timeout": self.timeout,
+            "retry_count": self.retry_count,
+            "health_endpoint": self.config.get("health_endpoint", "/health"),
+        }
+
+
+class QuizGeneratorClient(BaseServiceClient):
+    """Enhanced client for Quiz Generator service."""
+
+    def __init__(self):
+        super().__init__("quiz_generator")
+
+    def generate_quiz(
+        self, sections: List[Dict], config: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Generate quiz from content sections."""
+        payload = {"sections": sections, "config": config}
+
+        logger.info(
+            f"[{self.service_name}] Generating quiz: {len(sections)} sections, {config.get('n_questions', 'unknown')} questions"
+        )
+
+        response = self._make_request("POST", "/quiz/generate", data=payload)
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        result = response.data
+
+        # Enhanced logging
+        if "metadata" in result:
+            metadata = result["metadata"]
+            total_generated = metadata.get("total_generated", 0)
+            total_validated = metadata.get("total_validated", 0)
+            filtered_count = metadata.get("filtered_count", 0)
+
+            logger.info(
+                f"[{self.service_name}] Quiz generated successfully: {total_validated}/{total_generated} questions validated"
+            )
+
+            if filtered_count > 0:
+                logger.warning(
+                    f"[{self.service_name}] Filtered {filtered_count} high-risk questions"
+                )
+
+        # Add response metadata
+        result["gateway_response_meta"] = {
+            "response_time": response.response_time,
+            "service": self.service_name,
+            "timestamp": time.time(),
+        }
+
+        return result
+
+    def get_generator_info(self) -> Dict[str, Any]:
+        """Get generator service information."""
+        response = self._make_request("GET", "/")
+
+        if response.success:
+            return response.data
+        else:
+            return {"error": response.error}
+
+
+class QuizEvaluatorClient(BaseServiceClient):
+    """Enhanced client for Quiz Evaluator service."""
+
+    def __init__(self):
+        super().__init__("quiz_evaluator")
+
+    def evaluate_quiz(
+        self, submission: Dict[str, Any], config: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Evaluate quiz submission with enhanced logging."""
+        payload = {"submission": submission, "config": config}
+
+        quiz_id = submission.get("quiz_id", "unknown")
+        questions_count = len(submission.get("questions", []))
+
+        logger.info(
+            f"[{self.service_name}] Evaluating quiz {quiz_id} with {questions_count} questions"
+        )
+
+        response = self._make_request("POST", "/quiz/evaluate", data=payload)
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        result = response.data
+
+        # Enhanced logging
+        if "summary" in result:
+            summary = result["summary"]
+            score = summary.get("score_percentage", 0)
+            correct_answers = summary.get("correct_answers", 0)
+            total_questions = summary.get("total_questions", 0)
+
+            logger.info(
+                f"[{self.service_name}] Quiz {quiz_id} evaluated: {score:.1f}% ({correct_answers}/{total_questions})"
+            )
+
+        # Add response metadata
+        result["gateway_response_meta"] = {
+            "response_time": response.response_time,
+            "service": self.service_name,
+            "timestamp": time.time(),
+        }
+
+        return result
+
+    def get_grading_scale(self) -> Dict[str, Any]:
+        """Get grading scale configuration."""
+        response = self._make_request("GET", "/quiz/grading-scale")
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data
+
+    def get_evaluator_info(self) -> Dict[str, Any]:
+        """Get evaluator service information."""
+        response = self._make_request("GET", "/")
+
+        if response.success:
+            return response.data
+        else:
+            return {"error": response.error}
+
+
+class ServiceRegistry:
+    """Registry for managing all service clients."""
+
+    def __init__(self):
+        self.clients = {
+            "quiz_generator": QuizGeneratorClient(),
+            "quiz_evaluator": QuizEvaluatorClient(),
+        }
+
+    def get_client(self, service_name: str) -> BaseServiceClient:
+        """Get service client by name."""
+        if service_name not in self.clients:
+            raise ValueError(f"Unknown service: {service_name}")
+        return self.clients[service_name]
+
+    def health_check_all(self) -> Dict[str, Dict[str, Any]]:
+        """Check health of all registered services."""
+        health_results = {}
+
+        for service_name, client in self.clients.items():
+            try:
+                health_results[service_name] = client.health_check()
+            except Exception as e:
+                logger.error(f"Health check failed for {service_name}: {e}")
+                health_results[service_name] = {
+                    "status": ServiceStatus.UNKNOWN.value,
+                    "error": str(e),
+                }
+
+        return health_results
+
+    def get_services_info(self) -> Dict[str, Dict[str, Any]]:
+        """Get information about all services."""
+        return {
+            service_name: client.get_service_info()
+            for service_name, client in self.clients.items()
+        }
+
+
+# Global service registry instance
+service_registry = ServiceRegistry()
+
+# Backward compatibility - singleton instances
+quiz_generator_client = service_registry.get_client("quiz_generator")
+quiz_evaluator_client = service_registry.get_client("quiz_evaluator")
