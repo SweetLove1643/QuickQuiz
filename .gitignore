@@ -10,3 +10,15 @@ dataset/
 Services/__pycache__/
 Services/VRD_OCR/
 image_test/
+# Ignore virtual environment directories
+.venv/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore environment variable files
+.env
+
+# Ignore GitHub configuration files
+.github/
