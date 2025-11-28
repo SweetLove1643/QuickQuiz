@@ -1,13 +1,15 @@
 # AI Validation Service
 
 ## 📋 Overview
+
 Anti-hallucination validation system for AI-generated quiz content. Automatically validates quiz questions to prevent inaccurate, misleading, or risky content before delivery to users.
 
 ## 🛡️ Core Functions
 
 ### ContentValidator
+
 - **Risk Detection**: Identifies high-risk content (medical, legal, financial, temporal data)
-- **Consistency Check**: Validates answer-question alignment and option consistency  
+- **Consistency Check**: Validates answer-question alignment and option consistency
 - **Factual Claim Analysis**: Flags specific numerical/historical claims that may be inaccurate
 - **Confidence Scoring**: Assigns confidence scores (0.0-1.0) to each question
 
@@ -46,4 +48,4 @@ summary = validator.get_validation_summary(results)
 ✅ Prevents AI hallucination in generated content  
 ✅ Ensures educational accuracy and safety  
 ✅ Maintains high content quality standards  
-✅ Reduces manual review overhead  
+✅ Reduces manual review overhead
