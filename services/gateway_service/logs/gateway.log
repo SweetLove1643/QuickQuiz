@@ -34,3 +34,19 @@
 [INFO] 2025-11-26 23:40:43,340 django.server 19428 11952 "GET / HTTP/1.1" 200 359
 [WARNING] 2025-11-26 23:40:44,203 django.request 19428 11952 Not Found: /favicon.ico
 [WARNING] 2025-11-26 23:40:44,204 django.server 19428 11952 "GET /favicon.ico HTTP/1.1" 404 2859
+[INFO] 2025-11-28 17:06:40,776 django.utils.autoreload 20296 11584 Watching for file changes with StatReloader
+[INFO] 2025-11-28 17:08:59,971 django.server 20296 8240 "OPTIONS /api/quiz/generate/ HTTP/1.1" 200 0
+[ERROR] 2025-11-28 17:09:00,351 api.views 20296 8240 Quiz generation failed: QuizGeneratorClient.generate_quiz() missing 1 required positional argument: 'config'
+[ERROR] 2025-11-28 17:09:00,351 django.request 20296 8240 Internal Server Error: /api/quiz/generate/
+[ERROR] 2025-11-28 17:09:00,367 django.server 20296 8240 "POST /api/quiz/generate/ HTTP/1.1" 500 96
+[DEBUG] 2025-11-28 17:11:49,444 api.service_clients 20296 8152 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-11-28 17:11:51,515 api.service_clients 20296 8152 [quiz_evaluator] GET http://localhost:8005/health
+[INFO] 2025-11-28 17:11:53,553 django.server 20296 8152 "GET /api/health/ HTTP/1.1" 200 204
+[WARNING] 2025-11-28 17:11:54,120 django.request 20296 8152 Not Found: /favicon.ico
+[WARNING] 2025-11-28 17:11:54,120 django.server 20296 8152 "GET /favicon.ico HTTP/1.1" 404 2859
+[INFO] 2025-11-28 17:13:52,219 django.utils.autoreload 20296 11584 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-11-28 17:13:53,505 django.utils.autoreload 9780 14128 Watching for file changes with StatReloader
+[INFO] 2025-11-28 17:14:10,818 django.utils.autoreload 9780 14128 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-11-28 17:14:12,344 django.utils.autoreload 18884 8012 Watching for file changes with StatReloader
+[INFO] 2025-11-28 17:14:20,031 django.utils.autoreload 18884 8012 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-11-28 17:14:21,374 django.utils.autoreload 12344 4248 Watching for file changes with StatReloader
