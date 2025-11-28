@@ -81,10 +81,15 @@ def generate_quiz(request):
     try:
         # Extract and validate request data
         data = request.data
-        logger.info(f"Generating quiz with data: {data}")
+        sections = data.get("sections", [])
+        config = data.get("config", {})
 
-        # Call quiz generator service
-        result = quiz_generator.generate_quiz(data)
+        logger.info(
+            f"Generating quiz: {len(sections)} sections, {config.get('n_questions', 'unknown')} questions"
+        )
+
+        # Call quiz generator service with correct arguments
+        result = quiz_generator.generate_quiz(sections, config)
 
         if result:
             return Response(result, status=status.HTTP_200_OK)
@@ -108,10 +113,14 @@ def evaluate_quiz(request):
     try:
         # Extract and validate request data
         data = request.data
-        logger.info(f"Evaluating quiz with data: {data}")
+        submission = data.get("submission", {})
+        config = data.get("config", {})
 
-        # Call quiz evaluator service
-        result = quiz_evaluator.evaluate_quiz(data)
+        quiz_id = submission.get("quiz_id", "unknown")
+        logger.info(f"Evaluating quiz {quiz_id}")
+
+        # Call quiz evaluator service with correct arguments
+        result = quiz_evaluator.evaluate_quiz(submission, config)
 
         if result:
             return Response(result, status=status.HTTP_200_OK)
