@@ -30,3 +30,7 @@
 [INFO] 2025-11-26 10:44:42,738 django.server 2936 15428 "GET / HTTP/1.1" 200 359
 [INFO] 2025-11-26 10:56:10,313 django.utils.autoreload 4124 16508 Watching for file changes with StatReloader
 [INFO] 2025-11-26 11:04:29,370 django.utils.autoreload 13748 7312 Watching for file changes with StatReloader
+[INFO] 2025-11-26 23:40:23,123 django.utils.autoreload 19428 12568 Watching for file changes with StatReloader
+[INFO] 2025-11-26 23:40:43,340 django.server 19428 11952 "GET / HTTP/1.1" 200 359
+[WARNING] 2025-11-26 23:40:44,203 django.request 19428 11952 Not Found: /favicon.ico
+[WARNING] 2025-11-26 23:40:44,204 django.server 19428 11952 "GET /favicon.ico HTTP/1.1" 404 2859
