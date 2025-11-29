@@ -80,7 +80,7 @@ wait_for_service "http://localhost:8003/health" "Quiz Generator"
 wait_for_service "http://localhost:8005/health" "Quiz Evaluator"
 
 # 4. Django API Gateway
-echo "Starting API Gateway (port 8001)..."
+echo "🌐 Starting API Gateway (port 8001)..."
 cd services/gateway_service
 python manage.py runserver 127.0.0.1:8001 &
 GATEWAY_PID=$!
@@ -88,6 +88,13 @@ cd ../..
 
 # Wait for gateway to be ready
 wait_for_service "http://localhost:8001/api/health/" "API Gateway"
+
+# 5. Frontend React App
+echo "⚛️ Starting Frontend (port 3000)..."
+cd frontend
+npm run dev &
+FRONTEND_PID=$!
+cd ..
 
 echo ""
 echo "QuickQuiz System is now running!"
@@ -106,7 +113,7 @@ echo ""
 echo "Press Ctrl+C to stop all services"
 
 # Store PIDs for cleanup
-echo "$QUIZ_GEN_PID $QUIZ_EVAL_PID $GATEWAY_PID" > .service_pids
+echo "$QUIZ_GEN_PID $QUIZ_EVAL_PID $GATEWAY_PID $FRONTEND_PID" > .service_pids
 
 # Wait for user interrupt
 trap 'kill $(cat .service_pids 2>/dev/null) 2>/dev/null; rm -f .service_pids; echo ""; echo "🛑 All services stopped"; exit 0' INT

@@ -30,3 +30,48 @@
 [INFO] 2025-11-26 10:44:42,738 django.server 2936 15428 "GET / HTTP/1.1" 200 359
 [INFO] 2025-11-26 10:56:10,313 django.utils.autoreload 4124 16508 Watching for file changes with StatReloader
 [INFO] 2025-11-26 11:04:29,370 django.utils.autoreload 13748 7312 Watching for file changes with StatReloader
+[INFO] 2025-11-26 23:40:23,123 django.utils.autoreload 19428 12568 Watching for file changes with StatReloader
+[INFO] 2025-11-26 23:40:43,340 django.server 19428 11952 "GET / HTTP/1.1" 200 359
+[WARNING] 2025-11-26 23:40:44,203 django.request 19428 11952 Not Found: /favicon.ico
+[WARNING] 2025-11-26 23:40:44,204 django.server 19428 11952 "GET /favicon.ico HTTP/1.1" 404 2859
+[INFO] 2025-11-28 17:06:40,776 django.utils.autoreload 20296 11584 Watching for file changes with StatReloader
+[INFO] 2025-11-28 17:08:59,971 django.server 20296 8240 "OPTIONS /api/quiz/generate/ HTTP/1.1" 200 0
+[ERROR] 2025-11-28 17:09:00,351 api.views 20296 8240 Quiz generation failed: QuizGeneratorClient.generate_quiz() missing 1 required positional argument: 'config'
+[ERROR] 2025-11-28 17:09:00,351 django.request 20296 8240 Internal Server Error: /api/quiz/generate/
+[ERROR] 2025-11-28 17:09:00,367 django.server 20296 8240 "POST /api/quiz/generate/ HTTP/1.1" 500 96
+[DEBUG] 2025-11-28 17:11:49,444 api.service_clients 20296 8152 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-11-28 17:11:51,515 api.service_clients 20296 8152 [quiz_evaluator] GET http://localhost:8005/health
+[INFO] 2025-11-28 17:11:53,553 django.server 20296 8152 "GET /api/health/ HTTP/1.1" 200 204
+[WARNING] 2025-11-28 17:11:54,120 django.request 20296 8152 Not Found: /favicon.ico
+[WARNING] 2025-11-28 17:11:54,120 django.server 20296 8152 "GET /favicon.ico HTTP/1.1" 404 2859
+[INFO] 2025-11-28 17:13:52,219 django.utils.autoreload 20296 11584 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-11-28 17:13:53,505 django.utils.autoreload 9780 14128 Watching for file changes with StatReloader
+[INFO] 2025-11-28 17:14:10,818 django.utils.autoreload 9780 14128 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-11-28 17:14:12,344 django.utils.autoreload 18884 8012 Watching for file changes with StatReloader
+[INFO] 2025-11-28 17:14:20,031 django.utils.autoreload 18884 8012 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-11-28 17:14:21,374 django.utils.autoreload 12344 4248 Watching for file changes with StatReloader
+[INFO] 2025-11-28 17:14:40,001 api.views 12344 18252 Generating quiz: 1 sections, 2 questions
+[INFO] 2025-11-28 17:14:40,001 api.service_clients 12344 18252 [quiz_generator] Generating quiz: 1 sections, 2 questions
+[DEBUG] 2025-11-28 17:14:40,001 api.service_clients 12344 18252 [quiz_generator] POST http://localhost:8003/quiz/generate
+[WARNING] 2025-11-28 17:14:45,542 api.service_clients 12344 18252 [quiz_generator] Slow request: 5.54s
+[INFO] 2025-11-28 17:14:45,542 django.server 12344 18252 "POST /api/quiz/generate/ HTTP/1.1" 200 892
+[INFO] 2025-11-28 17:16:06,510 api.views 12344 20068 Generating quiz: 1 sections, 5 questions
+[INFO] 2025-11-28 17:16:06,514 api.service_clients 12344 20068 [quiz_generator] Generating quiz: 1 sections, 5 questions
+[DEBUG] 2025-11-28 17:16:06,514 api.service_clients 12344 20068 [quiz_generator] POST http://localhost:8003/quiz/generate
+[WARNING] 2025-11-28 17:16:15,349 api.service_clients 12344 20068 [quiz_generator] Slow request: 8.84s
+[INFO] 2025-11-28 17:16:15,349 django.server 12344 20068 "POST /api/quiz/generate/ HTTP/1.1" 200 1842
+[INFO] 2025-11-28 22:31:04,484 django.utils.autoreload 3704 2032 Watching for file changes with StatReloader
+[INFO] 2025-11-28 22:34:34,068 api.views 3704 10196 Generating quiz: 1 sections, 2 questions
+[INFO] 2025-11-28 22:34:34,068 api.service_clients 3704 10196 [quiz_generator] Generating quiz: 1 sections, 2 questions
+[DEBUG] 2025-11-28 22:34:34,068 api.service_clients 3704 10196 [quiz_generator] POST http://localhost:8003/quiz/generate
+[WARNING] 2025-11-28 22:34:42,237 api.service_clients 3704 10196 [quiz_generator] Slow request: 8.17s
+[INFO] 2025-11-28 22:34:42,237 django.server 3704 10196 "POST /api/quiz/generate/ HTTP/1.1" 200 1348
+[ERROR] 2025-11-28 22:49:50,865 api.views 3704 17080 Quiz evaluation failed: JSON parse error - 'utf-8' codec can't decode byte 0xe0 in position 959: invalid continuation byte
+[ERROR] 2025-11-28 22:49:50,865 django.request 3704 17080 Internal Server Error: /api/quiz/evaluate/
+[ERROR] 2025-11-28 22:49:50,865 django.server 3704 17080 "POST /api/quiz/evaluate/ HTTP/1.1" 500 110
+[INFO] 2025-11-28 22:50:48,251 api.views 3704 4348 Evaluating quiz quiz-3a785efe
+[INFO] 2025-11-28 22:50:48,251 api.service_clients 3704 4348 [quiz_evaluator] Evaluating quiz quiz-3a785efe with 2 questions
+[DEBUG] 2025-11-28 22:50:48,251 api.service_clients 3704 4348 [quiz_evaluator] POST http://localhost:8005/quiz/evaluate
+[WARNING] 2025-11-28 22:50:59,255 api.service_clients 3704 4348 [quiz_evaluator] Slow request: 11.00s
+[INFO] 2025-11-28 22:50:59,257 api.service_clients 3704 4348 [quiz_evaluator] Quiz quiz-3a785efe evaluated: 50.0% (1/2)
+[INFO] 2025-11-28 22:50:59,257 django.server 3704 4348 "POST /api/quiz/evaluate/ HTTP/1.1" 200 1932

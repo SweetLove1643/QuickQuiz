@@ -2,16 +2,25 @@ import os
 import json
 import uuid
 import logging
+import time
+import hashlib
 from typing import Optional
+from datetime import datetime
 from dotenv import load_dotenv
 
 from schemas import GenerateRequest, Quiz, QuizQuestion
 from llm_adapter import GeminiAdapter
+from database import SessionLocal, GenerationHistory, GeneratedQuiz, ContentCache
 
 # Load environment variables from .env file
 load_dotenv()
 
 logger = logging.getLogger(__name__)
+
+
+def get_db_session():
+    """Get database session for operations."""
+    return SessionLocal()
 
 
 def _build_prompt_from_sections(sections):
@@ -28,6 +37,8 @@ def generate_quiz_job(job_id: str, request_payload: dict) -> dict:
     request_payload is the parsed JSON matching GenerateRequest.
     Returns metadata dict including quiz_id and storage path.
     """
+    start_time = time.time()
+
     # Support a per-request 'use_canned' flag (coming from the UI) without
     # passing unknown fields into the Pydantic model.
     payload_copy = dict(request_payload or {})
@@ -248,8 +259,54 @@ def generate_quiz_job(job_id: str, request_payload: dict) -> dict:
         id=quiz_id, questions=question_objs, meta={"source_count": len(sections)}
     )
 
+    quiz_data = quiz.model_dump()
+
+    # Save to database
+    try:
+        db = get_db_session()
+
+        # Save generation history
+        history = GenerationHistory(
+            job_id=job_id,
+            quiz_id=quiz_id,
+            sections_count=len(sections),
+            requested_questions=n_questions,
+            question_types=types,
+            generated_questions=len(questions),
+            generation_time=time.time() - start_time if "start_time" in locals() else 0,
+            model_used=(
+                getattr(gemini, "current_model", "unknown")
+                if "gemini" in locals()
+                else "unknown"
+            ),
+            status="completed",
+        )
+        db.add(history)
+
+        # Save generated quiz for caching
+        generated_quiz = GeneratedQuiz(
+            quiz_id=quiz_id,
+            questions_data=quiz_data,
+            quiz_metadata={"generation_time": time.time()},
+            source_sections=sections,
+            generation_config=request_payload.get("config", {}),
+            validation_summary={},  # Will be updated by AI validation
+        )
+        db.add(generated_quiz)
+
+        db.commit()
+        logger.info(f"Saved quiz {quiz_id} to database")
+
+    except Exception as e:
+        logger.error(f"Failed to save quiz to database: {e}")
+        if "db" in locals():
+            db.rollback()
+    finally:
+        if "db" in locals():
+            db.close()
+
     # Return quiz data directly without saving to file
-    return quiz.model_dump()
+    return quiz_data
 
 
 __all__ = ["generate_quiz_job"]

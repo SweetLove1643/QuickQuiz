@@ -36,15 +36,25 @@ REM Wait for gateway to start
 echo Waiting for gateway to initialize...
 timeout /t 3 /nobreak >nul
 
+REM Start Frontend React App
+echo Starting Frontend (port 3000)...
+start "Frontend React" /min cmd /c "cd frontend && npm run dev"
+
+REM Wait for gateway to start
+echo Waiting for gateway to initialize...
+timeout /t 3 /nobreak >nul
+
 echo.
 echo QuickQuiz System is now running!
 echo.
 echo Service URLs:
+echo    - Frontend:         http://localhost:3000
 echo    - API Gateway:      http://localhost:8001
 echo    - Quiz Generator:   http://localhost:8003
 echo    - Quiz Evaluator:   http://localhost:8005
 echo.
 echo Important Endpoints:
+echo    - Web Interface:    http://localhost:3000
 echo    - Health Check:     http://localhost:8001/api/health/
 echo    - API Docs:        http://localhost:8001/api/
 echo    - Generate Quiz:    POST http://localhost:8001/api/quiz/generate/
