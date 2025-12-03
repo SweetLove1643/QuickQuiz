@@ -10,6 +10,7 @@ dataset/
 Services/__pycache__/
 Services/VRD_OCR/
 image_test/
+PaddleOCR/
 # Ignore virtual environment directories
 .venv/
 
