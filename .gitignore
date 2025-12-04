@@ -32,3 +32,6 @@ __pycache__/
 # Ignore documentation build files
 *.ini
 
+# Ignore build files frontend
+node_modules/
+
