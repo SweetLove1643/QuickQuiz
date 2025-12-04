@@ -516,6 +516,76 @@ class QuizEvaluatorClient(BaseServiceClient):
             return {"error": response.error}
 
 
+class RAGChatbotClient(BaseServiceClient):
+    """Enhanced client for RAG Chatbot service."""
+
+    def __init__(self):
+        super().__init__("rag_chatbot_service")
+
+    def chat(
+        self,
+        query: str,
+        conversation_id: Optional[str] = None,
+        retrieval_config: Optional[Dict] = None,
+        chat_config: Optional[Dict] = None,
+    ) -> Dict[str, Any]:
+        """Send chat message to RAG service."""
+        data = {
+            "query": query,
+            "conversation_id": conversation_id,
+            "retrieval_config": retrieval_config
+            or {"top_k": 5, "similarity_threshold": 0.3},
+            "chat_config": chat_config or {"temperature": 0.7, "max_tokens": 1000},
+        }
+
+        logger.info(f"[{self.service_name}] Processing chat query: {query[:50]}...")
+
+        response = self._make_request("POST", "/chat", data=data)
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data
+
+    def get_conversation_history(
+        self, conversation_id: str, limit: int = 10
+    ) -> Dict[str, Any]:
+        """Get conversation history."""
+        params = {"limit": limit}
+
+        logger.info(
+            f"[{self.service_name}] Getting history for conversation {conversation_id[:8]}"
+        )
+
+        response = self._make_request(
+            "GET", f"/conversations/{conversation_id}", params=params
+        )
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data
+
+    def list_conversations(self, limit: int = 20) -> Dict[str, Any]:
+        """List all conversations."""
+        params = {"limit": limit}
+
+        logger.info(f"[{self.service_name}] Listing conversations")
+
+        response = self._make_request("GET", "/conversations", params=params)
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data
+
+
 class ServiceRegistry:
     """Registry for managing all service clients."""
 
@@ -525,6 +595,7 @@ class ServiceRegistry:
             "quiz_evaluator": QuizEvaluatorClient(),
             "ocr_service": OCRServiceClient(),
             "summary_service": SummaryServiceClient(),
+            "rag_chatbot_service": RAGChatbotClient(),
         }
 
     def get_client(self, service_name: str) -> BaseServiceClient:
@@ -565,3 +636,4 @@ quiz_generator_client = service_registry.get_client("quiz_generator")
 quiz_evaluator_client = service_registry.get_client("quiz_evaluator")
 ocr_service_client = service_registry.get_client("ocr_service")
 summary_service_client = service_registry.get_client("summary_service")
+rag_chatbot_client = service_registry.get_client("rag_chatbot_service")

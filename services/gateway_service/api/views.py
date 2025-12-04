@@ -13,6 +13,7 @@ from .service_clients import (
     QuizEvaluatorClient,
     OCRServiceClient,
     SummaryServiceClient,
+    RAGChatbotClient,
 )
 import json
 import io
@@ -24,6 +25,7 @@ quiz_generator = QuizGeneratorClient()
 quiz_evaluator = QuizEvaluatorClient()
 ocr_service = OCRServiceClient()
 summary_service = SummaryServiceClient()
+rag_chatbot = RAGChatbotClient()
 
 
 @api_view(["GET"])
@@ -38,6 +40,7 @@ def health_check(request):
         evaluator_health = quiz_evaluator.health_check()
         ocr_health = ocr_service.health_check()
         summary_health = summary_service.health_check()
+        rag_health = rag_chatbot.health_check()
 
         return Response(
             {
@@ -59,6 +62,10 @@ def health_check(request):
                     "summary_service": {
                         "status": "healthy" if summary_health else "unhealthy",
                         "url": summary_service.base_url,
+                    },
+                    "rag_chatbot_service": {
+                        "status": "healthy" if rag_health else "unhealthy",
+                        "url": rag_chatbot.base_url,
                     },
                 },
             }
@@ -440,4 +447,97 @@ def image_ocr_legacy(request):
 
     except Exception as e:
         logger.error(f"Legacy image OCR failed: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+# ==============================================================================
+# RAG CHATBOT SERVICE VIEWS
+# ==============================================================================
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class ChatView(View):
+    """RAG Chatbot service overview and operations"""
+
+    def get(self, request):
+        """Get RAG Chatbot service information"""
+        return JsonResponse(
+            {
+                "service": "RAG Chatbot Service",
+                "version": "1.0.0",
+                "endpoints": {
+                    "chat_message": "/api/chat/message/",
+                    "start_conversation": "/api/chat/conversations/start/",
+                    "list_conversations": "/api/chat/conversations/",
+                    "conversation_history": "/api/chat/conversations/{id}/history/",
+                },
+                "description": "AI-powered chatbot with document retrieval and quiz context",
+            }
+        )
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def chat_message(request):
+    """Send message to RAG chatbot"""
+    try:
+        data = json.loads(request.body)
+        query = data.get("query")
+        conversation_id = data.get("conversation_id")
+        retrieval_config = data.get("retrieval_config", {})
+        chat_config = data.get("chat_config", {})
+
+        if not query:
+            return JsonResponse({"error": "Query is required"}, status=400)
+
+        # Call RAG service
+        result = rag_chatbot.chat(
+            query=query,
+            conversation_id=conversation_id,
+            retrieval_config=retrieval_config,
+            chat_config=chat_config,
+        )
+
+        return JsonResponse(result)
+
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON data"}, status=400)
+    except Exception as e:
+        logger.error(f"Chat message failed: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def list_conversations(request):
+    """List all conversations"""
+    try:
+        limit = int(request.GET.get("limit", 20))
+
+        # Call RAG service
+        result = rag_chatbot.list_conversations(limit=limit)
+
+        return JsonResponse(result)
+
+    except Exception as e:
+        logger.error(f"List conversations failed: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_conversation_history(request, conversation_id):
+    """Get conversation history"""
+    try:
+        limit = int(request.GET.get("limit", 10))
+
+        # Call RAG service
+        result = rag_chatbot.get_conversation_history(
+            conversation_id=conversation_id, limit=limit
+        )
+
+        return JsonResponse(result)
+
+    except Exception as e:
+        logger.error(f"Get conversation history failed: {str(e)}")
         return JsonResponse({"error": str(e)}, status=500)

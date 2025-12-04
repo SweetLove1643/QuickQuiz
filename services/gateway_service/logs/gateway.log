@@ -104,3 +104,160 @@
 [DEBUG] 2025-12-04 15:41:47,538 api.service_clients 8220 25172 [ocr_service] GET http://localhost:8007/health
 [DEBUG] 2025-12-04 15:41:49,604 api.service_clients 8220 25172 [summary_service] GET http://localhost:8009/health
 [INFO] 2025-12-04 15:41:51,645 django.server 8220 25172 "GET /api/health/ HTTP/1.1" 200 338
+[INFO] 2025-12-04 16:08:11,825 django.utils.autoreload 8220 18368 E:\QuickQuiz\services\gateway_service\api\service_clients.py changed, reloading.
+[INFO] 2025-12-04 16:08:13,316 django.utils.autoreload 16376 3308 Watching for file changes with StatReloader
+[INFO] 2025-12-04 16:08:17,738 django.utils.autoreload 16376 3308 E:\QuickQuiz\services\gateway_service\api\service_clients.py changed, reloading.
+[INFO] 2025-12-04 16:08:19,019 django.utils.autoreload 24208 15108 Watching for file changes with StatReloader
+[INFO] 2025-12-04 16:08:22,349 django.utils.autoreload 24208 15108 E:\QuickQuiz\services\gateway_service\api\service_clients.py changed, reloading.
+[INFO] 2025-12-04 16:08:23,846 django.utils.autoreload 13516 2552 Watching for file changes with StatReloader
+[INFO] 2025-12-04 16:08:31,538 django.utils.autoreload 13516 2552 E:\QuickQuiz\services\gateway_service\gateway\settings.py changed, reloading.
+[INFO] 2025-12-04 16:08:32,951 django.utils.autoreload 19704 16284 Watching for file changes with StatReloader
+[INFO] 2025-12-04 16:11:51,025 django.utils.autoreload 19704 16284 E:\QuickQuiz\services\gateway_service\gateway\settings.py changed, reloading.
+[INFO] 2025-12-04 16:11:52,623 django.utils.autoreload 4768 11480 Watching for file changes with StatReloader
+[INFO] 2025-12-04 16:42:46,069 django.utils.autoreload 22968 18108 Watching for file changes with StatReloader
+[DEBUG] 2025-12-04 16:44:30,332 api.service_clients 22968 22100 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-12-04 16:44:32,408 api.service_clients 22968 22100 [quiz_evaluator] GET http://localhost:8005/health
+[DEBUG] 2025-12-04 16:44:34,474 api.service_clients 22968 22100 [ocr_service] GET http://localhost:8007/health
+[DEBUG] 2025-12-04 16:44:36,540 api.service_clients 22968 22100 [summary_service] GET http://localhost:8009/health
+[INFO] 2025-12-04 16:44:38,615 django.server 22968 22100 "GET /api/health/ HTTP/1.1" 200 338
+[INFO] 2025-12-04 16:45:27,564 django.utils.autoreload 22968 18108 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-12-04 16:45:28,960 django.utils.autoreload 8880 17656 Watching for file changes with StatReloader
+[INFO] 2025-12-04 16:45:33,446 django.utils.autoreload 8880 17656 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-12-04 16:45:34,885 django.utils.autoreload 1264 3608 Watching for file changes with StatReloader
+[INFO] 2025-12-04 16:45:40,486 django.utils.autoreload 1264 3608 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-12-04 16:45:41,779 django.utils.autoreload 14624 12780 Watching for file changes with StatReloader
+[INFO] 2025-12-04 16:45:51,685 django.utils.autoreload 14624 12780 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-12-04 16:45:53,045 django.utils.autoreload 10724 6372 Watching for file changes with StatReloader
+[INFO] 2025-12-04 16:46:07,131 django.utils.autoreload 10724 6372 E:\QuickQuiz\services\gateway_service\api\urls.py changed, reloading.
+[INFO] 2025-12-04 16:46:08,474 django.utils.autoreload 25384 25388 Watching for file changes with StatReloader
+[INFO] 2025-12-04 16:46:37,626 django.utils.autoreload 25384 25388 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-12-04 16:46:38,960 django.utils.autoreload 18716 22964 Watching for file changes with StatReloader
+[DEBUG] 2025-12-04 16:47:00,267 api.service_clients 18716 10768 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-12-04 16:47:02,311 api.service_clients 18716 10768 [quiz_evaluator] GET http://localhost:8005/health
+[DEBUG] 2025-12-04 16:47:04,345 api.service_clients 18716 10768 [ocr_service] GET http://localhost:8007/health
+[DEBUG] 2025-12-04 16:47:06,400 api.service_clients 18716 10768 [summary_service] GET http://localhost:8009/health
+[DEBUG] 2025-12-04 16:47:08,467 api.service_clients 18716 10768 [rag_chatbot_service] GET http://localhost:8011/health
+[WARNING] 2025-12-04 16:47:38,639 api.service_clients 18716 10768 [rag_chatbot_service] Slow request: 30.17s
+[INFO] 2025-12-04 16:47:38,642 django.server 18716 10768 "GET /api/health/ HTTP/1.1" 200 411
+[WARNING] 2025-12-04 16:49:45,450 django.request 18716 10304 Not Found: /api/rag/chat/
+[WARNING] 2025-12-04 16:49:45,451 django.server 18716 10304 "POST /api/rag/chat/ HTTP/1.1" 404 7974
+[INFO] 2025-12-04 16:49:56,291 django.utils.autoreload 18716 22964 E:\QuickQuiz\services\gateway_service\api\urls.py changed, reloading.
+[INFO] 2025-12-04 16:49:57,685 django.utils.autoreload 19976 5208 Watching for file changes with StatReloader
+[WARNING] 2025-12-04 16:50:03,843 django.request 19976 22532 Bad Request: /api/rag/chat/
+[WARNING] 2025-12-04 16:50:03,845 django.server 19976 22532 "POST /api/rag/chat/ HTTP/1.1" 400 30
+[INFO] 2025-12-04 16:52:55,692 api.service_clients 19976 16928 [rag_chatbot_service] Processing chat query: What types of quizzes can be generated?...
+[DEBUG] 2025-12-04 16:52:55,693 api.service_clients 19976 16928 [rag_chatbot_service] POST http://localhost:8011/chat
+[WARNING] 2025-12-04 16:53:00,916 api.service_clients 19976 16928 [rag_chatbot_service] Slow request: 5.22s
+[INFO] 2025-12-04 16:53:00,918 django.server 19976 16928 "POST /api/rag/chat/ HTTP/1.1" 200 6500
+[INFO] 2025-12-04 16:53:09,414 api.service_clients 19976 16928 [rag_chatbot_service] Starting new conversation
+[DEBUG] 2025-12-04 16:53:09,414 api.service_clients 19976 16928 [rag_chatbot_service] POST http://localhost:8011/conversations/start
+[ERROR] 2025-12-04 16:53:11,486 api.service_clients 19976 16928 [rag_chatbot_service] HTTP 500: 405 Client Error: Method Not Allowed for url: http://localhost:8011/conversations/start
+[ERROR] 2025-12-04 16:53:11,486 api.views 19976 16928 Start conversation failed: HTTP 500: 405 Client Error: Method Not Allowed for url: http://localhost:8011/conversations/start
+[ERROR] 2025-12-04 16:53:11,487 django.request 19976 16928 Internal Server Error: /api/rag/conversations/start/
+[ERROR] 2025-12-04 16:53:11,488 django.server 19976 16928 "POST /api/rag/conversations/start/ HTTP/1.1" 500 110
+[INFO] 2025-12-04 16:53:45,101 api.service_clients 19976 16928 [rag_chatbot_service] Listing conversations
+[DEBUG] 2025-12-04 16:53:45,101 api.service_clients 19976 16928 [rag_chatbot_service] GET http://localhost:8011/conversations
+[INFO] 2025-12-04 16:53:47,175 django.server 19976 16928 "GET /api/rag/conversations/ HTTP/1.1" 200 1713
+[INFO] 2025-12-04 16:54:03,476 api.service_clients 19976 16928 [rag_chatbot_service] Getting history for conversation 78ba8c30
+[DEBUG] 2025-12-04 16:54:03,477 api.service_clients 19976 16928 [rag_chatbot_service] GET http://localhost:8011/conversations/78ba8c30-4cf8-40aa-b8c3-ddf0a80ae9b0/history
+[ERROR] 2025-12-04 16:54:05,554 api.service_clients 19976 16928 [rag_chatbot_service] HTTP 500: 404 Client Error: Not Found for url: http://localhost:8011/conversations/78ba8c30-4cf8-40aa-b8c3-ddf0a80ae9b0/history?limit=10
+[ERROR] 2025-12-04 16:54:05,555 api.views 19976 16928 Get conversation history failed: HTTP 500: 404 Client Error: Not Found for url: http://localhost:8011/conversations/78ba8c30-4cf8-40aa-b8c3-ddf0a80ae9b0/history?limit=10
+[ERROR] 2025-12-04 16:54:05,556 django.request 19976 16928 Internal Server Error: /api/rag/conversations/78ba8c30-4cf8-40aa-b8c3-ddf0a80ae9b0/history/
+[ERROR] 2025-12-04 16:54:05,557 django.server 19976 16928 "GET /api/rag/conversations/78ba8c30-4cf8-40aa-b8c3-ddf0a80ae9b0/history/ HTTP/1.1" 500 149
+[INFO] 2025-12-04 16:54:14,226 django.utils.autoreload 19976 5208 E:\QuickQuiz\services\gateway_service\api\urls.py changed, reloading.
+[INFO] 2025-12-04 16:54:15,613 django.utils.autoreload 10980 20212 Watching for file changes with StatReloader
+[INFO] 2025-12-04 16:54:18,965 django.utils.autoreload 10980 20212 E:\QuickQuiz\services\gateway_service\api\service_clients.py changed, reloading.
+[INFO] 2025-12-04 16:54:20,300 django.utils.autoreload 11204 24284 Watching for file changes with StatReloader
+[INFO] 2025-12-04 16:54:26,162 api.service_clients 11204 13936 [rag_chatbot_service] Getting history for conversation 78ba8c30
+[DEBUG] 2025-12-04 16:54:26,163 api.service_clients 11204 13936 [rag_chatbot_service] GET http://localhost:8011/conversations/78ba8c30-4cf8-40aa-b8c3-ddf0a80ae9b0
+[INFO] 2025-12-04 16:54:28,207 django.server 11204 13936 "GET /api/rag/conversations/78ba8c30-4cf8-40aa-b8c3-ddf0a80ae9b0/ HTTP/1.1" 200 802
+[INFO] 2025-12-04 16:55:02,568 api.service_clients 11204 13936 [rag_chatbot_service] Processing chat query: Can you create multiple choice questions?...
+[DEBUG] 2025-12-04 16:55:02,568 api.service_clients 11204 13936 [rag_chatbot_service] POST http://localhost:8011/chat
+[WARNING] 2025-12-04 16:55:07,801 api.service_clients 11204 13936 [rag_chatbot_service] Slow request: 5.23s
+[INFO] 2025-12-04 16:55:07,802 django.server 11204 13936 "POST /api/rag/chat/ HTTP/1.1" 200 7274
+[INFO] 2025-12-04 16:55:12,718 django.utils.autoreload 11204 24284 E:\QuickQuiz\services\gateway_service\api\urls.py changed, reloading.
+[INFO] 2025-12-04 16:55:14,154 django.utils.autoreload 23108 6064 Watching for file changes with StatReloader
+[INFO] 2025-12-04 16:55:20,762 django.utils.autoreload 23108 6064 E:\QuickQuiz\services\gateway_service\api\service_clients.py changed, reloading.
+[INFO] 2025-12-04 16:55:22,227 django.utils.autoreload 15088 20652 Watching for file changes with StatReloader
+[INFO] 2025-12-04 16:55:32,444 django.utils.autoreload 15088 20652 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-12-04 16:55:33,920 django.utils.autoreload 22236 15968 Watching for file changes with StatReloader
+[DEBUG] 2025-12-04 16:56:20,260 api.service_clients 22236 18052 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-12-04 16:56:22,289 api.service_clients 22236 18052 [quiz_evaluator] GET http://localhost:8005/health
+[DEBUG] 2025-12-04 16:56:24,337 api.service_clients 22236 18052 [ocr_service] GET http://localhost:8007/health
+[DEBUG] 2025-12-04 16:56:26,388 api.service_clients 22236 18052 [summary_service] GET http://localhost:8009/health
+[DEBUG] 2025-12-04 16:56:28,445 api.service_clients 22236 18052 [rag_chatbot_service] GET http://localhost:8011/health
+[INFO] 2025-12-04 16:56:31,283 django.server 22236 18052 "GET /api/health/ HTTP/1.1" 200 411
+[INFO] 2025-12-04 16:56:31,329 api.service_clients 22236 18052 [rag_chatbot_service] Processing chat query: Tell me about Python programming...
+[DEBUG] 2025-12-04 16:56:31,330 api.service_clients 22236 18052 [rag_chatbot_service] POST http://localhost:8011/chat
+[INFO] 2025-12-04 16:56:33,672 django.server 22236 18052 "POST /api/rag/chat/ HTTP/1.1" 200 3385
+[DEBUG] 2025-12-04 16:56:48,274 api.service_clients 22236 18052 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-12-04 16:56:50,349 api.service_clients 22236 18052 [quiz_evaluator] GET http://localhost:8005/health
+[DEBUG] 2025-12-04 16:56:52,388 api.service_clients 22236 18052 [ocr_service] GET http://localhost:8007/health
+[DEBUG] 2025-12-04 16:56:54,407 api.service_clients 22236 18052 [summary_service] GET http://localhost:8009/health
+[DEBUG] 2025-12-04 16:56:56,441 api.service_clients 22236 18052 [rag_chatbot_service] GET http://localhost:8011/health
+[INFO] 2025-12-04 16:56:59,288 django.server 22236 18052 "GET /api/health/ HTTP/1.1" 200 411
+[INFO] 2025-12-04 16:56:59,334 api.service_clients 22236 18052 [rag_chatbot_service] Processing chat query: Tell me about Python programming...
+[DEBUG] 2025-12-04 16:56:59,334 api.service_clients 22236 18052 [rag_chatbot_service] POST http://localhost:8011/chat
+[INFO] 2025-12-04 16:57:01,434 django.server 22236 18052 "POST /api/rag/chat/ HTTP/1.1" 200 3389
+[INFO] 2025-12-04 16:57:01,491 api.service_clients 22236 18052 [rag_chatbot_service] Listing conversations
+[DEBUG] 2025-12-04 16:57:01,491 api.service_clients 22236 18052 [rag_chatbot_service] GET http://localhost:8011/conversations
+[INFO] 2025-12-04 16:57:01,501 django.server 22236 18052 "GET /api/rag/conversations/ HTTP/1.1" 200 3559
+[INFO] 2025-12-04 22:44:42,659 django.utils.autoreload 20208 16920 Watching for file changes with StatReloader
+[DEBUG] 2025-12-04 22:46:58,570 api.service_clients 20208 5972 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-12-04 22:47:00,620 api.service_clients 20208 5972 [quiz_evaluator] GET http://localhost:8005/health
+[DEBUG] 2025-12-04 22:47:02,660 api.service_clients 20208 5972 [ocr_service] GET http://localhost:8007/health
+[DEBUG] 2025-12-04 22:47:04,680 api.service_clients 20208 5972 [summary_service] GET http://localhost:8009/health
+[DEBUG] 2025-12-04 22:47:06,738 api.service_clients 20208 5972 [rag_chatbot_service] GET http://localhost:8011/health
+[ERROR] 2025-12-04 22:47:14,800 api.service_clients 20208 5972 [rag_chatbot_service] Unexpected error: HTTPConnectionPool(host='localhost', port=8011): Max retries exceeded with url: /health (Caused by ResponseError('too many 503 error responses'))
+[INFO] 2025-12-04 22:47:14,800 django.server 20208 5972 "GET /api/health/ HTTP/1.1" 200 411
+[INFO] 2025-12-04 22:47:26,283 api.service_clients 20208 5972 [rag_chatbot_service] Processing chat query: What can you help me with?...
+[DEBUG] 2025-12-04 22:47:26,284 api.service_clients 20208 5972 [rag_chatbot_service] POST http://localhost:8011/chat
+[INFO] 2025-12-04 22:47:28,338 django.server 20208 5972 "POST /api/rag/chat/ HTTP/1.1" 200 445
+[INFO] 2025-12-04 22:47:50,881 api.service_clients 20208 5972 [rag_chatbot_service] Processing chat query: What can you tell me about quiz generation?...
+[DEBUG] 2025-12-04 22:47:50,881 api.service_clients 20208 5972 [rag_chatbot_service] POST http://localhost:8011/chat
+[INFO] 2025-12-04 22:47:52,970 django.server 20208 5972 "POST /api/rag/chat/ HTTP/1.1" 200 1018
+[INFO] 2025-12-04 22:48:18,674 django.utils.autoreload 20208 16920 E:\QuickQuiz\services\gateway_service\api\service_clients.py changed, reloading.
+[INFO] 2025-12-04 22:48:20,080 django.utils.autoreload 19300 21024 Watching for file changes with StatReloader
+[INFO] 2025-12-04 22:48:46,753 api.service_clients 19300 7632 [rag_chatbot_service] Processing chat query: What are the main features of QuickQuiz?...
+[DEBUG] 2025-12-04 22:48:46,753 api.service_clients 19300 7632 [rag_chatbot_service] POST http://localhost:8011/chat
+[INFO] 2025-12-04 22:48:48,841 django.server 19300 7632 "POST /api/rag/chat/ HTTP/1.1" 200 1017
+[INFO] 2025-12-04 22:49:33,234 api.service_clients 19300 7632 [rag_chatbot_service] Processing chat query: Tell me about QuickQuiz system features...
+[DEBUG] 2025-12-04 22:49:33,234 api.service_clients 19300 7632 [rag_chatbot_service] POST http://localhost:8011/chat
+[INFO] 2025-12-04 22:49:35,305 django.server 19300 7632 "POST /api/rag/chat/ HTTP/1.1" 200 1018
+[INFO] 2025-12-04 22:52:39,793 api.service_clients 19300 4552 [rag_chatbot_service] Processing chat query: Tell me about QuickQuiz system features...
+[DEBUG] 2025-12-04 22:52:39,793 api.service_clients 19300 4552 [rag_chatbot_service] POST http://localhost:8011/chat
+[INFO] 2025-12-04 22:52:41,882 django.server 19300 4552 "POST /api/rag/chat/ HTTP/1.1" 200 1018
+[ERROR] 2025-12-04 22:58:29,970 api.views 19300 12984 Chat message failed: 'utf-8' codec can't decode byte 0xed in position 45: invalid continuation byte
+[ERROR] 2025-12-04 22:58:29,970 django.request 19300 12984 Internal Server Error: /api/rag/chat/
+[ERROR] 2025-12-04 22:58:29,970 django.server 19300 12984 "POST /api/rag/chat/ HTTP/1.1" 500 91
+[INFO] 2025-12-04 23:01:24,749 django.utils.autoreload 19484 5488 Watching for file changes with StatReloader
+[DEBUG] 2025-12-04 23:02:30,930 api.service_clients 19484 22496 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-12-04 23:02:32,956 api.service_clients 19484 22496 [quiz_evaluator] GET http://localhost:8005/health
+[DEBUG] 2025-12-04 23:02:35,005 api.service_clients 19484 22496 [ocr_service] GET http://localhost:8007/health
+[DEBUG] 2025-12-04 23:02:37,024 api.service_clients 19484 22496 [summary_service] GET http://localhost:8009/health
+[DEBUG] 2025-12-04 23:02:39,060 api.service_clients 19484 22496 [rag_chatbot_service] GET http://localhost:8011/health
+[ERROR] 2025-12-04 23:02:47,093 api.service_clients 19484 22496 [rag_chatbot_service] Unexpected error: HTTPConnectionPool(host='localhost', port=8011): Max retries exceeded with url: /health (Caused by ResponseError('too many 503 error responses'))
+[INFO] 2025-12-04 23:02:47,093 django.server 19484 22496 "GET /api/health/ HTTP/1.1" 200 411
+[ERROR] 2025-12-04 23:03:16,171 api.views 19484 22496 Chat message failed: 'utf-8' codec can't decode byte 0xed in position 29: invalid continuation byte
+[ERROR] 2025-12-04 23:03:16,171 django.request 19484 22496 Internal Server Error: /api/rag/chat/
+[ERROR] 2025-12-04 23:03:16,171 django.server 19484 22496 "POST /api/rag/chat/ HTTP/1.1" 500 91
+[INFO] 2025-12-04 23:04:10,778 django.utils.autoreload 18836 20928 Watching for file changes with StatReloader
+[DEBUG] 2025-12-04 23:04:59,146 api.service_clients 19484 9556 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-12-04 23:05:01,192 api.service_clients 19484 9556 [quiz_evaluator] GET http://localhost:8005/health
+[DEBUG] 2025-12-04 23:05:03,247 api.service_clients 19484 9556 [ocr_service] GET http://localhost:8007/health
+[DEBUG] 2025-12-04 23:05:05,312 api.service_clients 19484 9556 [summary_service] GET http://localhost:8009/health
+[DEBUG] 2025-12-04 23:05:07,362 api.service_clients 19484 9556 [rag_chatbot_service] GET http://localhost:8011/health
+[ERROR] 2025-12-04 23:05:15,412 api.service_clients 19484 9556 [rag_chatbot_service] Unexpected error: HTTPConnectionPool(host='localhost', port=8011): Max retries exceeded with url: /health (Caused by ResponseError('too many 503 error responses'))
+[INFO] 2025-12-04 23:05:15,412 django.server 19484 9556 "GET /api/health/ HTTP/1.1" 200 411
+[ERROR] 2025-12-04 23:06:09,778 api.views 19484 9556 Chat message failed: 'utf-8' codec can't decode byte 0xed in position 36: invalid continuation byte
+[ERROR] 2025-12-04 23:06:09,778 django.request 19484 9556 Internal Server Error: /api/rag/chat/
+[ERROR] 2025-12-04 23:06:09,778 django.server 19484 9556 "POST /api/rag/chat/ HTTP/1.1" 500 91
+[ERROR] 2025-12-04 23:08:38,484 api.views 19484 24592 Chat message failed: 'utf-8' codec can't decode byte 0xed in position 45: invalid continuation byte
+[ERROR] 2025-12-04 23:08:38,485 django.request 19484 24592 Internal Server Error: /api/rag/chat/
+[ERROR] 2025-12-04 23:08:38,486 django.server 19484 24592 "POST /api/rag/chat/ HTTP/1.1" 500 91
+[DEBUG] 2025-12-04 23:09:09,421 api.service_clients 19484 24592 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-12-04 23:09:11,474 api.service_clients 19484 24592 [quiz_evaluator] GET http://localhost:8005/health
+[DEBUG] 2025-12-04 23:09:13,530 api.service_clients 19484 24592 [ocr_service] GET http://localhost:8007/health
+[DEBUG] 2025-12-04 23:09:15,583 api.service_clients 19484 24592 [summary_service] GET http://localhost:8009/health
+[DEBUG] 2025-12-04 23:09:17,639 api.service_clients 19484 24592 [rag_chatbot_service] GET http://localhost:8011/health
+[INFO] 2025-12-04 23:09:19,678 django.server 19484 24592 "GET /api/health/ HTTP/1.1" 200 411

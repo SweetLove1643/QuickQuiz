@@ -200,6 +200,13 @@ MICROSERVICES = {
         "timeout": 60,  # Summarization might take longer
         "retry_count": 3,
     },
+    "rag_chatbot_service": {
+        "host": os.getenv("RAG_CHATBOT_HOST", "localhost"),
+        "port": os.getenv("RAG_CHATBOT_PORT", "8011"),
+        "health_endpoint": "/health",
+        "timeout": 45,  # RAG processing might take time
+        "retry_count": 3,
+    },
     # Legacy service for backward compatibility
     "extract_information": {
         "host": os.getenv("EXTRACT_INFORMATION_HOST", "localhost"),

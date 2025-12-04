@@ -31,4 +31,13 @@ urlpatterns = [
     ),
     path("summary/recommend_study/", views.recommend_study, name="recommend_study"),
     path("summary/image_ocr/", views.image_ocr_legacy, name="image_ocr_legacy"),
+    # RAG Chatbot endpoints
+    path("rag/", views.ChatView.as_view(), name="rag_chat"),
+    path("rag/chat/", views.chat_message, name="rag_chat_message"),
+    path("rag/conversations/", views.list_conversations, name="rag_list_conversations"),
+    path(
+        "rag/conversations/<str:conversation_id>/",
+        views.get_conversation_history,
+        name="rag_conversation_history",
+    ),
 ]
