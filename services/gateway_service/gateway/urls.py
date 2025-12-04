@@ -27,6 +27,7 @@ def gateway_info(request):
             "microservices": {
                 "quiz_generator": f"http://{settings.MICROSERVICES['quiz_generator']['host']}:{settings.MICROSERVICES['quiz_generator']['port']}",
                 "quiz_evaluator": f"http://{settings.MICROSERVICES['quiz_evaluator']['host']}:{settings.MICROSERVICES['quiz_evaluator']['port']}",
+                "extract_information": f"http://{settings.MICROSERVICES['extract_information']['host']}:{settings.MICROSERVICES['extract_information']['port']}",
             },
         }
     )

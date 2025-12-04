@@ -30,7 +30,7 @@ timeout /t 5 /nobreak >nul
 
 REM Start Django API Gateway
 echo Starting API Gateway (port 8001)...
-start "API Gateway" /min cmd /c "cd services\gateway_service && python manage.py runserver 127.0.0.1:8001"
+start "API Gateway" /min cmd /c "cd services\gateway_service && python manage.py runserver 0.0.0.0:8001"
 
 REM Wait for gateway to start
 echo Waiting for gateway to initialize...
