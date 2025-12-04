@@ -75,9 +75,25 @@ python -m uvicorn api:app --host 127.0.0.1 --port 8005 --reload &
 QUIZ_EVAL_PID=$!
 cd ../..
 
-# 3. Wait for microservices to be ready
+# 3. OCR Service
+echo "📷 Starting OCR Service (port 8007)..."
+cd services/ocr_service
+python -m uvicorn api:app --host 127.0.0.1 --port 8007 --reload &
+OCR_PID=$!
+cd ../..
+
+# 4. Summary Service
+echo "📝 Starting Summary Service (port 8009)..."
+cd services/summary_service
+python -m uvicorn api:app --host 127.0.0.1 --port 8009 --reload &
+SUMMARY_PID=$!
+cd ../..
+
+# 5. Wait for microservices to be ready
 wait_for_service "http://localhost:8003/health" "Quiz Generator"
 wait_for_service "http://localhost:8005/health" "Quiz Evaluator"
+wait_for_service "http://localhost:8007/health" "OCR Service"
+wait_for_service "http://localhost:8009/health" "Summary Service"
 
 # 4. Django API Gateway
 echo "🌐 Starting API Gateway (port 8001)..."
@@ -99,21 +115,28 @@ cd ..
 echo ""
 echo "QuickQuiz System is now running!"
 echo ""
-echo "Service URLs:"
-echo "   API Gateway:      http://localhost:8001"
-echo "   Quiz Generator:   http://localhost:8003"
-echo "   Quiz Evaluator:   http://localhost:8005"
+echo "📝 Service URLs:"
+echo "   ⚛️ Frontend:          http://localhost:3000"
+echo "   🌐 API Gateway:      http://localhost:8001"
+echo "   📚 Quiz Generator:   http://localhost:8003"
+echo "   📊 Quiz Evaluator:   http://localhost:8005"
+echo "   📷 OCR Service:      http://localhost:8007"
+echo "   📝 Summary Service:  http://localhost:8009"
 echo ""
-echo "Important Endpoints:"
-echo "   Health Check:     http://localhost:8001/api/health/"
-echo "   API Docs:        http://localhost:8001/api/"
-echo "   Generate Quiz:    POST http://localhost:8001/api/quiz/generate/"
-echo "   Evaluate Quiz:    POST http://localhost:8001/api/quiz/evaluate/"
+echo "🔗 Important Endpoints:"
+echo "   🖥️ Web Interface:     http://localhost:3000"
+echo "   📊 Health Check:     http://localhost:8001/api/health/"
+echo "   📖 API Docs:        http://localhost:8001/api/"
+echo "   🎯 Generate Quiz:    POST http://localhost:8001/api/quiz/generate/"
+echo "   ✅ Evaluate Quiz:    POST http://localhost:8001/api/quiz/evaluate/"
+echo "   📷 Extract Text:     POST http://localhost:8001/api/ocr/extract_text_multi/"
+echo "   📝 Summarize Text:   POST http://localhost:8001/api/summary/summarize_text/"
+echo "   📄 OCR + Summary:    POST http://localhost:8001/api/summary/ocr_and_summarize/"
 echo ""
 echo "Press Ctrl+C to stop all services"
 
 # Store PIDs for cleanup
-echo "$QUIZ_GEN_PID $QUIZ_EVAL_PID $GATEWAY_PID $FRONTEND_PID" > .service_pids
+echo "$QUIZ_GEN_PID $QUIZ_EVAL_PID $OCR_PID $SUMMARY_PID $GATEWAY_PID $FRONTEND_PID" > .service_pids
 
 # Wait for user interrupt
 trap 'kill $(cat .service_pids 2>/dev/null) 2>/dev/null; rm -f .service_pids; echo ""; echo "🛑 All services stopped"; exit 0' INT

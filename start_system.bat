@@ -24,9 +24,17 @@ REM Start Quiz Evaluator Service
 echo Starting Quiz Evaluator (port 8005)...
 start "Quiz Evaluator" /min cmd /c "cd services\quiz_evaluator_service && python -m uvicorn api:app --host 127.0.0.1 --port 8005 --reload"
 
+REM Start OCR Service
+echo Starting OCR Service (port 8007)...
+start "OCR Service" /min cmd /c "cd services\ocr_service && python -m uvicorn api:app --host 127.0.0.1 --port 8007 --reload"
+
+REM Start Summary Service
+echo Starting Summary Service (port 8009)...
+start "Summary Service" /min cmd /c "cd services\summary_service && python -m uvicorn api:app --host 127.0.0.1 --port 8009 --reload"
+
 REM Wait a moment for services to start
 echo Waiting for services to initialize...
-timeout /t 5 /nobreak >nul
+timeout /t 8 /nobreak >nul
 
 REM Start Django API Gateway
 echo Starting API Gateway (port 8001)...
@@ -52,6 +60,8 @@ echo    - Frontend:         http://localhost:3000
 echo    - API Gateway:      http://localhost:8001
 echo    - Quiz Generator:   http://localhost:8003
 echo    - Quiz Evaluator:   http://localhost:8005
+echo    - OCR Service:      http://localhost:8007
+echo    - Summary Service:  http://localhost:8009
 echo.
 echo Important Endpoints:
 echo    - Web Interface:    http://localhost:3000
@@ -59,6 +69,9 @@ echo    - Health Check:     http://localhost:8001/api/health/
 echo    - API Docs:        http://localhost:8001/api/
 echo    - Generate Quiz:    POST http://localhost:8001/api/quiz/generate/
 echo    - Evaluate Quiz:    POST http://localhost:8001/api/quiz/evaluate/
+echo    - Extract Text:     POST http://localhost:8001/api/ocr/extract_text_multi/
+echo    - Summarize Text:   POST http://localhost:8001/api/summary/summarize_text/
+echo    - OCR + Summary:    POST http://localhost:8001/api/summary/ocr_and_summarize/
 echo.
 echo To stop services, close the individual terminal windows
 echo    or use Task Manager to end Python processes
