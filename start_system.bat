@@ -18,11 +18,11 @@ echo Starting microservices...
 
 REM Start Quiz Generator Service
 echo Starting Quiz Generator (port 8003)...
-start "Quiz Generator" /min cmd /c "cd services\quiz_generator && python -m uvicorn api:app --host 127.0.0.1 --port 8003 --reload"
+start "Quiz Generator" /min cmd /c "cd services\quiz_generator_service && python -m uvicorn api:app --host 127.0.0.1 --port 8003 --reload"
 
 REM Start Quiz Evaluator Service
 echo Starting Quiz Evaluator (port 8005)...
-start "Quiz Evaluator" /min cmd /c "cd services\quiz_evaluator && python -m uvicorn api:app --host 127.0.0.1 --port 8005 --reload"
+start "Quiz Evaluator" /min cmd /c "cd services\quiz_evaluator_service && python -m uvicorn api:app --host 127.0.0.1 --port 8005 --reload"
 
 REM Wait a moment for services to start
 echo Waiting for services to initialize...
