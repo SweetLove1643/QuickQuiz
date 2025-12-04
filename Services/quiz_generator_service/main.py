@@ -14,7 +14,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from quiz_generator.tasks import generate_quiz_job
+from quiz_generator_service.tasks import generate_quiz_job
 
 
 def generate_quiz(input_data: dict) -> str:
