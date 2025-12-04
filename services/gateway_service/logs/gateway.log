@@ -75,3 +75,14 @@
 [WARNING] 2025-11-28 22:50:59,255 api.service_clients 3704 4348 [quiz_evaluator] Slow request: 11.00s
 [INFO] 2025-11-28 22:50:59,257 api.service_clients 3704 4348 [quiz_evaluator] Quiz quiz-3a785efe evaluated: 50.0% (1/2)
 [INFO] 2025-11-28 22:50:59,257 django.server 3704 4348 "POST /api/quiz/evaluate/ HTTP/1.1" 200 1932
+[INFO] 2025-11-28 23:21:40,649 django.utils.autoreload 9688 14860 Watching for file changes with StatReloader
+[DEBUG] 2025-11-28 23:23:22,875 api.service_clients 9688 14564 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-11-28 23:23:24,944 api.service_clients 9688 14564 [quiz_evaluator] GET http://localhost:8005/health
+[INFO] 2025-11-28 23:23:26,990 django.server 9688 14564 "GET /api/health/ HTTP/1.1" 200 204
+[INFO] 2025-11-29 20:10:45,064 django.utils.autoreload 21040 2592 Watching for file changes with StatReloader
+[INFO] 2025-11-29 20:29:52,590 django.server 21040 18808 "OPTIONS /api/quiz/generate/ HTTP/1.1" 200 0
+[INFO] 2025-11-29 20:29:52,604 api.views 21040 18808 Generating quiz: 1 sections, 5 questions
+[INFO] 2025-11-29 20:29:52,604 api.service_clients 21040 18808 [quiz_generator] Generating quiz: 1 sections, 5 questions
+[DEBUG] 2025-11-29 20:29:52,604 api.service_clients 21040 18808 [quiz_generator] POST http://localhost:8003/quiz/generate
+[WARNING] 2025-11-29 20:30:00,502 api.service_clients 21040 18808 [quiz_generator] Slow request: 7.90s
+[INFO] 2025-11-29 20:30:00,504 django.server 21040 18808 "POST /api/quiz/generate/ HTTP/1.1" 200 2018
