@@ -3,6 +3,12 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 
 
+class HealthResponse(BaseModel):
+    status: str = "healthy"
+    service: str
+    version: str
+
+
 class SummaryDocument(BaseModel):
     """Model cho summary document."""
 

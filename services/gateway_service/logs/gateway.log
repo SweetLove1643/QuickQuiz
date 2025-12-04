@@ -261,3 +261,9 @@
 [DEBUG] 2025-12-04 23:09:15,583 api.service_clients 19484 24592 [summary_service] GET http://localhost:8009/health
 [DEBUG] 2025-12-04 23:09:17,639 api.service_clients 19484 24592 [rag_chatbot_service] GET http://localhost:8011/health
 [INFO] 2025-12-04 23:09:19,678 django.server 19484 24592 "GET /api/health/ HTTP/1.1" 200 411
+[INFO] 2025-12-04 23:12:46,143 api.service_clients 19484 12240 [rag_chatbot_service] Processing chat query: QuickQuiz features...
+[DEBUG] 2025-12-04 23:12:46,143 api.service_clients 19484 12240 [rag_chatbot_service] POST http://localhost:8011/chat
+[INFO] 2025-12-04 23:12:48,194 django.server 19484 12240 "POST /api/rag/chat/ HTTP/1.1" 200 2116
+[INFO] 2025-12-04 23:19:04,424 api.service_clients 19484 19712 [rag_chatbot_service] Processing chat query: QuickQuiz system...
+[DEBUG] 2025-12-04 23:19:04,424 api.service_clients 19484 19712 [rag_chatbot_service] POST http://localhost:8011/chat
+[INFO] 2025-12-04 23:19:06,522 django.server 19484 19712 "POST /api/rag/chat/ HTTP/1.1" 200 2116

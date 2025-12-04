@@ -23,8 +23,8 @@ sys.path.insert(0, project_root)
 
 from chat_engine import get_chat_engine, RAGChatEngine
 
-# Use MongoDB retriever instead of mock data retriever
-from mongodb_retriever import MongoDBDocumentRetriever as DocumentRetriever
+# Use SQLite retriever for QuickQuiz integration
+from sqlite_retriever import SQLiteDocumentRetriever as DocumentRetriever
 from schemas import (
     RAGChatRequest,
     RAGChatResponse,
@@ -32,6 +32,14 @@ from schemas import (
     ChatConfig,
     ConversationHistory,
     ConversationListResponse,
+    HealthResponse,
+)
+from database import (
+    init_db,
+    log_conversation,
+    log_chat_message,
+    get_conversation_history,
+    quiz_data_access,
 )
 
 # Setup logging
@@ -59,6 +67,22 @@ app.add_middleware(
 # Global instances
 _chat_engine: Optional[RAGChatEngine] = None
 _retriever: Optional[DocumentRetriever] = None
+
+
+# Initialize database on startup
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database and services on startup"""
+    try:
+        init_db()
+        logger.info("✅ RAG Chatbot database initialized")
+
+        # Test quiz data access
+        templates = quiz_data_access.get_quiz_templates(1)
+        logger.info(f"✅ Quiz data access working - found {len(templates)} templates")
+
+    except Exception as e:
+        logger.error(f"❌ Startup initialization failed: {e}")
 
 
 # Shared logic functions
@@ -93,13 +117,44 @@ async def _process_chat_request(
         else:
             logger.info(f"Processing standalone chat: {log_query}")
 
+        # Get quiz context for enhanced responses
+        quiz_context = []
+        try:
+            # Search quiz data for relevant context
+            quiz_content = quiz_data_access.search_quiz_content(request.query, 3)
+            if quiz_content:
+                quiz_context = quiz_content
+                logger.info(f"Found {len(quiz_content)} relevant quiz contexts")
+        except Exception as e:
+            logger.warning(f"Could not access quiz context: {e}")
+
         # Process chat với chat engine - KHÔNG modify request.conversation_id
         response = chat_engine.chat(request, effective_conversation_id)
+
+        # Log chat message to database
+        try:
+            await log_chat_message(
+                conversation_id=effective_conversation_id or "standalone",
+                user_query=request.query,
+                assistant_response=response.answer,
+                retrieved_documents=[
+                    {
+                        "content": doc[:200] + "..." if len(doc) > 200 else doc,
+                        "source": "document_retrieval",
+                    }
+                    for doc in response.context.retrieved_documents[:3]
+                ],
+                context_sources=quiz_context,
+                processing_time=response.processing_time,
+            )
+        except Exception as e:
+            logger.warning(f"Could not log chat message: {e}")
 
         # Log success với debug info
         logger.info(f"=== CHAT RESPONSE DEBUG ===")
         logger.info(f"Retrieved docs: {response.context.retrieved_count}")
         logger.info(f"Context used: {response.context.context_used}")
+        logger.info(f"Quiz context: {len(quiz_context)} items")
         logger.info(f"Processing time: {response.processing_time:.2f}s")
         logger.info(f"Answer preview: {response.answer[:100]}...")
 
@@ -137,7 +192,7 @@ def get_chat_engine_instance() -> RAGChatEngine:
 
 
 # Health check endpoint
-@app.get("/health")
+@app.get("/health", response_model=HealthResponse)
 async def health_check():
     """Health check endpoint."""
     try:
@@ -145,26 +200,17 @@ async def health_check():
         retriever = get_retriever_instance()
         chat_engine = get_chat_engine_instance()
 
+        # Check quiz data access
+        quiz_templates = quiz_data_access.get_quiz_templates(1)
+        quiz_access_ok = (
+            len(quiz_templates) >= 0
+        )  # Just check if we can access without error
+
         stats = chat_engine.get_stats()
 
-        return {
-            "status": "healthy",
-            "timestamp": datetime.now().isoformat(),
-            "service": "rag-chatbot-api",
-            "version": "1.0.0",
-            "components": {
-                "retriever": "ready",
-                "chat_engine": "ready",
-                "llm_adapter": stats.get("llm_adapter", {}).get("status", "unknown"),
-            },
-            "data": {
-                "total_documents": stats.get("retriever", {}).get("total_documents", 0),
-                "total_vectors": stats.get("retriever", {}).get("total_vectors", 0),
-                "total_conversations": stats.get("conversations", {}).get(
-                    "total_conversations", 0
-                ),
-            },
-        }
+        return HealthResponse(
+            status="healthy", service="rag_chatbot_service", version="1.0.0"
+        )
     except Exception as e:
         logger.error(f"Health check failed: {e}")
         raise HTTPException(status_code=503, detail=f"Service unhealthy: {str(e)}")

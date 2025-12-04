@@ -1,36 +1,31 @@
-# RAG Chatbot Package
+# RAG Chatbot Service
 
-RAG (Retrieval-Augmented Generation) chatbot system cho Q&A từ document summaries sử dụng vector similarity search và Gemini AI.
+RAG (Retrieval-Augmented Generation) chatbot service for QuickQuiz project. Integrates with quiz data and provides conversational AI capabilities using SQLite and Gemini AI.
 
 ## 🎯 Tính năng chính
 
-- **Document Retrieval**: Vector search sử dụng FAISS và sentence-transformers
+- **Quiz Data Integration**: Access quiz templates and evaluation results
 - **Conversational AI**: Gemini API integration với conversation context
-- **Local Embeddings**: Offline text embedding với all-MiniLM-L6-v2
+- **SQLite Database**: Persistent conversation and document storage
 - **REST API**: FastAPI server với comprehensive endpoints
-- **Command-line Interface**: Interactive CLI cho development/testing
-- **Document Management**: Chunking, metadata, filtering capabilities
-- **Performance Optimization**: Index caching, multi-model fallback
+- **Cross-service Data Access**: Integration với quiz generator và evaluator services
+- **Document Retrieval**: Simple keyword-based search from quiz content
 
-## 📦 Cấu trúc Package
+## 📦 Cấu trúc Service
 
 ```
-rag_chatbot/
-├── __init__.py                 # Package initialization
-├── requirements.txt            # Dependencies
+rag_chatbot_service/
+├── __init__.py                 # Service initialization
+├── requirements.txt            # Dependencies (minimal FastAPI + Gemini)
 ├── schemas.py                  # Pydantic data models
-├── embeddings.py               # Text embedding service
-├── vector_store.py            # FAISS vector database
-├── retriever.py               # Document retrieval system
+├── database.py                 # SQLite database models và cross-service access
+├── sqlite_retriever.py         # Document retrieval from SQLite và quiz data
 ├── llm_adapter.py             # Gemini LLM integration
 ├── chat_engine.py             # Core RAG chat engine
-├── main.py                    # Command-line interface
 ├── api.py                     # FastAPI REST server
-├── demo.py                    # Example usage và demos
 ├── README.md                  # Documentation
-├── data/
-│   └── mock_summaries.json    # Sample document data
-└── cache/                     # FAISS index cache (auto-created)
+├── .env                       # Environment configuration
+└── rag_chatbot.db            # SQLite database (auto-created)
 ```
 
 ## 🛠️ Cài đặt

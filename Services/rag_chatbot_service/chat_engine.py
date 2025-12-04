@@ -3,7 +3,7 @@ import logging
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 import json
-from mongodb_retriever import MongoDBDocumentRetriever as DocumentRetriever
+from sqlite_retriever import SQLiteDocumentRetriever as DocumentRetriever
 from llm_adapter import GeminiChatAdapter
 from schemas import (
     RAGChatRequest,
@@ -72,6 +72,8 @@ class RAGChatEngine:
             )
 
             logger.info(f"Retrieved {len(retrieved_docs)} documents")
+            logger.debug(f"Query used: '{request.query}'")
+            logger.debug(f"Retrieval config: {request.retrieval_config}")
             for i, doc in enumerate(retrieved_docs):
                 logger.info(
                     f"  Doc {i+1}: {doc.topic} (score: {doc.similarity_score:.3f})"
@@ -355,6 +357,33 @@ def get_chat_engine(retriever: Optional[DocumentRetriever] = None) -> RAGChatEng
         _chat_engine = RAGChatEngine(retriever=retriever)
 
     return _chat_engine
+
+
+# Add get_stats method to RAGChatEngine
+def _add_stats_method():
+    def get_stats(self) -> Dict[str, Any]:
+        """Get chat engine statistics."""
+        try:
+            retriever_stats = (
+                self.retriever.get_stats()
+                if hasattr(self.retriever, "get_stats")
+                else {}
+            )
+
+            return {
+                "conversations": len(self.conversations),
+                "retriever_stats": retriever_stats,
+                "engine_initialized": True,
+            }
+        except Exception as e:
+            logger.error(f"Error getting chat engine stats: {e}")
+            return {"error": str(e)}
+
+    RAGChatEngine.get_stats = get_stats
+
+
+# Apply the stats method
+_add_stats_method()
 
 
 __all__ = ["RAGChatEngine", "get_chat_engine"]
