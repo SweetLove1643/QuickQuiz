@@ -1,0 +1,15 @@
+requests
+pydantic
+python-dotenv
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+langchain>=0.1.0
+langchain-community>=0.0.10
+langchain-huggingface>=0.0.1
+faiss-cpu>=1.7.4
+numpy>=1.21.0
+scikit-learn>=1.0.0
+# MongoDB integration
+pymongo>=4.6.0
+motor>=3.3.0  # Async MongoDB driver
+python-multipart>=0.0.6
