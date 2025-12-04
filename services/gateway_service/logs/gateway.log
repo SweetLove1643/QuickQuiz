@@ -99,3 +99,8 @@
 [WARNING] 2025-11-29 21:55:43,369 api.service_clients 17936 20336 [quiz_generator] Slow request: 8.81s
 [INFO] 2025-11-29 21:55:43,370 django.server 17936 20336 "POST /api/quiz/generate/ HTTP/1.1" 200 2029
 [INFO] 2025-12-04 15:40:38,336 django.utils.autoreload 8220 18368 Watching for file changes with StatReloader
+[DEBUG] 2025-12-04 15:41:43,447 api.service_clients 8220 25172 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-12-04 15:41:45,480 api.service_clients 8220 25172 [quiz_evaluator] GET http://localhost:8005/health
+[DEBUG] 2025-12-04 15:41:47,538 api.service_clients 8220 25172 [ocr_service] GET http://localhost:8007/health
+[DEBUG] 2025-12-04 15:41:49,604 api.service_clients 8220 25172 [summary_service] GET http://localhost:8009/health
+[INFO] 2025-12-04 15:41:51,645 django.server 8220 25172 "GET /api/health/ HTTP/1.1" 200 338
