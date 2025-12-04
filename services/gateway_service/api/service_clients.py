@@ -284,6 +284,169 @@ class QuizGeneratorClient(BaseServiceClient):
             return {"error": response.error}
 
 
+class OCRServiceClient(BaseServiceClient):
+    """Enhanced client for OCR service."""
+
+    def __init__(self):
+        super().__init__("ocr_service")
+
+    def extract_text_single(
+        self, file_data: bytes, filename: str, content_type: str
+    ) -> Dict[str, Any]:
+        """Extract text from a single image file."""
+        files = {"file": (filename, file_data, content_type)}
+
+        logger.info(
+            f"[{self.service_name}] Extracting text from single image: {filename}"
+        )
+
+        response = self._make_request("POST", "/extract_text", files=files)
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data
+
+    def extract_text_multi(self, files_data: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Extract text from multiple image files."""
+        files = [
+            (
+                "files",
+                (file_info["filename"], file_info["data"], file_info["content_type"]),
+            )
+            for file_info in files_data
+        ]
+
+        logger.info(
+            f"[{self.service_name}] Extracting text from {len(files_data)} images"
+        )
+
+        response = self._make_request("POST", "/extract_text_multi", files=files)
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data
+
+    def extract_information_legacy(
+        self, files_data: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """Legacy endpoint for backward compatibility."""
+        files = [
+            (
+                "files",
+                (file_info["filename"], file_info["data"], file_info["content_type"]),
+            )
+            for file_info in files_data
+        ]
+
+        logger.info(
+            f"[{self.service_name}] Legacy extraction from {len(files_data)} images"
+        )
+
+        response = self._make_request("POST", "/extract_information", files=files)
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data
+
+
+class SummaryServiceClient(BaseServiceClient):
+    """Enhanced client for Summary service."""
+
+    def __init__(self):
+        super().__init__("summary_service")
+
+    def summarize_text(self, text: str) -> Dict[str, Any]:
+        """Summarize provided text."""
+        data = {"text": text}
+
+        logger.info(f"[{self.service_name}] Summarizing text: {len(text)} characters")
+
+        response = self._make_request("POST", "/summarize_text", data=data)
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data
+
+    def ocr_and_summarize(self, files_data: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Extract text from images/PDFs and create summary."""
+        files = [
+            (
+                "files",
+                (file_info["filename"], file_info["data"], file_info["content_type"]),
+            )
+            for file_info in files_data
+        ]
+
+        logger.info(
+            f"[{self.service_name}] OCR and summarize from {len(files_data)} files"
+        )
+
+        response = self._make_request("POST", "/ocr_and_summarize", files=files)
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data
+
+    def recommend_study(
+        self, content: str, difficulty_level: str = "intermediate", study_time: int = 60
+    ) -> Dict[str, Any]:
+        """Generate study recommendations based on content."""
+        data = {
+            "content": content,
+            "difficulty_level": difficulty_level,
+            "study_time": study_time,
+        }
+
+        logger.info(
+            f"[{self.service_name}] Generating recommendations for {difficulty_level} level"
+        )
+
+        response = self._make_request("POST", "/recommend_study", data=data)
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data
+
+    def image_ocr_legacy(self, files_data: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Legacy OCR endpoint."""
+        files = [
+            (
+                "files",
+                (file_info["filename"], file_info["data"], file_info["content_type"]),
+            )
+            for file_info in files_data
+        ]
+
+        logger.info(f"[{self.service_name}] Legacy OCR from {len(files_data)} files")
+
+        response = self._make_request("POST", "/image_ocr", files=files)
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data
+
+
 class QuizEvaluatorClient(BaseServiceClient):
     """Enhanced client for Quiz Evaluator service."""
 
@@ -360,6 +523,8 @@ class ServiceRegistry:
         self.clients = {
             "quiz_generator": QuizGeneratorClient(),
             "quiz_evaluator": QuizEvaluatorClient(),
+            "ocr_service": OCRServiceClient(),
+            "summary_service": SummaryServiceClient(),
         }
 
     def get_client(self, service_name: str) -> BaseServiceClient:
@@ -398,3 +563,5 @@ service_registry = ServiceRegistry()
 # Backward compatibility - singleton instances
 quiz_generator_client = service_registry.get_client("quiz_generator")
 quiz_evaluator_client = service_registry.get_client("quiz_evaluator")
+ocr_service_client = service_registry.get_client("ocr_service")
+summary_service_client = service_registry.get_client("summary_service")

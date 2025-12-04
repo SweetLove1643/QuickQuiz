@@ -186,6 +186,21 @@ MICROSERVICES = {
         "timeout": 30,
         "retry_count": 3,
     },
+    "ocr_service": {
+        "host": os.getenv("OCR_SERVICE_HOST", "localhost"),
+        "port": os.getenv("OCR_SERVICE_PORT", "8007"),
+        "health_endpoint": "/health",
+        "timeout": 60,  # OCR might take longer
+        "retry_count": 3,
+    },
+    "summary_service": {
+        "host": os.getenv("SUMMARY_SERVICE_HOST", "localhost"),
+        "port": os.getenv("SUMMARY_SERVICE_PORT", "8009"),
+        "health_endpoint": "/health",
+        "timeout": 60,  # Summarization might take longer
+        "retry_count": 3,
+    },
+    # Legacy service for backward compatibility
     "extract_information": {
         "host": os.getenv("EXTRACT_INFORMATION_HOST", "localhost"),
         "port": os.getenv("EXTRACT_INFORMATION_PORT", "8007"),

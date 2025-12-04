@@ -98,3 +98,4 @@
 [DEBUG] 2025-11-29 21:55:34,564 api.service_clients 17936 20336 [quiz_generator] POST http://localhost:8003/quiz/generate
 [WARNING] 2025-11-29 21:55:43,369 api.service_clients 17936 20336 [quiz_generator] Slow request: 8.81s
 [INFO] 2025-11-29 21:55:43,370 django.server 17936 20336 "POST /api/quiz/generate/ HTTP/1.1" 200 2029
+[INFO] 2025-12-04 15:40:38,336 django.utils.autoreload 8220 18368 Watching for file changes with StatReloader

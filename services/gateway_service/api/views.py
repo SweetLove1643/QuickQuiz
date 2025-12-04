@@ -8,14 +8,22 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from .service_clients import QuizGeneratorClient, QuizEvaluatorClient
+from .service_clients import (
+    QuizGeneratorClient,
+    QuizEvaluatorClient,
+    OCRServiceClient,
+    SummaryServiceClient,
+)
 import json
+import io
 
 logger = logging.getLogger(__name__)
 
 # Initialize service clients
 quiz_generator = QuizGeneratorClient()
 quiz_evaluator = QuizEvaluatorClient()
+ocr_service = OCRServiceClient()
+summary_service = SummaryServiceClient()
 
 
 @api_view(["GET"])
@@ -28,6 +36,8 @@ def health_check(request):
         # Check microservices health
         generator_health = quiz_generator.health_check()
         evaluator_health = quiz_evaluator.health_check()
+        ocr_health = ocr_service.health_check()
+        summary_health = summary_service.health_check()
 
         return Response(
             {
@@ -41,6 +51,14 @@ def health_check(request):
                     "quiz_evaluator": {
                         "status": "healthy" if evaluator_health else "unhealthy",
                         "url": quiz_evaluator.base_url,
+                    },
+                    "ocr_service": {
+                        "status": "healthy" if ocr_health else "unhealthy",
+                        "url": ocr_service.base_url,
+                    },
+                    "summary_service": {
+                        "status": "healthy" if summary_health else "unhealthy",
+                        "url": summary_service.base_url,
                     },
                 },
             }
@@ -179,3 +197,247 @@ class QuizView(View):
         except Exception as e:
             logger.error(f"Quiz operation failed: {str(e)}")
             return JsonResponse({"error": str(e)}, status=500)
+
+
+# ==============================================================================
+# OCR SERVICE VIEWS
+# ==============================================================================
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class OCRView(View):
+    """OCR service overview and operations"""
+
+    def get(self, request):
+        """Get OCR service information"""
+        return JsonResponse(
+            {
+                "service": "OCR Service",
+                "version": "1.0.0",
+                "endpoints": {
+                    "extract_text": "/api/ocr/extract_text/",
+                    "extract_text_multi": "/api/ocr/extract_text_multi/",
+                    "extract_information": "/api/ocr/extract_information/",
+                },
+                "description": "Text extraction from images using computer vision",
+            }
+        )
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def extract_text_single(request):
+    """Extract text from a single image"""
+    try:
+        if not request.FILES.get("file"):
+            return JsonResponse({"error": "No file provided"}, status=400)
+
+        uploaded_file = request.FILES["file"]
+
+        # Prepare file data
+        file_data = uploaded_file.read()
+        filename = uploaded_file.name
+        content_type = uploaded_file.content_type
+
+        # Call OCR service
+        result = ocr_service.extract_text_single(file_data, filename, content_type)
+
+        return JsonResponse(result)
+
+    except Exception as e:
+        logger.error(f"OCR single extraction failed: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def extract_text_multi(request):
+    """Extract text from multiple images"""
+    try:
+        files = request.FILES.getlist("files")
+        if not files:
+            return JsonResponse({"error": "No files provided"}, status=400)
+
+        # Prepare files data
+        files_data = []
+        for uploaded_file in files:
+            files_data.append(
+                {
+                    "filename": uploaded_file.name,
+                    "data": uploaded_file.read(),
+                    "content_type": uploaded_file.content_type,
+                }
+            )
+
+        # Call OCR service
+        result = ocr_service.extract_text_multi(files_data)
+
+        return JsonResponse(result)
+
+    except Exception as e:
+        logger.error(f"OCR multi extraction failed: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def extract_information_legacy(request):
+    """Legacy OCR endpoint for backward compatibility"""
+    try:
+        files = request.FILES.getlist("files")
+        if not files:
+            return JsonResponse({"error": "No files provided"}, status=400)
+
+        # Prepare files data
+        files_data = []
+        for uploaded_file in files:
+            files_data.append(
+                {
+                    "filename": uploaded_file.name,
+                    "data": uploaded_file.read(),
+                    "content_type": uploaded_file.content_type,
+                }
+            )
+
+        # Call legacy OCR service
+        result = ocr_service.extract_information_legacy(files_data)
+
+        return JsonResponse(result)
+
+    except Exception as e:
+        logger.error(f"Legacy OCR extraction failed: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+# ==============================================================================
+# SUMMARY SERVICE VIEWS
+# ==============================================================================
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class SummaryView(View):
+    """Summary service overview and operations"""
+
+    def get(self, request):
+        """Get Summary service information"""
+        return JsonResponse(
+            {
+                "service": "Summary Service",
+                "version": "1.0.0",
+                "endpoints": {
+                    "summarize_text": "/api/summary/summarize_text/",
+                    "ocr_and_summarize": "/api/summary/ocr_and_summarize/",
+                    "recommend_study": "/api/summary/recommend_study/",
+                    "image_ocr": "/api/summary/image_ocr/",
+                },
+                "description": "Document summarization and study recommendations",
+            }
+        )
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def summarize_text(request):
+    """Summarize provided text"""
+    try:
+        data = json.loads(request.body)
+        text = data.get("text")
+
+        if not text:
+            return JsonResponse({"error": "Text content is required"}, status=400)
+
+        # Call Summary service
+        result = summary_service.summarize_text(text)
+
+        return JsonResponse(result)
+
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON data"}, status=400)
+    except Exception as e:
+        logger.error(f"Text summarization failed: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def ocr_and_summarize(request):
+    """Extract text from files and create summary"""
+    try:
+        files = request.FILES.getlist("files")
+        if not files:
+            return JsonResponse({"error": "No files provided"}, status=400)
+
+        # Prepare files data
+        files_data = []
+        for uploaded_file in files:
+            files_data.append(
+                {
+                    "filename": uploaded_file.name,
+                    "data": uploaded_file.read(),
+                    "content_type": uploaded_file.content_type,
+                }
+            )
+
+        # Call Summary service
+        result = summary_service.ocr_and_summarize(files_data)
+
+        return JsonResponse(result)
+
+    except Exception as e:
+        logger.error(f"OCR and summarization failed: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def recommend_study(request):
+    """Generate study recommendations"""
+    try:
+        data = json.loads(request.body)
+        content = data.get("content")
+        difficulty_level = data.get("difficulty_level", "intermediate")
+        study_time = data.get("study_time", 60)
+
+        if not content:
+            return JsonResponse({"error": "Content is required"}, status=400)
+
+        # Call Summary service
+        result = summary_service.recommend_study(content, difficulty_level, study_time)
+
+        return JsonResponse(result)
+
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON data"}, status=400)
+    except Exception as e:
+        logger.error(f"Study recommendation failed: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def image_ocr_legacy(request):
+    """Legacy OCR endpoint for Summary service"""
+    try:
+        files = request.FILES.getlist("files")
+        if not files:
+            return JsonResponse({"error": "No files provided"}, status=400)
+
+        # Prepare files data
+        files_data = []
+        for uploaded_file in files:
+            files_data.append(
+                {
+                    "filename": uploaded_file.name,
+                    "data": uploaded_file.read(),
+                    "content_type": uploaded_file.content_type,
+                }
+            )
+
+        # Call legacy Summary service
+        result = summary_service.image_ocr_legacy(files_data)
+
+        return JsonResponse(result)
+
+    except Exception as e:
+        logger.error(f"Legacy image OCR failed: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)

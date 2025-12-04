@@ -12,4 +12,23 @@ urlpatterns = [
     path("quiz/", views.QuizView.as_view(), name="quiz"),
     path("quiz/generate/", views.generate_quiz, name="generate_quiz"),
     path("quiz/evaluate/", views.evaluate_quiz, name="evaluate_quiz"),
+    # OCR endpoints
+    path("ocr/", views.OCRView.as_view(), name="ocr"),
+    path("ocr/extract_text/", views.extract_text_single, name="extract_text_single"),
+    path(
+        "ocr/extract_text_multi/", views.extract_text_multi, name="extract_text_multi"
+    ),
+    path(
+        "ocr/extract_information/",
+        views.extract_information_legacy,
+        name="extract_information_legacy",
+    ),
+    # Summary endpoints
+    path("summary/", views.SummaryView.as_view(), name="summary"),
+    path("summary/summarize_text/", views.summarize_text, name="summarize_text"),
+    path(
+        "summary/ocr_and_summarize/", views.ocr_and_summarize, name="ocr_and_summarize"
+    ),
+    path("summary/recommend_study/", views.recommend_study, name="recommend_study"),
+    path("summary/image_ocr/", views.image_ocr_legacy, name="image_ocr_legacy"),
 ]
