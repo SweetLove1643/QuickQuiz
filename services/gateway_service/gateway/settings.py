@@ -186,6 +186,13 @@ MICROSERVICES = {
         "timeout": 30,
         "retry_count": 3,
     },
+    "extract_information": {
+        "host": os.getenv("EXTRACT_INFORMATION_HOST", "localhost"),
+        "port": os.getenv("EXTRACT_INFORMATION_PORT", "8007"),
+        "health_endpoint": "/health",
+        "timeout": 30,
+        "retry_count": 3,
+    },
 }
 
 # Dynamically construct base URLs

@@ -1,3 +1,17 @@
+venv/
+archive/
+dataset/
+data/
+DeepSeek-OCR/
+.env
+quickquiz/Models/
+datata_small/
+dataset/
+Services/__pycache__/
+Services/VRD_OCR/
+image_test/
+PaddleOCR/
+
 # Ignore virtual environment directories
 .venv/
 
@@ -17,3 +31,4 @@ __pycache__/
 
 # Ignore documentation build files
 *.ini
+
