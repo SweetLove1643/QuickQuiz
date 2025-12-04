@@ -89,11 +89,19 @@ python -m uvicorn api:app --host 127.0.0.1 --port 8009 --reload &
 SUMMARY_PID=$!
 cd ../..
 
-# 5. Wait for microservices to be ready
+# 5. RAG Chatbot Service
+echo "🤖 Starting RAG Chatbot (port 8011)..."
+cd services/rag_chatbot_service
+python -m uvicorn api:app --host 127.0.0.1 --port 8011 --reload &
+RAG_PID=$!
+cd ../..
+
+# 6. Wait for microservices to be ready
 wait_for_service "http://localhost:8003/health" "Quiz Generator"
 wait_for_service "http://localhost:8005/health" "Quiz Evaluator"
 wait_for_service "http://localhost:8007/health" "OCR Service"
 wait_for_service "http://localhost:8009/health" "Summary Service"
+wait_for_service "http://localhost:8011/health" "RAG Chatbot"
 
 # 4. Django API Gateway
 echo "🌐 Starting API Gateway (port 8001)..."
@@ -122,6 +130,7 @@ echo "   📚 Quiz Generator:   http://localhost:8003"
 echo "   📊 Quiz Evaluator:   http://localhost:8005"
 echo "   📷 OCR Service:      http://localhost:8007"
 echo "   📝 Summary Service:  http://localhost:8009"
+echo "   🤖 RAG Chatbot:      http://localhost:8011"
 echo ""
 echo "🔗 Important Endpoints:"
 echo "   🖥️ Web Interface:     http://localhost:3000"
@@ -136,7 +145,7 @@ echo ""
 echo "Press Ctrl+C to stop all services"
 
 # Store PIDs for cleanup
-echo "$QUIZ_GEN_PID $QUIZ_EVAL_PID $OCR_PID $SUMMARY_PID $GATEWAY_PID $FRONTEND_PID" > .service_pids
+echo "$QUIZ_GEN_PID $QUIZ_EVAL_PID $OCR_PID $SUMMARY_PID $RAG_PID $GATEWAY_PID $FRONTEND_PID" > .service_pids
 
 # Wait for user interrupt
 trap 'kill $(cat .service_pids 2>/dev/null) 2>/dev/null; rm -f .service_pids; echo ""; echo "🛑 All services stopped"; exit 0' INT

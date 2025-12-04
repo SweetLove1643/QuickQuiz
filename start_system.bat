@@ -32,6 +32,10 @@ REM Start Summary Service
 echo Starting Summary Service (port 8009)...
 start "Summary Service" /min cmd /c "cd services\summary_service && python -m uvicorn api:app --host 127.0.0.1 --port 8009 --reload"
 
+REM Start RAG Chatbot Service
+echo Starting RAG Chatbot (port 8011)...
+start "RAG Chatbot" /min cmd /c "cd services\rag_chatbot_service && python -m uvicorn api:app --host 127.0.0.1 --port 8011 --reload"
+
 REM Wait a moment for services to start
 echo Waiting for services to initialize...
 timeout /t 8 /nobreak >nul
@@ -62,6 +66,7 @@ echo    - Quiz Generator:   http://localhost:8003
 echo    - Quiz Evaluator:   http://localhost:8005
 echo    - OCR Service:      http://localhost:8007
 echo    - Summary Service:  http://localhost:8009
+echo    - RAG Chatbot:      http://localhost:8011
 echo.
 echo Important Endpoints:
 echo    - Web Interface:    http://localhost:3000
