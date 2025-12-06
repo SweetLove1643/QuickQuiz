@@ -267,3 +267,102 @@
 [INFO] 2025-12-04 23:19:04,424 api.service_clients 19484 19712 [rag_chatbot_service] Processing chat query: QuickQuiz system...
 [DEBUG] 2025-12-04 23:19:04,424 api.service_clients 19484 19712 [rag_chatbot_service] POST http://localhost:8011/chat
 [INFO] 2025-12-04 23:19:06,522 django.server 19484 19712 "POST /api/rag/chat/ HTTP/1.1" 200 2116
+[DEBUG] 2025-12-04 23:26:33,674 api.service_clients 19484 2220 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-12-04 23:26:35,723 api.service_clients 19484 2220 [quiz_evaluator] GET http://localhost:8005/health
+[DEBUG] 2025-12-04 23:26:37,767 api.service_clients 19484 2220 [ocr_service] GET http://localhost:8007/health
+[DEBUG] 2025-12-04 23:26:39,795 api.service_clients 19484 2220 [summary_service] GET http://localhost:8009/health
+[DEBUG] 2025-12-04 23:26:41,827 api.service_clients 19484 2220 [rag_chatbot_service] GET http://localhost:8011/health
+[INFO] 2025-12-04 23:26:43,897 django.server 19484 2220 "GET /api/health/ HTTP/1.1" 200 411
+[DEBUG] 2025-12-04 23:28:39,532 api.service_clients 19484 3708 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-12-04 23:28:41,585 api.service_clients 19484 3708 [quiz_evaluator] GET http://localhost:8005/health
+[DEBUG] 2025-12-04 23:28:43,637 api.service_clients 19484 3708 [ocr_service] GET http://localhost:8007/health
+[DEBUG] 2025-12-04 23:28:45,706 api.service_clients 19484 3708 [summary_service] GET http://localhost:8009/health
+[DEBUG] 2025-12-04 23:28:47,758 api.service_clients 19484 3708 [rag_chatbot_service] GET http://localhost:8011/health
+[INFO] 2025-12-04 23:28:49,796 django.server 19484 3708 "GET /api/health/ HTTP/1.1" 200 411
+[DEBUG] 2025-12-04 23:29:37,864 api.service_clients 19484 3708 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-12-04 23:29:39,929 api.service_clients 19484 3708 [quiz_evaluator] GET http://localhost:8005/health
+[DEBUG] 2025-12-04 23:29:41,981 api.service_clients 19484 3708 [ocr_service] GET http://localhost:8007/health
+[DEBUG] 2025-12-04 23:29:44,016 api.service_clients 19484 3708 [summary_service] GET http://localhost:8009/health
+[DEBUG] 2025-12-04 23:29:46,053 api.service_clients 19484 3708 [rag_chatbot_service] GET http://localhost:8011/health
+[INFO] 2025-12-04 23:29:48,088 django.server 19484 3708 "GET /api/health/ HTTP/1.1" 200 411
+[INFO] 2025-12-04 23:29:48,125 api.views 19484 3708 Generating quiz: 1 sections, 2 questions
+[INFO] 2025-12-04 23:29:48,126 api.service_clients 19484 3708 [quiz_generator] Generating quiz: 1 sections, 2 questions
+[DEBUG] 2025-12-04 23:29:48,127 api.service_clients 19484 3708 [quiz_generator] POST http://localhost:8003/quiz/generate
+[WARNING] 2025-12-04 23:29:55,617 api.service_clients 19484 3708 [quiz_generator] Slow request: 7.49s
+[INFO] 2025-12-04 23:29:55,617 django.server 19484 3708 "POST /api/quiz/generate/ HTTP/1.1" 200 1374
+[WARNING] 2025-12-04 23:30:15,680 django.request 19484 3708 Bad Request: /api/summary/summarize_text/
+[WARNING] 2025-12-04 23:30:15,681 django.server 19484 3708 "POST /api/summary/summarize_text/ HTTP/1.1" 400 37
+[DEBUG] 2025-12-04 23:31:11,901 api.service_clients 19484 3708 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-12-04 23:31:13,943 api.service_clients 19484 3708 [quiz_evaluator] GET http://localhost:8005/health
+[DEBUG] 2025-12-04 23:31:15,979 api.service_clients 19484 3708 [ocr_service] GET http://localhost:8007/health
+[DEBUG] 2025-12-04 23:31:18,029 api.service_clients 19484 3708 [summary_service] GET http://localhost:8009/health
+[DEBUG] 2025-12-04 23:31:20,082 api.service_clients 19484 3708 [rag_chatbot_service] GET http://localhost:8011/health
+[INFO] 2025-12-04 23:31:22,151 django.server 19484 3708 "GET /api/health/ HTTP/1.1" 200 411
+[DEBUG] 2025-12-04 23:47:28,697 api.service_clients 19484 20448 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-12-04 23:47:30,745 api.service_clients 19484 20448 [quiz_evaluator] GET http://localhost:8005/health
+[DEBUG] 2025-12-04 23:47:32,813 api.service_clients 19484 20448 [ocr_service] GET http://localhost:8007/health
+[DEBUG] 2025-12-04 23:47:34,888 api.service_clients 19484 20448 [summary_service] GET http://localhost:8009/health
+[DEBUG] 2025-12-04 23:47:36,982 api.service_clients 19484 20448 [rag_chatbot_service] GET http://localhost:8011/health
+[INFO] 2025-12-04 23:47:39,069 django.server 19484 20448 "GET /api/health/ HTTP/1.1" 200 411
+[WARNING] 2025-12-04 23:47:39,266 django.request 19484 20448 Not Found: /api/ocr/health
+[WARNING] 2025-12-04 23:47:39,267 django.server 19484 20448 "GET /api/ocr/health HTTP/1.1" 404 7688
+[WARNING] 2025-12-04 23:47:39,286 django.request 19484 20448 Not Found: /api/summary/health
+[WARNING] 2025-12-04 23:47:39,287 django.server 19484 20448 "GET /api/summary/health HTTP/1.1" 404 7700
+[INFO] 2025-12-04 23:48:03,954 django.server 19484 20448 "GET /api/ocr/ HTTP/1.1" 200 281
+[INFO] 2025-12-04 23:48:03,995 django.server 19484 20448 "GET /api/summary/ HTTP/1.1" 200 330
+[INFO] 2025-12-04 23:48:04,039 django.server 19484 20448 "GET /api/ HTTP/1.1" 200 230
+[WARNING] 2025-12-04 23:49:37,736 django.request 19484 20448 Bad Request: /api/summary/summarize_text/
+[WARNING] 2025-12-04 23:49:37,737 django.server 19484 20448 "POST /api/summary/summarize_text/ HTTP/1.1" 400 37
+[INFO] 2025-12-04 23:50:22,392 api.service_clients 19484 20448 [summary_service] Summarizing text: 113 characters
+[DEBUG] 2025-12-04 23:50:22,393 api.service_clients 19484 20448 [summary_service] POST http://localhost:8009/summarize_text
+[ERROR] 2025-12-04 23:50:24,450 api.service_clients 19484 20448 [summary_service] HTTP 500: 422 Client Error: Unprocessable Entity for url: http://localhost:8009/summarize_text
+[ERROR] 2025-12-04 23:50:24,451 api.views 19484 20448 Text summarization failed: HTTP 500: 422 Client Error: Unprocessable Entity for url: http://localhost:8009/summarize_text
+[ERROR] 2025-12-04 23:50:24,453 django.request 19484 20448 Internal Server Error: /api/summary/summarize_text/
+[ERROR] 2025-12-04 23:50:24,455 django.server 19484 20448 "POST /api/summary/summarize_text/ HTTP/1.1" 500 107
+[INFO] 2025-12-05 00:07:46,839 django.utils.autoreload 1876 16276 Watching for file changes with StatReloader
+[DEBUG] 2025-12-05 00:17:56,365 api.service_clients 1876 14476 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-12-05 00:17:58,449 api.service_clients 1876 14476 [quiz_evaluator] GET http://localhost:8005/health
+[DEBUG] 2025-12-05 00:18:00,506 api.service_clients 1876 14476 [ocr_service] GET http://localhost:8007/health
+[DEBUG] 2025-12-05 00:18:02,582 api.service_clients 1876 14476 [summary_service] GET http://localhost:8009/health
+[DEBUG] 2025-12-05 00:18:04,668 api.service_clients 1876 14476 [rag_chatbot_service] GET http://localhost:8011/health
+[INFO] 2025-12-05 00:18:06,761 django.server 1876 14476 "GET /api/health/ HTTP/1.1" 200 411
+[INFO] 2025-12-05 15:46:13,472 django.utils.autoreload 4496 14912 Watching for file changes with StatReloader
+[INFO] 2025-12-05 15:54:11,747 django.server 4496 7252 "OPTIONS /api/summary/summarize_text/ HTTP/1.1" 200 0
+[INFO] 2025-12-05 15:54:11,767 api.service_clients 4496 7252 [summary_service] Summarizing text: 123 characters
+[DEBUG] 2025-12-05 15:54:11,768 api.service_clients 4496 7252 [summary_service] POST http://localhost:8009/summarize_text
+[WARNING] 2025-12-05 15:54:17,607 api.service_clients 4496 7252 [summary_service] Slow request: 5.84s
+[INFO] 2025-12-05 15:54:17,609 django.server 4496 7252 "POST /api/summary/summarize_text/ HTTP/1.1" 200 623
+[INFO] 2025-12-05 15:54:32,423 api.service_clients 4496 7252 [summary_service] Summarizing text: 123 characters
+[DEBUG] 2025-12-05 15:54:32,423 api.service_clients 4496 7252 [summary_service] POST http://localhost:8009/summarize_text
+[WARNING] 2025-12-05 15:54:39,636 api.service_clients 4496 7252 [summary_service] Slow request: 7.21s
+[INFO] 2025-12-05 15:54:39,637 django.server 4496 7252 "POST /api/summary/summarize_text/ HTTP/1.1" 200 829
+[INFO] 2025-12-05 15:56:29,142 django.utils.autoreload 4496 14912 E:\QuickQuiz\services\gateway_service\api\urls.py changed, reloading.
+[INFO] 2025-12-05 15:56:30,489 django.utils.autoreload 4572 1908 Watching for file changes with StatReloader
+[INFO] 2025-12-05 15:56:46,616 django.utils.autoreload 4572 1908 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-12-05 15:56:48,188 django.utils.autoreload 2240 3908 Watching for file changes with StatReloader
+[INFO] 2025-12-05 15:57:02,729 django.utils.autoreload 2240 3908 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-12-05 15:57:04,100 django.utils.autoreload 1920 5908 Watching for file changes with StatReloader
+[INFO] 2025-12-05 15:58:14,706 django.server 1920 10264 "OPTIONS /api/documents/save/ HTTP/1.1" 200 0
+[INFO] 2025-12-05 15:58:14,718 api.views 1920 10264 Saving document: test-document.txt (ID: doc_1764924879640_npt5amztz)
+[INFO] 2025-12-05 15:58:14,719 django.server 1920 10264 "POST /api/documents/save/ HTTP/1.1" 200 153
+[INFO] 2025-12-05 16:00:10,068 django.utils.autoreload 1920 5908 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-12-05 16:00:11,620 django.utils.autoreload 9156 8828 Watching for file changes with StatReloader
+[INFO] 2025-12-05 16:02:11,228 api.service_clients 9156 9072 [summary_service] Summarizing text: 123 characters
+[DEBUG] 2025-12-05 16:02:11,229 api.service_clients 9156 9072 [summary_service] POST http://localhost:8009/summarize_text
+[WARNING] 2025-12-05 16:02:18,487 api.service_clients 9156 9072 [summary_service] Slow request: 7.26s
+[INFO] 2025-12-05 16:02:18,489 django.server 9156 9072 "POST /api/summary/summarize_text/ HTTP/1.1" 200 586
+[INFO] 2025-12-05 16:04:29,622 api.views 9156 9072 Saving document: test-document.txt (ID: doc_1764925338491_j2ld7fwuk)
+[INFO] 2025-12-05 16:04:29,623 django.server 9156 9072 "POST /api/documents/save/ HTTP/1.1" 200 153
+[INFO] 2025-12-05 16:14:26,003 api.service_clients 9156 7504 [summary_service] Summarizing text: 123 characters
+[DEBUG] 2025-12-05 16:14:26,003 api.service_clients 9156 7504 [summary_service] POST http://localhost:8009/summarize_text
+[WARNING] 2025-12-05 16:14:32,354 api.service_clients 9156 7504 [summary_service] Slow request: 6.35s
+[INFO] 2025-12-05 16:14:32,355 django.server 9156 7504 "POST /api/summary/summarize_text/ HTTP/1.1" 200 732
+[INFO] 2025-12-05 16:14:34,544 api.views 9156 7504 Saving document: test-document.txt (ID: doc_1764926072360_z5a49jkuk)
+[INFO] 2025-12-05 16:14:34,547 django.server 9156 7504 "POST /api/documents/save/ HTTP/1.1" 200 153
+[INFO] 2025-12-05 16:18:01,540 api.service_clients 9156 7504 [summary_service] Summarizing text: 123 characters
+[DEBUG] 2025-12-05 16:18:01,540 api.service_clients 9156 7504 [summary_service] POST http://localhost:8009/summarize_text
+[WARNING] 2025-12-05 16:18:08,836 api.service_clients 9156 7504 [summary_service] Slow request: 7.30s
+[INFO] 2025-12-05 16:18:08,838 django.server 9156 7504 "POST /api/summary/summarize_text/ HTTP/1.1" 200 660
+[INFO] 2025-12-05 16:18:10,788 api.views 9156 7504 Saving document: test-document.txt (ID: doc_1764926288841_ym7wc9ovg)
+[INFO] 2025-12-05 16:18:10,789 django.server 9156 7504 "POST /api/documents/save/ HTTP/1.1" 200 153
+[INFO] 2025-12-06 08:44:11,401 django.utils.autoreload 18248 17472 Watching for file changes with StatReloader

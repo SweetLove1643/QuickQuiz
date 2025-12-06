@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.utils.decorators import method_decorator
+from django.utils import timezone
 from django.views import View
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -540,4 +541,59 @@ def get_conversation_history(request, conversation_id):
 
     except Exception as e:
         logger.error(f"Get conversation history failed: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def save_document(request):
+    """Save processed document to database"""
+    try:
+        data = json.loads(request.body)
+
+        # Extract required fields
+        file_name = data.get("fileName")
+        file_size = data.get("fileSize")
+        file_type = data.get("fileType")
+        extracted_text = data.get("extractedText")
+        summary = data.get("summary")
+        document_id = data.get("documentId")
+
+        if not all([file_name, extracted_text, summary, document_id]):
+            return JsonResponse(
+                {
+                    "error": "Missing required fields: fileName, extractedText, summary, documentId"
+                },
+                status=400,
+            )
+
+        # Create document record
+        document_data = {
+            "document_id": document_id,
+            "file_name": file_name,
+            "file_size": file_size or 0,
+            "file_type": file_type or "unknown",
+            "extracted_text": extracted_text[:5000],  # Limit text length
+            "summary": summary,
+            "created_at": timezone.now().isoformat(),
+            "processing_time": data.get("processingTime", 0),
+            "ocr_confidence": data.get("ocrConfidence"),
+            "summary_confidence": data.get("summaryConfidence"),
+        }
+
+        logger.info(f"Saving document: {file_name} (ID: {document_id})")
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Document saved successfully",
+                "document_id": document_id,
+                "saved_at": document_data["created_at"],
+            }
+        )
+
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON data"}, status=400)
+    except Exception as e:
+        logger.error(f"Document save failed: {str(e)}")
         return JsonResponse({"error": str(e)}, status=500)
