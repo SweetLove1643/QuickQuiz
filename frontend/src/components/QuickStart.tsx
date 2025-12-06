@@ -3,6 +3,8 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { useState } from "react";
 import { Textarea } from "./ui/textarea";
+import { processDocument, ProcessedDocument } from "../api/fileUtils";
+import { quizAPI } from "../api/quizAPI";
 
 interface QuickStartProps {
   onDocumentProcessed: (document: any) => void;
@@ -11,35 +13,86 @@ interface QuickStartProps {
 export function QuickStart({ onDocumentProcessed }: QuickStartProps) {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processedDoc, setProcessedDoc] = useState<ProcessedDocument | null>(
+    null
+  );
   const [summary, setSummary] = useState("");
   const [isProcessed, setIsProcessed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setUploadedFile(file);
       setIsProcessed(false);
       setSummary("");
-      
-      // Simulate API call to backend for processing
+      setError(null);
+      setSuccess(null);
+      setProcessedDoc(null);
+
       setIsProcessing(true);
-      setTimeout(() => {
-        // Mock summary from backend
-        const mockSummary = `Tóm tắt tài liệu "${file.name}":\n\n• Chương 1: Giới thiệu về chủ đề chính\n• Chương 2: Các khái niệm cơ bản và định nghĩa\n• Chương 3: Ứng dụng thực tế\n• Chương 4: Bài tập và câu hỏi ôn tập\n\nNội dung tài liệu bao gồm các kiến thức quan trọng về chủ đề, với nhiều ví dụ minh họa và bài tập thực hành.`;
-        setSummary(mockSummary);
-        setIsProcessing(false);
+      try {
+        const result = await processDocument(file);
+        setProcessedDoc(result);
+        setSummary(result.summary);
         setIsProcessed(true);
-      }, 2000);
+      } catch (error) {
+        console.error("Error processing document:", error);
+        setError(
+          error instanceof Error ? error.message : "Không thể xử lý tài liệu"
+        );
+        setIsProcessed(false);
+      } finally {
+        setIsProcessing(false);
+      }
     }
   };
 
-  const handleCreateQuiz = () => {
-    if (uploadedFile && summary) {
-      onDocumentProcessed({
-        fileName: uploadedFile.name,
-        summary: summary,
-        uploadDate: new Date().toISOString(),
-      });
+  const handleCreateQuiz = async () => {
+    if (uploadedFile && processedDoc) {
+      setIsSaving(true);
+      setError(null);
+      setSuccess(null);
+
+      try {
+        const result = await quizAPI.saveDocument({
+          fileName: processedDoc.fileName,
+          fileSize: processedDoc.fileSize,
+          fileType: processedDoc.fileType,
+          extractedText: processedDoc.extractedText,
+          summary: summary,
+          documentId: processedDoc.documentId,
+          processingTime: processedDoc.processingTime,
+          ocrConfidence: processedDoc.ocrConfidence,
+          summaryConfidence: processedDoc.summaryConfidence,
+        });
+
+        if (result.success) {
+          const savedDocument = {
+            ...processedDoc,
+            summary,
+            documentId: result.document_id || processedDoc.documentId,
+            savedAt: result.saved_at,
+          };
+
+          setSuccess(
+            `Đã lưu tài liệu "${uploadedFile.name}" vào thư viện thành công!`
+          );
+
+          onDocumentProcessed(savedDocument);
+        } else {
+          throw new Error("Save failed");
+        }
+      } catch (error) {
+        console.error("Error saving document:", error);
+        setError(
+          error instanceof Error ? error.message : "Không thể lưu tài liệu"
+        );
+      } finally {
+        setIsSaving(false);
+      }
     }
   };
 
@@ -47,7 +100,9 @@ export function QuickStart({ onDocumentProcessed }: QuickStartProps) {
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="text-slate-900 mb-2">Bắt đầu nhanh</h1>
-        <p className="text-slate-600">Tải lên tài liệu của bạn để tạo bài quiz tự động</p>
+        <p className="text-slate-600">
+          Tải lên tài liệu của bạn để tạo bài quiz tự động
+        </p>
       </div>
 
       {/* Upload Area */}
@@ -94,7 +149,36 @@ export function QuickStart({ onDocumentProcessed }: QuickStartProps) {
                   <Loader2 className="size-6 text-blue-600 animate-spin" />
                 )}
               </div>
-              
+
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg mb-4">
+                  <p className="text-red-600 text-sm">{error}</p>
+                </div>
+              )}
+
+              {success && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg mb-4 animate-fade-in">
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="size-4 text-green-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <p className="text-green-700 text-sm font-medium">
+                      {success}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {!isProcessed && !isProcessing && (
                 <Button
                   variant="outline"
@@ -102,6 +186,9 @@ export function QuickStart({ onDocumentProcessed }: QuickStartProps) {
                   onClick={() => {
                     setUploadedFile(null);
                     setSummary("");
+                    setError(null);
+                    setSuccess(null);
+                    setProcessedDoc(null);
                   }}
                 >
                   Chọn file khác
@@ -119,7 +206,9 @@ export function QuickStart({ onDocumentProcessed }: QuickStartProps) {
             <Loader2 className="size-6 text-blue-600 animate-spin" />
             <div>
               <h3 className="text-slate-900">Đang xử lý tài liệu...</h3>
-              <p className="text-slate-500">Hệ thống đang trích xuất và tóm tắt nội dung</p>
+              <p className="text-slate-500">
+                Hệ thống đang trích xuất và tóm tắt nội dung
+              </p>
             </div>
           </div>
         </Card>
@@ -130,9 +219,11 @@ export function QuickStart({ onDocumentProcessed }: QuickStartProps) {
         <Card className="p-6 mb-6">
           <div className="mb-4">
             <h3 className="text-slate-900 mb-2">Bản tóm tắt tài liệu</h3>
-            <p className="text-slate-500">Bạn có thể chỉnh sửa nội dung tóm tắt bên dưới</p>
+            <p className="text-slate-500">
+              Bạn có thể chỉnh sửa nội dung tóm tắt bên dưới
+            </p>
           </div>
-          
+
           <Textarea
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
@@ -141,8 +232,13 @@ export function QuickStart({ onDocumentProcessed }: QuickStartProps) {
           />
 
           <div className="flex gap-3">
-            <Button onClick={handleCreateQuiz} className="flex-1">
-              Tạo bài Quiz
+            <Button
+              onClick={handleCreateQuiz}
+              className="flex-1"
+              disabled={isSaving}
+            >
+              {isSaving && <Loader2 className="size-4 mr-2 animate-spin" />}
+              {isSaving ? "Đang lưu..." : "Lưu và tạo Quiz"}
             </Button>
             <Button
               variant="outline"
@@ -150,6 +246,9 @@ export function QuickStart({ onDocumentProcessed }: QuickStartProps) {
                 setUploadedFile(null);
                 setSummary("");
                 setIsProcessed(false);
+                setError(null);
+                setSuccess(null);
+                setProcessedDoc(null);
               }}
             >
               Upload lại

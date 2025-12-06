@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { quizAPI, convertFromBackendFormat } from "../api/quizAPI";
 
 interface CreateQuizProps {
   document: any;
@@ -43,24 +44,11 @@ interface Question {
 }
 
 export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
-  const [quizTitle, setQuizTitle] = useState(`Quiz - ${document?.fileName || "Tài liệu"}`);
+  const [quizTitle, setQuizTitle] = useState(
+    `Quiz - ${document?.fileName || "Tài liệu"}`
+  );
   const [isGenerating, setIsGenerating] = useState(false);
-  const [questions, setQuestions] = useState<Question[]>([
-    {
-      id: "1",
-      question: "Chương 1 giới thiệu về nội dung gì?",
-      options: ["Chủ đề chính", "Bài tập", "Kết luận", "Tài liệu tham khảo"],
-      correctAnswer: 0,
-      type: "multiple-choice",
-    },
-    {
-      id: "2",
-      question: "Chương 2 bao gồm những nội dung nào?",
-      options: ["Giới thiệu", "Khái niệm cơ bản và định nghĩa", "Phụ lục", "Mục lục"],
-      correctAnswer: 1,
-      type: "multiple-choice",
-    },
-  ]);
+  const [questions, setQuestions] = useState<Question[]>([]);
 
   // AI Generation settings
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
@@ -71,39 +59,87 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
     fillBlank: false,
   });
   const [aiDifficulty, setAiDifficulty] = useState("medium");
+  const [error, setError] = useState<string | null>(null);
+  const [isSavingQuiz, setIsSavingQuiz] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Manual question type selection
   const [manualDialogOpen, setManualDialogOpen] = useState(false);
 
-  const handleGenerateQuestions = () => {
+  const handleGenerateQuestions = async () => {
+    const baseContent = document?.summary || document?.extractedText || "";
+    if (!baseContent) {
+      setError("Không có nội dung tài liệu để tạo câu hỏi.");
+      return;
+    }
+
     setIsGenerating(true);
-    setAiDialogOpen(false);
-    
-    // Simulate API call to generate questions with settings
-    setTimeout(() => {
-      const count = parseInt(aiQuestionCount);
-      const newQuestions: Question[] = [];
-      
-      for (let i = 0; i < count; i++) {
-        newQuestions.push({
-          id: `${Date.now()}-${i}`,
-          question: `Câu hỏi tự động ${i + 1} (${aiDifficulty === "easy" ? "Dễ" : aiDifficulty === "medium" ? "Trung bình" : "Khó"})`,
-          options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
-          correctAnswer: 0,
-          type: "multiple-choice",
-        });
-      }
-      
-      setQuestions([...newQuestions, ...questions]);
+    setError(null);
+
+    const requestedTypes: ("multiple_choice" | "true_false" | "fill_blank")[] =
+      [];
+    if (aiQuestionTypes.multipleChoice) requestedTypes.push("multiple_choice");
+    if (aiQuestionTypes.trueFalse) requestedTypes.push("true_false");
+    if (aiQuestionTypes.fillBlank) requestedTypes.push("fill_blank");
+    if (requestedTypes.length === 0) {
+      requestedTypes.push("multiple_choice");
+    }
+
+    try {
+      const count = parseInt(aiQuestionCount) || 5;
+      const payload = {
+        sections: [
+          {
+            id: document?.documentId || `section-${Date.now()}`,
+            summary: baseContent,
+          },
+        ],
+        config: {
+          n_questions: count,
+          types: requestedTypes,
+        },
+      };
+
+      const response = await quizAPI.generateQuiz(payload);
+      const generated = convertFromBackendFormat(response.questions).map(
+        (q) => ({
+          id: q.id,
+          question: q.question,
+          options: q.options || ["Đúng", "Sai"],
+          correctAnswer: q.correctAnswer ?? 0,
+          type:
+            q.type === "multiple-choice"
+              ? "multiple-choice"
+              : q.type === "true-false"
+              ? "true-false"
+              : "fill-blank",
+        })
+      );
+
+      setQuestions([...generated]);
+      setAiDialogOpen(false);
+    } catch (err) {
+      console.error("Generate quiz failed:", err);
+      setError(
+        err instanceof Error ? err.message : "Không thể tạo câu hỏi tự động"
+      );
+    } finally {
       setIsGenerating(false);
-    }, 1500);
+    }
   };
 
-  const addQuestion = (type: "multiple-choice" | "true-false" | "fill-blank" = "multiple-choice") => {
+  const addQuestion = (
+    type: "multiple-choice" | "true-false" | "fill-blank" = "multiple-choice"
+  ) => {
     const newQuestion: Question = {
       id: Date.now().toString(),
       question: "",
-      options: type === "true-false" ? ["Đúng", "Sai"] : type === "fill-blank" ? [""] : ["", "", "", ""],
+      options:
+        type === "true-false"
+          ? ["Đúng", "Sai"]
+          : type === "fill-blank"
+          ? [""]
+          : ["", "", "", ""],
       correctAnswer: 0,
       type,
     };
@@ -112,13 +148,14 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
 
   const updateQuestion = (id: string, field: string, value: any) => {
     setQuestions(
-      questions.map((q) =>
-        q.id === id ? { ...q, [field]: value } : q
-      )
+      questions.map((q) => (q.id === id ? { ...q, [field]: value } : q))
     );
   };
 
-  const handleQuestionTypeChange = (id: string, newType: "multiple-choice" | "true-false" | "fill-blank") => {
+  const handleQuestionTypeChange = (
+    id: string,
+    newType: "multiple-choice" | "true-false" | "fill-blank"
+  ) => {
     setQuestions(
       questions.map((q) => {
         if (q.id === id) {
@@ -142,11 +179,20 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
     );
   };
 
-  const updateOption = (questionId: string, optionIndex: number, value: string) => {
+  const updateOption = (
+    questionId: string,
+    optionIndex: number,
+    value: string
+  ) => {
     setQuestions(
       questions.map((q) =>
         q.id === questionId
-          ? { ...q, options: q.options.map((opt, idx) => (idx === optionIndex ? value : opt)) }
+          ? {
+              ...q,
+              options: q.options.map((opt, idx) =>
+                idx === optionIndex ? value : opt
+              ),
+            }
           : q
       )
     );
@@ -156,12 +202,68 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
     setQuestions(questions.filter((q) => q.id !== id));
   };
 
-  const handleStartQuiz = () => {
-    onQuizCreated({
-      title: quizTitle,
-      questions: questions,
-      documentName: document?.fileName,
-    });
+  const handleStartQuiz = async () => {
+    setIsSavingQuiz(true);
+    setSaveError(null);
+
+    try {
+      const payload = {
+        title: quizTitle,
+        document_id: document?.documentId,
+        document_name: document?.fileName,
+        questions: questions.map((q) => ({
+          id: q.id,
+          stem: q.question,
+          type:
+            q.type === "true-false"
+              ? "tf"
+              : q.type === "fill-blank"
+              ? "fill_blank"
+              : "mcq",
+          options: q.options,
+          answer:
+            q.type === "true-false"
+              ? q.correctAnswer === 0
+                ? "True"
+                : "False"
+              : q.options[q.correctAnswer] || "",
+        })),
+        metadata: {
+          source: "quick-start",
+        },
+      };
+
+      const result = await quizAPI.saveQuiz(payload);
+
+      if (!result.success) {
+        throw new Error("Không thể lưu quiz");
+      }
+
+      onQuizCreated({
+        quizId: result.quiz_id,
+        title: quizTitle,
+        questions,
+        documentName: document?.fileName,
+        savedAt: result.saved_at,
+      });
+    } catch (err) {
+      console.error("Save quiz failed:", err);
+      const message = err instanceof Error ? err.message : "Không thể lưu quiz";
+      setSaveError(message);
+
+      // Fallback: if endpoint 404 or not available, proceed without saving
+      if (message.includes("404")) {
+        onQuizCreated({
+          quizId: `local-${Date.now()}`,
+          title: quizTitle,
+          questions,
+          documentName: document?.fileName,
+          savedAt: new Date().toISOString(),
+        });
+      }
+    } finally {
+      setIsSavingQuiz(false);
+    }
   };
 
   return (
@@ -184,6 +286,18 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
       </Card>
 
       {/* Questions List */}
+      {error && (
+        <div className="p-3 mb-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm text-red-700">{error}</p>
+        </div>
+      )}
+
+      {saveError && (
+        <div className="p-3 mb-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm text-red-700">{saveError}</p>
+        </div>
+      )}
+
       <div className="space-y-4 mb-6">
         {questions.map((question, qIndex) => (
           <Card key={question.id} className="p-6">
@@ -199,43 +313,64 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
             </div>
 
             <div className="mb-4">
-              <Label htmlFor={`type-${question.id}`} className="mb-2 block">Loại câu hỏi</Label>
+              <Label htmlFor={`type-${question.id}`} className="mb-2 block">
+                Loại câu hỏi
+              </Label>
               <Select
                 value={question.type || "multiple-choice"}
-                onValueChange={(value) => handleQuestionTypeChange(question.id, value as "multiple-choice" | "true-false" | "fill-blank")}
+                onValueChange={(value) =>
+                  handleQuestionTypeChange(
+                    question.id,
+                    value as "multiple-choice" | "true-false" | "fill-blank"
+                  )
+                }
               >
                 <SelectTrigger id={`type-${question.id}`}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="multiple-choice">Trắc nghiệm (4 đáp án)</SelectItem>
-                  <SelectItem value="true-false">Đúng/Sai (2 đáp án)</SelectItem>
-                  <SelectItem value="fill-blank">Điền khuyết (tự luận)</SelectItem>
+                  <SelectItem value="multiple-choice">
+                    Trắc nghiệm (4 đáp án)
+                  </SelectItem>
+                  <SelectItem value="true-false">
+                    Đúng/Sai (2 đáp án)
+                  </SelectItem>
+                  <SelectItem value="fill-blank">
+                    Điền khuyết (tự luận)
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <Textarea
               value={question.question}
-              onChange={(e) => updateQuestion(question.id, "question", e.target.value)}
+              onChange={(e) =>
+                updateQuestion(question.id, "question", e.target.value)
+              }
               placeholder="Nhập câu hỏi..."
               className="mb-4"
             />
 
             <div className="space-y-2">
-              <label className="block text-slate-700 mb-2">Các đáp án (chọn đáp án đúng)</label>
+              <label className="block text-slate-700 mb-2">
+                Các đáp án (chọn đáp án đúng)
+              </label>
               {question.options.map((option, optIndex) => (
                 <div key={optIndex} className="flex items-center gap-2">
                   <input
                     type="radio"
                     name={`correct-${question.id}`}
                     checked={question.correctAnswer === optIndex}
-                    onChange={() => updateQuestion(question.id, "correctAnswer", optIndex)}
+                    onChange={() =>
+                      updateQuestion(question.id, "correctAnswer", optIndex)
+                    }
                     className="w-4 h-4"
                   />
                   <Input
                     value={option}
-                    onChange={(e) => updateOption(question.id, optIndex, e.target.value)}
+                    onChange={(e) =>
+                      updateOption(question.id, optIndex, e.target.value)
+                    }
                     placeholder={`Đáp án ${String.fromCharCode(65 + optIndex)}`}
                   />
                 </div>
@@ -340,10 +475,7 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="difficulty">Độ khó</Label>
-                <Select
-                  value={aiDifficulty}
-                  onValueChange={setAiDifficulty}
-                >
+                <Select value={aiDifficulty} onValueChange={setAiDifficulty}>
                   <SelectTrigger id="difficulty">
                     <SelectValue />
                   </SelectTrigger>
@@ -376,7 +508,7 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        
+
         <Button variant="outline" onClick={() => addQuestion()}>
           <Plus className="size-4 mr-2" />
           Thêm câu hỏi thủ công
@@ -385,8 +517,15 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
 
       {/* Action Buttons */}
       <div className="flex gap-3">
-        <Button onClick={handleStartQuiz} className="flex-1" disabled={questions.length === 0}>
-          Bắt đầu làm Quiz ({questions.length} câu hỏi)
+        <Button
+          onClick={handleStartQuiz}
+          className="flex-1"
+          disabled={questions.length === 0 || isSavingQuiz}
+        >
+          {isSavingQuiz && <Loader2 className="size-4 mr-2 animate-spin" />}
+          {isSavingQuiz
+            ? "Đang lưu quiz..."
+            : `Bắt đầu làm Quiz (${questions.length} câu hỏi)`}
         </Button>
       </div>
     </div>

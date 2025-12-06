@@ -32,6 +32,42 @@ export interface QuizConfig {
   types: ("multiple_choice" | "true_false" | "fill_blank")[];
 }
 
+// OCR Service interfaces
+export interface OCRRequest {
+  images: string[]; // base64 encoded images
+  config?: {
+    language?: string;
+    output_format?: "text" | "json";
+  };
+}
+
+export interface OCRResponse {
+  extracted_text: string;
+  confidence_score: number;
+  processing_time: number;
+  metadata?: {
+    page_count: number;
+    language_detected: string;
+  };
+}
+
+// Summary Service interfaces
+export interface SummaryRequest {
+  text: string;
+  config?: {
+    max_length?: number;
+    style?: "concise" | "detailed" | "bullet_points";
+    language?: string;
+  };
+}
+
+export interface SummaryResponse {
+  summary: string;
+  key_points: string[];
+  processing_time: number;
+  confidence_score: number;
+}
+
 export interface GenerateQuizRequest {
   sections: QuizSection[];
   config: QuizConfig;
@@ -159,6 +195,44 @@ class QuizAPI {
     });
   }
 
+  // OCR Service - Extract text from images
+  async extractTextFromImages(request: OCRRequest): Promise<OCRResponse> {
+    return this.makeRequest("/ocr/extract_text_multi/", {
+      method: "POST",
+      body: JSON.stringify(request),
+    });
+  }
+
+  // OCR Service - Single image extraction
+  async extractTextSingle(imageBase64: string): Promise<OCRResponse> {
+    return this.makeRequest("/ocr/extract_text/", {
+      method: "POST",
+      body: JSON.stringify({ image: imageBase64 }),
+    });
+  }
+
+  // Summary Service - Summarize text content
+  async summarizeText(request: SummaryRequest): Promise<SummaryResponse> {
+    return this.makeRequest("/summary/summarize_text/", {
+      method: "POST",
+      body: JSON.stringify({ text: request.text }),
+    });
+  }
+
+  // OCR + Summary combined workflow
+  async ocrAndSummarize(
+    imageBase64: string,
+    summaryConfig?: SummaryRequest["config"]
+  ): Promise<{ ocr: OCRResponse; summary: SummaryResponse }> {
+    return this.makeRequest("/summary/ocr_and_summarize/", {
+      method: "POST",
+      body: JSON.stringify({
+        image: imageBase64,
+        summary_config: summaryConfig || { style: "detailed" },
+      }),
+    });
+  }
+
   // Get validation metrics
   async getValidationMetrics(): Promise<any> {
     // Try gateway first, fallback to direct service
@@ -170,6 +244,53 @@ class QuizAPI {
       const response = await fetch(directUrl);
       return response.json();
     }
+  }
+
+  // Save processed document to database
+  async saveDocument(document: {
+    fileName: string;
+    fileSize: number;
+    fileType: string;
+    extractedText: string;
+    summary: string;
+    documentId: string;
+    processingTime?: number;
+    ocrConfidence?: number;
+    summaryConfidence?: number;
+  }): Promise<{
+    success: boolean;
+    message: string;
+    document_id: string;
+    saved_at: string;
+  }> {
+    return this.makeRequest("/documents/save/", {
+      method: "POST",
+      body: JSON.stringify(document),
+    });
+  }
+
+  // Save generated quiz to database
+  async saveQuiz(quiz: {
+    title: string;
+    document_id?: string;
+    document_name?: string;
+    questions: Array<{
+      id?: string;
+      stem: string;
+      type: "mcq" | "tf" | "fill_blank";
+      options?: string[];
+      answer: string;
+    }>;
+    metadata?: Record<string, any>;
+  }): Promise<{
+    success: boolean;
+    quiz_id: string;
+    saved_at: string;
+  }> {
+    return this.makeRequest("/quiz/save/", {
+      method: "POST",
+      body: JSON.stringify(quiz),
+    });
   }
 }
 

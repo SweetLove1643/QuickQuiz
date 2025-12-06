@@ -133,7 +133,7 @@
  * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
  */
 @layer base {
-  :where(:not(:has([class*=' text-']), :not(:has([class^='text-'])))) {
+  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
     h1 {
       font-size: var(--text-2xl);
       font-weight: var(--font-weight-medium);
@@ -186,4 +186,20 @@
 
 html {
   font-size: var(--font-size);
+}
+
+/* Custom animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
 }

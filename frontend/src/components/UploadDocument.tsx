@@ -1,8 +1,15 @@
-import { Upload, File, CheckCircle, Loader2 } from "lucide-react";
+import { Upload, File, CheckCircle, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { useState } from "react";
 import { Textarea } from "./ui/textarea";
+import { quizAPI } from "../api/quizAPI";
+import {
+  processDocument,
+  formatFileSize,
+  validateFile,
+  ProcessedDocument,
+} from "../api/fileUtils";
 
 interface UploadDocumentProps {
   onDocumentProcessed: (document: any) => void;
@@ -11,34 +18,47 @@ interface UploadDocumentProps {
 export function UploadDocument({ onDocumentProcessed }: UploadDocumentProps) {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processedDoc, setProcessedDoc] = useState<ProcessedDocument | null>(
+    null
+  );
   const [summary, setSummary] = useState("");
   const [isProcessed, setIsProcessed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setUploadedFile(file);
       setIsProcessed(false);
       setSummary("");
-      
-      // Simulate API call to backend for processing
+      setError(null);
+
       setIsProcessing(true);
-      setTimeout(() => {
-        // Mock summary from backend
-        const mockSummary = `Tóm tắt tài liệu "${file.name}":\n\n• Chương 1: Giới thiệu về chủ đề chính\n• Chương 2: Các khái niệm cơ bản và định nghĩa\n• Chương 3: Ứng dụng thực tế\n• Chương 4: Bài tập và câu hỏi ôn tập\n\nNội dung tài liệu bao gồm các kiến thức quan trọng về chủ đề, với nhiều ví dụ minh họa và bài tập thực hành.`;
-        setSummary(mockSummary);
+      try {
+        const result = await processDocument(file);
+        setProcessedDoc(result);
+        setSummary(result.summary);
         setIsProcessing(false);
         setIsProcessed(true);
-      }, 2000);
+      } catch (error) {
+        console.error("Error processing document:", error);
+        setError(
+          error instanceof Error ? error.message : "Không thể xử lý tài liệu"
+        );
+        setIsProcessing(false);
+        setIsProcessed(false);
+      }
     }
   };
 
   const handleCreateQuiz = () => {
-    if (uploadedFile && summary) {
+    if (uploadedFile && processedDoc) {
       onDocumentProcessed({
         fileName: uploadedFile.name,
-        summary: summary,
+        summary: processedDoc.summary,
         uploadDate: new Date().toISOString(),
+        extractedText: processedDoc.extractedText,
+        documentId: processedDoc.documentId,
       });
     }
   };
@@ -47,7 +67,9 @@ export function UploadDocument({ onDocumentProcessed }: UploadDocumentProps) {
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="text-slate-900 mb-2">Tạo bài kiểm tra</h1>
-        <p className="text-slate-600">Tải lên tài liệu của bạn để tạo bài quiz tự động</p>
+        <p className="text-slate-600">
+          Tải lên tài liệu của bạn để tạo bài quiz tự động
+        </p>
       </div>
 
       {/* Upload Area */}
@@ -94,7 +116,13 @@ export function UploadDocument({ onDocumentProcessed }: UploadDocumentProps) {
                   <Loader2 className="size-6 text-blue-600 animate-spin" />
                 )}
               </div>
-              
+
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg mb-4">
+                  <p className="text-red-600 text-sm">{error}</p>
+                </div>
+              )}
+
               {!isProcessed && !isProcessing && (
                 <Button
                   variant="outline"
@@ -102,6 +130,8 @@ export function UploadDocument({ onDocumentProcessed }: UploadDocumentProps) {
                   onClick={() => {
                     setUploadedFile(null);
                     setSummary("");
+                    setError(null);
+                    setProcessedDoc(null);
                   }}
                 >
                   Chọn file khác
@@ -119,7 +149,9 @@ export function UploadDocument({ onDocumentProcessed }: UploadDocumentProps) {
             <Loader2 className="size-6 text-blue-600 animate-spin" />
             <div>
               <h3 className="text-slate-900">Đang xử lý tài liệu...</h3>
-              <p className="text-slate-500">Hệ thống đang trích xuất và tóm tắt nội dung</p>
+              <p className="text-slate-500">
+                Hệ thống đang trích xuất và tóm tắt nội dung
+              </p>
             </div>
           </div>
         </Card>
@@ -130,9 +162,11 @@ export function UploadDocument({ onDocumentProcessed }: UploadDocumentProps) {
         <Card className="p-6 mb-6">
           <div className="mb-4">
             <h3 className="text-slate-900 mb-2">Bản tóm tắt tài liệu</h3>
-            <p className="text-slate-500">Bạn có thể chỉnh sửa nội dung tóm tắt bên dưới</p>
+            <p className="text-slate-500">
+              Bạn có thể chỉnh sửa nội dung tóm tắt bên dưới
+            </p>
           </div>
-          
+
           <Textarea
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
@@ -150,6 +184,8 @@ export function UploadDocument({ onDocumentProcessed }: UploadDocumentProps) {
                 setUploadedFile(null);
                 setSummary("");
                 setIsProcessed(false);
+                setError(null);
+                setProcessedDoc(null);
               }}
             >
               Upload lại
