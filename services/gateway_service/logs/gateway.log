@@ -546,3 +546,34 @@
 [INFO] 2025-12-06 13:46:39,879 django.utils.autoreload 14168 10004 Watching for file changes with StatReloader
 [INFO] 2025-12-06 17:52:58,472 django.utils.autoreload 14168 10004 E:\QuickQuiz\services\gateway_service\gateway\settings.py changed, reloading.
 [INFO] 2025-12-06 17:53:00,301 django.utils.autoreload 5940 18224 Watching for file changes with StatReloader
+[INFO] 2025-12-06 17:53:36,444 django.server 5940 3792 "OPTIONS /api/summary/summarize_text/ HTTP/1.1" 200 0
+[INFO] 2025-12-06 17:53:36,460 api.service_clients 5940 3792 [summary_service] Summarizing text: 623 characters
+[DEBUG] 2025-12-06 17:53:36,460 api.service_clients 5940 3792 [summary_service] POST http://localhost:8009/summarize_text
+[WARNING] 2025-12-06 17:53:42,034 api.service_clients 5940 3792 [summary_service] Slow request: 5.57s
+[INFO] 2025-12-06 17:53:42,034 django.server 5940 3792 "POST /api/summary/summarize_text/ HTTP/1.1" 200 1644
+[INFO] 2025-12-06 17:53:55,105 django.server 5940 3792 "OPTIONS /api/documents/save/ HTTP/1.1" 200 0
+[INFO] 2025-12-06 17:53:55,110 api.views 5940 3792 Saving document: test-document.txt (ID: doc_1765018422040_bsv46cpf8)
+[INFO] 2025-12-06 17:53:55,112 django.server 5940 3792 "POST /api/documents/save/ HTTP/1.1" 200 153
+[INFO] 2025-12-06 17:54:05,228 django.server 5940 3792 "OPTIONS /api/quiz/generate/ HTTP/1.1" 200 0
+[INFO] 2025-12-06 17:54:05,232 api.views 5940 3792 Generating quiz: 1 sections, 5 questions
+[INFO] 2025-12-06 17:54:05,233 api.service_clients 5940 3792 [quiz_generator] Generating quiz: 1 sections, 5 questions
+[DEBUG] 2025-12-06 17:54:05,233 api.service_clients 5940 3792 [quiz_generator] POST http://localhost:8003/quiz/generate
+[WARNING] 2025-12-06 17:54:15,299 api.service_clients 5940 3792 [quiz_generator] Slow request: 10.07s
+[INFO] 2025-12-06 17:54:15,299 django.server 5940 3792 "POST /api/quiz/generate/ HTTP/1.1" 200 2758
+[INFO] 2025-12-06 17:54:30,192 django.server 5940 3792 "OPTIONS /api/quiz/save/ HTTP/1.1" 200 0
+[INFO] 2025-12-06 17:54:30,196 api.views 5940 3792 Saving quiz with 5 questions and title Quiz - test-document.txt
+[DEBUG] 2025-12-06 17:54:30,197 api.service_clients 5940 3792 [quiz_generator] POST http://localhost:8003/quiz/save
+[INFO] 2025-12-06 17:54:32,257 django.server 5940 3792 "POST /api/quiz/save/ HTTP/1.1" 200 82
+[INFO] 2025-12-06 17:55:16,625 django.server 5940 3792 "OPTIONS /api/quiz/evaluate/ HTTP/1.1" 200 0
+[INFO] 2025-12-06 17:55:16,630 api.views 5940 3792 Evaluating quiz quiz-1765018516621
+[INFO] 2025-12-06 17:55:16,631 api.service_clients 5940 3792 [quiz_evaluator] Evaluating quiz quiz-1765018516621 with 5 questions
+[DEBUG] 2025-12-06 17:55:16,631 api.service_clients 5940 3792 [quiz_evaluator] POST http://localhost:8005/quiz/evaluate
+[WARNING] 2025-12-06 17:55:27,223 api.service_clients 5940 3792 [quiz_evaluator] Slow request: 10.59s
+[INFO] 2025-12-06 17:55:27,223 api.service_clients 5940 3792 [quiz_evaluator] Quiz quiz-1765018516621 evaluated: 100.0% (5/5)
+[INFO] 2025-12-06 17:55:27,223 django.server 5940 3792 "POST /api/quiz/evaluate/ HTTP/1.1" 200 2542
+[INFO] 2025-12-06 17:59:56,701 api.views 5940 3792 Evaluating quiz quiz-1765018796700
+[INFO] 2025-12-06 17:59:56,701 api.service_clients 5940 3792 [quiz_evaluator] Evaluating quiz quiz-1765018796700 with 5 questions
+[DEBUG] 2025-12-06 17:59:56,709 api.service_clients 5940 3792 [quiz_evaluator] POST http://localhost:8005/quiz/evaluate
+[WARNING] 2025-12-06 18:00:06,092 api.service_clients 5940 3792 [quiz_evaluator] Slow request: 9.38s
+[INFO] 2025-12-06 18:00:06,092 api.service_clients 5940 3792 [quiz_evaluator] Quiz quiz-1765018796700 evaluated: 60.0% (3/5)
+[INFO] 2025-12-06 18:00:06,092 django.server 5940 3792 "POST /api/quiz/evaluate/ HTTP/1.1" 200 3519
