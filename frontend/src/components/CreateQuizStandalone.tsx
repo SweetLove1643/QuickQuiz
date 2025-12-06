@@ -1,9 +1,16 @@
-import { Plus, Trash2, Loader2, Sparkles, Save } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Loader2,
+  Sparkles,
+  Save,
+  CheckCircle,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   quizAPI,
   convertToBackendFormat,
@@ -40,43 +47,32 @@ interface Question {
   type?: "multiple-choice" | "true-false" | "fill-blank";
 }
 
-// Mock documents for selection
-const mockDocuments = [
-  { id: "1", fileName: "Bài giảng Toán học.pdf", uploadDate: "2024-01-15" },
-  { id: "2", fileName: "Lịch sử Việt Nam.docx", uploadDate: "2024-01-10" },
-  { id: "3", fileName: "Vật lý đại cương.pdf", uploadDate: "2024-01-05" },
-];
+interface Document {
+  document_id: string;
+  file_name: string;
+  file_type: string;
+  extracted_text: string;
+  summary: string;
+  created_at: string;
+}
 
 export function CreateQuizStandalone({
   onQuizCreated,
 }: CreateQuizStandaloneProps) {
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [selectedDocumentId, setSelectedDocumentId] = useState("");
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(
+    null
+  );
   const [quizTitle, setQuizTitle] = useState("");
   const [documentContent, setDocumentContent] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [validationInfo, setValidationInfo] = useState<any>(null);
-  const [questions, setQuestions] = useState<Question[]>([
-    {
-      id: "1",
-      question: "Chương 1 giới thiệu về nội dung gì?",
-      options: ["Chủ đề chính", "Bài tập", "Kết luận", "Tài liệu tham khảo"],
-      correctAnswer: 0,
-      type: "multiple-choice",
-    },
-    {
-      id: "2",
-      question: "Chương 2 bao gồm những nội dung nào?",
-      options: [
-        "Giới thiệu",
-        "Khái niệm cơ bản và định nghĩa",
-        "Phụ lục",
-        "Mục lục",
-      ],
-      correctAnswer: 1,
-      type: "multiple-choice",
-    },
-  ]);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
 
   // AI Generation settings
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
@@ -88,9 +84,33 @@ export function CreateQuizStandalone({
   });
   const [aiDifficulty, setAiDifficulty] = useState("medium");
 
+  // Load documents from API
+  useEffect(() => {
+    const loadDocuments = async () => {
+      setIsLoadingDocuments(true);
+      try {
+        const response = await quizAPI.getDocuments();
+        if (response.success) {
+          setDocuments(response.documents);
+        }
+      } catch (error) {
+        console.error("Failed to load documents:", error);
+        setApiError("Không thể tải danh sách tài liệu");
+      } finally {
+        setIsLoadingDocuments(false);
+      }
+    };
+
+    loadDocuments();
+  }, []);
+
   const handleGenerateQuestions = async () => {
-    if (!documentContent.trim()) {
-      setApiError("Vui lòng nhập nội dung để tạo câu hỏi");
+    const baseContent =
+      selectedDocument?.summary ||
+      selectedDocument?.extracted_text ||
+      documentContent;
+    if (!baseContent.trim()) {
+      setApiError("Vui lòng chọn tài liệu hoặc nhập nội dung để tạo câu hỏi");
       return;
     }
 
@@ -98,27 +118,47 @@ export function CreateQuizStandalone({
     setAiDialogOpen(false);
     setApiError(null);
 
+    const requestedTypes: ("mcq" | "tf" | "fill_blank")[] = [];
+    if (aiQuestionTypes.multipleChoice) requestedTypes.push("mcq");
+    if (aiQuestionTypes.trueFalse) requestedTypes.push("tf");
+    if (aiQuestionTypes.fillBlank) requestedTypes.push("fill_blank");
+    if (requestedTypes.length === 0) {
+      requestedTypes.push("multiple_choice");
+    }
+
     try {
-      // Convert frontend settings to backend format
-      const requestData = convertToBackendFormat(documentContent, {
-        questionCount: aiQuestionCount,
-        questionTypes: aiQuestionTypes,
-        difficulty: aiDifficulty,
-      });
+      const count = parseInt(aiQuestionCount) || 5;
+      const payload = {
+        sections: [
+          {
+            id: selectedDocument?.document_id || `section-${Date.now()}`,
+            summary: baseContent,
+          },
+        ],
+        config: {
+          n_questions: count,
+          types: requestedTypes,
+        },
+      };
 
-      // Call real API
-      const response = await quizAPI.generateQuiz(requestData);
+      const response = await quizAPI.generateQuiz(payload);
+      const generated = convertFromBackendFormat(response.questions).map(
+        (q) => ({
+          id: q.id,
+          question: q.question,
+          options: q.options || ["Đúng", "Sai"],
+          correctAnswer: q.correctAnswer ?? 0,
+          type:
+            q.type === "multiple-choice"
+              ? "multiple-choice"
+              : q.type === "true-false"
+              ? "true-false"
+              : "fill-blank",
+        })
+      );
 
-      // Convert backend format to frontend format
-      const newQuestions = convertFromBackendFormat(response.questions);
-
-      // Store validation info
+      setQuestions([...generated]);
       setValidationInfo(response.validation);
-
-      // Add to existing questions
-      setQuestions([...newQuestions, ...questions]);
-
-      console.log("Generated questions with validation:", response.validation);
     } catch (error) {
       console.error("Failed to generate questions:", error);
       setApiError(
@@ -203,38 +243,82 @@ export function CreateQuizStandalone({
     setQuestions(questions.filter((q) => q.id !== id));
   };
 
-  const handleStartQuiz = () => {
-    const selectedDoc = mockDocuments.find(
-      (doc) => doc.id === selectedDocumentId
-    );
+  const handleStartQuiz = async () => {
+    if (!quizTitle.trim()) {
+      setApiError("Vui lòng nhập tên bài quiz");
+      return;
+    }
 
-    // Save quiz data
-    const quizData = {
-      title: quizTitle,
-      questions: questions,
-      documentName: selectedDoc?.fileName || "Không có tài liệu",
-      createdAt: new Date().toISOString(),
-    };
+    if (questions.length === 0) {
+      setApiError("Vui lòng thêm ít nhất 1 câu hỏi");
+      return;
+    }
 
-    // Here you would typically save to backend/database
-    console.log("Quiz saved:", quizData);
+    setIsSaving(true);
+    setApiError(null);
 
-    // Show success message (you can use toast here if available)
-    alert(`Đã lưu bài quiz "${quizTitle}" với ${questions.length} câu hỏi!`);
+    try {
+      // Convert questions to backend format
+      const quizPayload = {
+        title: quizTitle,
+        document_id: selectedDocument?.document_id,
+        document_name: selectedDocument?.file_name || "Không có tài liệu",
+        questions: questions.map((q) => ({
+          id: q.id,
+          stem: q.question,
+          type:
+            q.type === "multiple-choice"
+              ? "mcq"
+              : q.type === "true-false"
+              ? "tf"
+              : "fill_blank",
+          options: q.options,
+          answer:
+            q.type === "true-false"
+              ? q.correctAnswer === 0
+                ? "Đúng"
+                : "Sai"
+              : q.type === "fill-blank"
+              ? q.options[0]
+              : q.options[q.correctAnswer],
+        })),
+        metadata: {
+          question_count: questions.length,
+          created_at: new Date().toISOString(),
+        },
+      };
 
-    // Optionally reset form or navigate
-    // You can uncomment the following to reset:
-    // setQuizTitle("");
-    // setSelectedDocumentId("");
-    // setQuestions([]);
+      const response = await quizAPI.saveQuiz(quizPayload);
+
+      if (response.success) {
+        // Show success message
+        const successMsg = `Đã lưu bài quiz "${quizTitle}" thành công!`;
+        setSaveSuccess(successMsg);
+        setIsSaving(false);
+        // Auto-hide after 3 seconds
+        setTimeout(() => setSaveSuccess(null), 3000);
+        return;
+      }
+    } catch (error) {
+      console.error("Failed to save quiz:", error);
+      setApiError(
+        error instanceof Error ? error.message : "Không thể lưu bài quiz"
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Auto-set quiz title when document is selected
   const handleDocumentChange = (docId: string) => {
     setSelectedDocumentId(docId);
-    const selectedDoc = mockDocuments.find((doc) => doc.id === docId);
-    if (selectedDoc && !quizTitle) {
-      setQuizTitle(`Quiz - ${selectedDoc.fileName}`);
+    const doc = documents.find((d) => d.document_id === docId);
+    if (doc) {
+      setSelectedDocument(doc);
+      setDocumentContent(doc.summary || doc.extracted_text);
+      if (!quizTitle) {
+        setQuizTitle(`Quiz - ${doc.file_name}`);
+      }
     }
   };
 
@@ -253,13 +337,19 @@ export function CreateQuizStandalone({
           Chọn tài liệu
         </Label>
         <Select value={selectedDocumentId} onValueChange={handleDocumentChange}>
-          <SelectTrigger id="document-select">
-            <SelectValue placeholder="Chọn tài liệu từ thư viện..." />
+          <SelectTrigger id="document-select" disabled={isLoadingDocuments}>
+            <SelectValue
+              placeholder={
+                isLoadingDocuments
+                  ? "Đang tải..."
+                  : "Chọn tài liệu từ thư viện..."
+              }
+            />
           </SelectTrigger>
           <SelectContent>
-            {mockDocuments.map((doc) => (
-              <SelectItem key={doc.id} value={doc.id}>
-                {doc.fileName}
+            {documents.map((doc) => (
+              <SelectItem key={doc.document_id} value={doc.document_id}>
+                {doc.file_name}
               </SelectItem>
             ))}
           </SelectContent>
@@ -390,26 +480,36 @@ export function CreateQuizStandalone({
               <label className="block text-slate-700 mb-2">
                 Các đáp án (chọn đáp án đúng)
               </label>
-              {question.options.map((option, optIndex) => (
-                <div key={optIndex} className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name={`correct-${question.id}`}
-                    checked={question.correctAnswer === optIndex}
-                    onChange={() =>
-                      updateQuestion(question.id, "correctAnswer", optIndex)
-                    }
-                    className="w-4 h-4"
-                  />
-                  <Input
-                    value={option}
-                    onChange={(e) =>
-                      updateOption(question.id, optIndex, e.target.value)
-                    }
-                    placeholder={`Đáp án ${String.fromCharCode(65 + optIndex)}`}
-                  />
-                </div>
-              ))}
+              {question.type === "fill-blank" ? (
+                <Input
+                  value={question.options[0] || ""}
+                  onChange={(e) => updateOption(question.id, 0, e.target.value)}
+                  placeholder="Nhập đáp án cần điền"
+                />
+              ) : (
+                question.options.map((option, optIndex) => (
+                  <div key={optIndex} className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name={`correct-${question.id}`}
+                      checked={question.correctAnswer === optIndex}
+                      onChange={() =>
+                        updateQuestion(question.id, "correctAnswer", optIndex)
+                      }
+                      className="w-4 h-4"
+                    />
+                    <Input
+                      value={option}
+                      onChange={(e) =>
+                        updateOption(question.id, optIndex, e.target.value)
+                      }
+                      placeholder={`Đáp án ${String.fromCharCode(
+                        65 + optIndex
+                      )}`}
+                    />
+                  </div>
+                ))
+              )}
             </div>
           </Card>
         ))}
@@ -529,7 +629,7 @@ export function CreateQuizStandalone({
               <Button
                 type="button"
                 onClick={handleGenerateQuestions}
-                disabled={isGenerating}
+                disabled={isGenerating || !documentContent.trim()}
               >
                 {isGenerating ? (
                   <>
@@ -554,7 +654,7 @@ export function CreateQuizStandalone({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-3">
+      <div className="flex gap-3 items-start">
         <Button
           onClick={handleStartQuiz}
           className="flex-1"
@@ -562,9 +662,16 @@ export function CreateQuizStandalone({
             questions.length === 0 || !selectedDocumentId || !quizTitle.trim()
           }
         >
-          <Save className="size-4 mr-2" />
-          Lưu Quiz ({questions.length} câu hỏi)
+          {isSaving && <Loader2 className="size-4 mr-2 animate-spin" />}
+          {!isSaving && <Save className="size-4 mr-2" />}
+          {isSaving ? "Đang lưu..." : `Lưu Quiz (${questions.length} câu hỏi)`}
         </Button>
+        {saveSuccess && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-md text-sm text-green-700 whitespace-nowrap">
+            <CheckCircle className="size-4 text-green-600" />
+            <span>{saveSuccess}</span>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -29,7 +29,7 @@ export interface QuizSection {
 
 export interface QuizConfig {
   n_questions: number;
-  types: ("multiple_choice" | "true_false" | "fill_blank")[];
+  types: ("mcq" | "tf" | "fill_blank")[];
 }
 
 // OCR Service interfaces
@@ -292,6 +292,24 @@ class QuizAPI {
       body: JSON.stringify(quiz),
     });
   }
+
+  // Get list of documents from database
+  async getDocuments(): Promise<{
+    success: boolean;
+    documents: Array<{
+      document_id: string;
+      file_name: string;
+      file_type: string;
+      file_size: number;
+      extracted_text: string;
+      summary: string;
+      created_at: string;
+    }>;
+  }> {
+    return this.makeRequest("/documents/list/", {
+      method: "GET",
+    });
+  }
 }
 
 // Export singleton instance
@@ -310,10 +328,10 @@ export const convertToBackendFormat = (
     difficulty: string;
   }
 ): GenerateQuizRequest => {
-  const types: ("multiple_choice" | "true_false" | "fill_blank")[] = [];
+  const types: ("mcq" | "tf" | "fill_blank")[] = [];
 
-  if (settings.questionTypes.multipleChoice) types.push("multiple_choice");
-  if (settings.questionTypes.trueFalse) types.push("true_false");
+  if (settings.questionTypes.multipleChoice) types.push("mcq");
+  if (settings.questionTypes.trueFalse) types.push("tf");
   if (settings.questionTypes.fillBlank) types.push("fill_blank");
 
   return {
@@ -325,7 +343,7 @@ export const convertToBackendFormat = (
     ],
     config: {
       n_questions: parseInt(settings.questionCount) || 5,
-      types: types.length > 0 ? types : ["multiple_choice"],
+      types: types.length > 0 ? types : ["mcq"],
     },
   };
 };
@@ -334,13 +352,21 @@ export const convertFromBackendFormat = (backendQuestions: QuizQuestion[]) => {
   return backendQuestions.map((q, index) => ({
     id: q.id || `q-${index}`,
     question: q.stem,
-    options: q.options || ["True", "False"],
+    options:
+      q.type === "fill_blank"
+        ? [q.answer || ""]
+        : q.type === "tf"
+        ? ["Đúng", "Sai"]
+        : q.options || [],
     correctAnswer:
       q.type === "tf"
-        ? q.answer.toLowerCase() === "true" || q.answer.toLowerCase() === "đúng"
+        ? typeof q.answer === "string" &&
+          ["true", "đúng"].includes(q.answer.toLowerCase())
           ? 0
           : 1
-        : q.options?.indexOf(q.answer) || 0,
+        : q.type === "fill_blank"
+        ? 0
+        : Math.max((q.options || []).indexOf(q.answer), 0),
     type:
       q.type === "mcq"
         ? ("multiple-choice" as const)
