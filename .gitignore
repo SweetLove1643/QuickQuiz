@@ -23,7 +23,7 @@ __pycache__/
 .env
 
 # Ignore log files
-*/*.log
+./services/gateway_service/logs/gateway.log
 
 # Ignore SQLite database files
 *.sqlite3
