@@ -132,6 +132,24 @@ def generate_quiz(request):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+def save_quiz(request):
+    """Save quiz payload via quiz generator service."""
+    try:
+        data = request.data
+        logger.info(
+            f"Saving quiz with {len(data.get('questions', []))} questions and title {data.get('title')}"
+        )
+
+        result = quiz_generator.save_quiz(data)
+        return Response(result, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"Quiz save failed: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
 def evaluate_quiz(request):
     """
     Evaluate quiz endpoint - proxies to quiz evaluator service

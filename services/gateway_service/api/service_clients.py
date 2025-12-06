@@ -274,6 +274,17 @@ class QuizGeneratorClient(BaseServiceClient):
 
         return result
 
+    def save_quiz(self, quiz_payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Persist quiz to generator service."""
+        response = self._make_request("POST", "/quiz/save", data=quiz_payload)
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data or {}
+
     def get_generator_info(self) -> Dict[str, Any]:
         """Get generator service information."""
         response = self._make_request("GET", "/")

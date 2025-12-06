@@ -183,7 +183,7 @@ MICROSERVICES = {
         "host": os.getenv("QUIZ_EVALUATOR_HOST", "localhost"),
         "port": os.getenv("QUIZ_EVALUATOR_PORT", "8005"),
         "health_endpoint": "/health",
-        "timeout": 30,
+        "timeout": 60,
         "retry_count": 3,
     },
     "ocr_service": {

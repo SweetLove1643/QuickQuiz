@@ -12,6 +12,7 @@ urlpatterns = [
     path("quiz/", views.QuizView.as_view(), name="quiz"),
     path("quiz/generate/", views.generate_quiz, name="generate_quiz"),
     path("quiz/evaluate/", views.evaluate_quiz, name="evaluate_quiz"),
+    path("quiz/save/", views.save_quiz, name="save_quiz"),
     # OCR endpoints
     path("ocr/", views.OCRView.as_view(), name="ocr"),
     path("ocr/extract_text/", views.extract_text_single, name="extract_text_single"),
