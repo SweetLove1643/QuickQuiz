@@ -25,7 +25,7 @@ class GeminiEvaluationAdapter:
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY environment variable is required")
 
-        self.model = model or os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+        self.model = model or os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
         self.base_url = "https://generativelanguage.googleapis.com/v1/models"
 
     def analyze_quiz_results(
@@ -34,7 +34,7 @@ class GeminiEvaluationAdapter:
         correct_count: int,
         total_count: int,
         topic_breakdown: List[Dict],
-        max_tokens: int = 1500,
+        max_tokens: int = 2048,
         temperature: float = 0.3,
     ) -> str:
         """Phân tích kết quả quiz và đưa ra đề xuất cải thiện."""
@@ -87,9 +87,8 @@ class GeminiEvaluationAdapter:
         # Try different model names if default fails
         model_names = [
             self.model,
-            "gemini-2.5-flash",
-            "gemini-2.5-pro",
             "gemini-2.0-flash",
+            "gemini-2.5-flash",
         ]
 
         # Remove duplicates while preserving order
@@ -198,37 +197,24 @@ class GeminiEvaluationAdapter:
         for topic in topic_breakdown:
             topic_summary += f"- {topic['topic']}: {topic['correct_answers']}/{topic['total_questions']} đúng ({topic['accuracy_rate']:.1f}%)\n"
 
-        # Build prompt for Vietnamese analysis
-        prompt = f"""Bạn là chuyên gia đánh giá giáo dục, hãy phân tích kết quả bài kiểm tra sau và đưa ra lời khuyên cải thiện bằng tiếng Việt.
+        # Build prompt for Vietnamese analysis (ultra-compact)
+        prompt = f"""Phân tích quiz và trả JSON ngắn:
 
-THÔNG TIN BÀI KIỂM TRA:
-- Tổng số câu: {total_count}
-- Số câu đúng: {correct_count}
-- Điểm số: {score_percent:.1f}%
+Điểm: {correct_count}/{total_count} ({score_percent:.1f}%)
+Chủ đề: {topic_summary}
+Sai: {self._format_wrong_answers(quiz_data)}
 
-PHÂN TÍCH THEO CHỦ ĐỀ:
-{topic_summary}
-
-CHI TIẾT CÂU HỎI SAI:
-{self._format_wrong_answers(quiz_data)}
-
-Hãy phân tích và trả về JSON với format chính xác sau (không thêm markdown hay text khác):
-
+JSON:
 {{
-  "strengths": ["Điểm mạnh 1", "Điểm mạnh 2", "..."],
-  "weaknesses": ["Điểm yếu 1", "Điểm yếu 2", "..."], 
-  "recommendations": ["Đề xuất 1", "Đề xuất 2", "..."],
-  "study_plan": ["Kế hoạch học tập tuần 1", "Tuần 2", "..."],
-  "overall_feedback": "Nhận xét tổng quan chi tiết về kết quả",
-  "improvement_areas": ["Lĩnh vực cần cải thiện 1", "Lĩnh vực 2", "..."]
+  "strengths": ["1-2 điểm mạnh"],
+  "weaknesses": ["1-2 điểm yếu"], 
+  "recommendations": ["2 gợi ý"],
+  "study_plan": ["1-2 bước"],
+  "overall_feedback": "1 câu ngắn",
+  "improvement_areas": ["1-2 lĩnh vực"]
 }}
 
-YÊU CẦU:
-- Phân tích dựa trên dữ liệu cụ thể
-- Đưa ra lời khuyên thiết thực và có thể thực hiện
-- Sử dụng tiếng Việt tự nhiên, dễ hiểu
-- Tập trung vào cải thiện năng lực học tập
-- Khích lệ tích cực, xây dựng"""
+YC: Súc tích, tiếng Việt"""
 
         return prompt
 

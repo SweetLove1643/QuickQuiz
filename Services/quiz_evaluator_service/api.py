@@ -13,10 +13,15 @@ import json
 from typing import Dict, Any
 
 from tasks import evaluate_quiz
+from database import create_tables
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Create database tables on startup
+create_tables()
+logger.info("Database tables initialized")
 
 # Create FastAPI app
 app = FastAPI(

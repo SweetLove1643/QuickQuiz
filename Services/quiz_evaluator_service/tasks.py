@@ -302,8 +302,28 @@ def _parse_ai_analysis(raw_response: str) -> Dict[str, Any]:
             cleaned = cleaned[:-3]
         cleaned = cleaned.strip()
 
-        # Parse JSON
-        analysis_data = json.loads(cleaned)
+        # Parse JSON - attempt to fix incomplete JSON
+        try:
+            analysis_data = json.loads(cleaned)
+        except json.JSONDecodeError as parse_error:
+            # Try to fix incomplete JSON by closing brackets
+            logger.warning(f"JSON parsing failed, attempting to fix: {parse_error}")
+
+            # Count opening/closing brackets to fix incomplete JSON
+            open_square = cleaned.count("[")
+            close_square = cleaned.count("]")
+            open_curly = cleaned.count("{")
+            close_curly = cleaned.count("}")
+
+            # Add missing closing brackets
+            fixed = cleaned
+            if open_square > close_square:
+                fixed += "]" * (open_square - close_square)
+            if open_curly > close_curly:
+                fixed += "}" * (open_curly - close_curly)
+
+            # Try parsing again
+            analysis_data = json.loads(fixed)
 
         # Validate required fields và set defaults
         required_fields = [
@@ -362,18 +382,90 @@ def _determine_grade(score_percentage: float, grading_scale: Dict[str, tuple]) -
 
 
 def _save_evaluation_history(result: EvaluationResult) -> None:
-    """Lưu lịch sử đánh giá (stub implementation)."""
+    """Lưu lịch sử đánh giá vào database."""
+    from database import (
+        SessionLocal,
+        QuizSubmission as DBQuizSubmission,
+        EvaluationResult as DBEvaluationResult,
+    )
 
-    # TODO: Implement actual storage (database, file system, etc.)
     logger.info(f"Saving evaluation history for {result.evaluation_id}")
 
-    # For now, just log the save action
-    # In production, this could save to:
-    # - SQLite database
-    # - PostgreSQL
-    # - JSON file
-    # - Cloud storage
-    pass
+    db = SessionLocal()
+    try:
+        # Save quiz submission
+        submission = DBQuizSubmission(
+            submission_id=f"sub-{uuid.uuid4().hex[:8]}",
+            quiz_id=result.quiz_id,
+            user_id=result.metadata.get("user_id", "anonymous"),
+            questions_data=json.loads(
+                json.dumps(
+                    [q.model_dump() for q in result.question_results], default=str
+                )
+            ),
+            user_answers=json.loads(
+                json.dumps(
+                    [
+                        {"question_id": q.question_id, "user_answer": q.user_answer}
+                        for q in result.question_results
+                    ],
+                    default=str,
+                )
+            ),
+            correct_answers=json.loads(
+                json.dumps(
+                    [
+                        {
+                            "question_id": q.question_id,
+                            "correct_answer": q.correct_answer,
+                        }
+                        for q in result.question_results
+                    ],
+                    default=str,
+                )
+            ),
+            total_questions=result.summary.total_questions,
+            correct_count=result.summary.correct_answers,
+            score_percentage=result.summary.score_percentage,
+            completion_time=result.metadata.get("total_time"),
+            session_id=result.metadata.get("session_id"),
+        )
+        db.add(submission)
+
+        # Save evaluation result
+        evaluation = DBEvaluationResult(
+            evaluation_id=result.evaluation_id,
+            submission_id=submission.submission_id,
+            detailed_analysis=json.loads(
+                json.dumps(
+                    [q.model_dump() for q in result.question_results], default=str
+                )
+            ),
+            performance_breakdown=json.loads(
+                json.dumps(
+                    [t.model_dump() for t in result.topic_breakdown], default=str
+                )
+            ),
+            ai_feedback=json.loads(result.analysis.model_dump_json()),
+            raw_score=result.summary.total_points,
+            weighted_score=result.summary.score_percentage,
+            grade_letter=result.summary.grade.value,
+            strengths=result.analysis.strengths,
+            weaknesses=result.analysis.weaknesses,
+            recommendations=result.analysis.recommendations,
+            model_used="gemini-2.0-flash-exp",
+            processing_time=0.0,
+        )
+        db.add(evaluation)
+
+        db.commit()
+        logger.info(f"Successfully saved evaluation {result.evaluation_id} to database")
+
+    except Exception as e:
+        logger.error(f"Failed to save evaluation history: {e}")
+        db.rollback()
+    finally:
+        db.close()
 
 
 __all__ = ["evaluate_quiz"]
