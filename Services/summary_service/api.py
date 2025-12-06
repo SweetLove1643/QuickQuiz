@@ -10,14 +10,15 @@ from schemas import (
     OCRSummaryResponse,
     RecommendationResponse,
     HealthResponse,
+    SummaryRequestModel,
 )
 from summary_processor import SummaryProcessor
 from ocr_processor import OCRProcessor
 from recommendation_engine import RecommendationEngine
 from database import init_db, log_summary_request
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from root directory
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -61,27 +62,27 @@ async def health_check():
 
 
 @app.post("/summarize_text", response_model=SummaryResponse)
-async def summarize_text(text: str):
+async def summarize_text(request: SummaryRequestModel):
     """Summarize provided text"""
-    if not text.strip():
+    if not request.text.strip():
         raise HTTPException(status_code=400, detail="Text content is required")
 
     if not api_key:
         raise HTTPException(status_code=500, detail="GEMINI_API_KEY not configured")
 
     try:
-        summary = await summary_processor.summarize_text(text)
+        summary = await summary_processor.summarize_text(request.text)
 
         # Log to database
         await log_summary_request(
             content_type="text",
-            input_text=text[:500],  # Store first 500 chars for logging
+            input_text=request.text[:500],  # Store first 500 chars for logging
             summary=summary,
             processing_method="direct_text",
         )
 
         return SummaryResponse(
-            summary=summary, input_type="text", word_count=len(text.split())
+            summary=summary, input_type="text", word_count=len(request.text.split())
         )
 
     except Exception as e:

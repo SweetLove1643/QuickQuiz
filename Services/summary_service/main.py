@@ -23,6 +23,7 @@ from typing import List
 from fastapi import UploadFile, File, HTTPException
 from fastapi.concurrency import run_in_threadpool
 
+
 @app.post("/image_ocr")
 async def ocr_endpoint(files: List[UploadFile] = File(...)):
     """
@@ -39,7 +40,7 @@ async def ocr_endpoint(files: List[UploadFile] = File(...)):
         if f.content_type not in allowed_types:
             raise HTTPException(
                 status_code=400,
-                detail=f"File {f.filename} không hỗ trợ. Chỉ hỗ trợ PNG, JPG, PDF"
+                detail=f"File {f.filename} không hỗ trợ. Chỉ hỗ trợ PNG, JPG, PDF",
             )
 
     # 2. Đọc toàn bộ bytes
@@ -54,21 +55,17 @@ async def ocr_endpoint(files: List[UploadFile] = File(...)):
     try:
         # 3. Gọi batch OCR
         text = await run_in_threadpool(
-            extract_information,
-            file_bytes_list,
-            mime_types,
-            API_KEY
+            extract_information, file_bytes_list, mime_types, API_KEY
         )
 
         return {
             "total_files": len(files),
             "files": [f.filename for f in files],
-            "text": text
+            "text": text,
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 
 @app.post("/summarize")
@@ -85,7 +82,8 @@ async def summarize_endpoint(request: SummaryRequestModel):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+
 @app.post("/api/notes/analyze")
 async def recommend_study_event_endpoint(payload: RecommendRequest):
     """
@@ -99,14 +97,14 @@ async def recommend_study_event_endpoint(payload: RecommendRequest):
             userEmail=payload.userEmail,
             newNote=payload.newNote.dict(),
             allEventsInMonth=[event.dict() for event in payload.allEventsInMonth],
-            api_key=API_KEY
+            api_key=API_KEY,
         )
 
         return {"newEvent": result}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8009, reload=True)

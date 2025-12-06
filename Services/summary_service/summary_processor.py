@@ -53,7 +53,7 @@ Hãy tạo bản tóm tắt ngay bây giờ:
 """
 
             response = self.client.models.generate_content(
-                model="gemini-1.5-flash", contents=summary_prompt
+                model="gemini-2.5-flash", contents=summary_prompt
             )
 
             return response.text.strip()

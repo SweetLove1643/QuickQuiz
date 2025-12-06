@@ -85,7 +85,7 @@ YÊU CẦU:
 Chỉ trả về nội dung văn bản đã trích xuất, không cần giải thích thêm."""
 
             response = self.client.models.generate_content(
-                model="gemini-1.5-flash", contents=[prompt, image]
+                model="gemini-2.5-flash", contents=[prompt, image]
             )
 
             return response.text.strip()

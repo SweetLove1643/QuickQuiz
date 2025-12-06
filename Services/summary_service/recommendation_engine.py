@@ -84,7 +84,7 @@ Chỉ trả về JSON object, không có text thêm.
 """
 
             response = self.client.models.generate_content(
-                model="gemini-1.5-flash", contents=recommendation_prompt
+                model="gemini-2.5-flash", contents=recommendation_prompt
             )
 
             # Try to parse JSON response
