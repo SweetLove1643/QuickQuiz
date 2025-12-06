@@ -8,6 +8,7 @@ from django.views import View
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
+from django.conf import settings
 from rest_framework.response import Response
 from .service_clients import (
     QuizGeneratorClient,
@@ -18,8 +19,75 @@ from .service_clients import (
 )
 import json
 import io
+import os
+import sqlite3
+from contextlib import closing
 
 logger = logging.getLogger(__name__)
+
+# Document storage (lightweight sqlite)
+DOCUMENT_DB_PATH = os.path.abspath(os.path.join(settings.BASE_DIR, "documents.db"))
+
+
+def ensure_document_table():
+    os.makedirs(os.path.dirname(DOCUMENT_DB_PATH), exist_ok=True)
+    with closing(sqlite3.connect(DOCUMENT_DB_PATH)) as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS documents (
+                id TEXT PRIMARY KEY,
+                file_name TEXT NOT NULL,
+                file_size INTEGER,
+                file_type TEXT,
+                extracted_text TEXT,
+                summary TEXT,
+                created_at TEXT
+            )
+            """
+        )
+        conn.commit()
+
+
+def insert_document(record: dict):
+    ensure_document_table()
+    with closing(sqlite3.connect(DOCUMENT_DB_PATH)) as conn:
+        conn.execute(
+            """
+            INSERT OR REPLACE INTO documents
+            (id, file_name, file_size, file_type, extracted_text, summary, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                record.get("document_id"),
+                record.get("file_name"),
+                record.get("file_size"),
+                record.get("file_type"),
+                record.get("extracted_text"),
+                record.get("summary"),
+                record.get("created_at"),
+            ),
+        )
+        conn.commit()
+
+
+def fetch_documents(limit: int = 50):
+    if not os.path.exists(DOCUMENT_DB_PATH):
+        return []
+    with closing(sqlite3.connect(DOCUMENT_DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT id, file_name, file_size, file_type, extracted_text, summary, created_at
+            FROM documents
+            ORDER BY datetime(created_at) DESC
+            LIMIT ?
+            """,
+            (limit,),
+        )
+        rows = cur.fetchall()
+        return [dict(row) for row in rows]
+
 
 # Initialize service clients
 quiz_generator = QuizGeneratorClient()
@@ -601,6 +669,8 @@ def save_document(request):
 
         logger.info(f"Saving document: {file_name} (ID: {document_id})")
 
+        insert_document(document_data)
+
         return JsonResponse(
             {
                 "success": True,
@@ -615,3 +685,32 @@ def save_document(request):
     except Exception as e:
         logger.error(f"Document save failed: {str(e)}")
         return JsonResponse({"error": str(e)}, status=500)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def list_documents(request):
+    """Return available documents from local documents.db."""
+
+    try:
+        ensure_document_table()
+        docs = fetch_documents(limit=100)
+        # Normalize field names for frontend
+        documents = [
+            {
+                "document_id": d.get("id"),
+                "file_name": d.get("file_name"),
+                "file_size": d.get("file_size"),
+                "file_type": d.get("file_type"),
+                "extracted_text": d.get("extracted_text") or "",
+                "summary": (d.get("summary") or d.get("extracted_text") or "")[:400],
+                "created_at": d.get("created_at"),
+            }
+            for d in docs
+        ]
+
+        return JsonResponse({"success": True, "documents": documents})
+
+    except Exception as e:
+        logger.error(f"Document list failed: {str(e)}")
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
