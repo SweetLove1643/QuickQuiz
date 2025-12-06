@@ -14,13 +14,19 @@ import sys
 from pathlib import Path
 from typing import Dict, Any, List
 from datetime import datetime
+import uuid
 
 # Add ai_validation to Python path
 ai_validation_path = Path(__file__).parent.parent / "ai_validation"
 sys.path.insert(0, str(ai_validation_path))
 
 from content_validator import ContentValidator, ValidationResult
-from tasks import generate_quiz_job
+from tasks import generate_quiz_job, get_db_session
+from schemas import QuizQuestion, Quiz
+from database import GeneratedQuiz, create_tables
+
+# Initialize database tables on startup
+create_tables()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -72,6 +78,15 @@ class QuizConfig(BaseModel):
 class GenerateQuizRequest(BaseModel):
     sections: List[Section]
     config: QuizConfig
+
+
+class SaveQuizRequest(BaseModel):
+    quiz_id: str | None = None
+    title: str | None = None
+    document_id: str | None = None
+    document_name: str | None = None
+    questions: List[QuizQuestion]
+    metadata: Dict[str, Any] | None = None
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -184,6 +199,55 @@ async def generate_quiz_endpoint(request: GenerateQuizRequest):
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@app.post("/quiz/save")
+async def save_quiz_endpoint(request: SaveQuizRequest):
+    """Persist a quiz payload for later retrieval/analytics."""
+    quiz_id = request.quiz_id or f"quiz-{uuid.uuid4().hex[:8]}"
+
+    try:
+        # Validate questions via Pydantic
+        question_objs = [QuizQuestion(**q.model_dump()) for q in request.questions]
+        quiz = Quiz(
+            id=quiz_id,
+            questions=question_objs,
+            meta={
+                "title": request.title,
+                "document_id": request.document_id,
+                "document_name": request.document_name,
+                **(request.metadata or {}),
+            },
+        )
+
+        quiz_data = quiz.model_dump()
+
+        db = get_db_session()
+        generated_quiz = GeneratedQuiz(
+            quiz_id=quiz_id,
+            questions_data=quiz_data,
+            quiz_metadata={"saved_at": datetime.utcnow().isoformat()},
+            source_sections=[],
+            generation_config={},
+            validation_summary={},
+        )
+        db.add(generated_quiz)
+        db.commit()
+
+        return {
+            "success": True,
+            "quiz_id": quiz_id,
+            "saved_at": datetime.utcnow().isoformat(),
+        }
+    except ValidationError as e:
+        logger.error(f"Quiz save validation error: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid quiz data: {str(e)}")
+    except Exception as e:
+        logger.error(f"Failed to save quiz: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save quiz")
+    finally:
+        if "db" in locals():
+            db.close()
 
 
 @app.get("/validation/metrics")

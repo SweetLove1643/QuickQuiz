@@ -15,6 +15,10 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from quiz_generator_service.tasks import generate_quiz_job
+from quiz_generator_service.database import create_tables
+
+# Initialize database tables on startup
+create_tables()
 
 
 def generate_quiz(input_data: dict) -> str:
