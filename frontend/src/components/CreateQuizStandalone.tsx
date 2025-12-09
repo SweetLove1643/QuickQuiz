@@ -74,6 +74,19 @@ export function CreateQuizStandalone({
   const [questions, setQuestions] = useState<Question[]>([]);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
 
+  // Reset component state for next quiz creation
+  const resetComponent = () => {
+    setSelectedDocumentId("");
+    setSelectedDocument(null);
+    setQuizTitle("");
+    setDocumentContent("");
+    setQuestions([]);
+    setApiError(null);
+    setValidationInfo(null);
+    setSaveSuccess(null);
+    setIsSaving(false);
+  };
+
   // AI Generation settings
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
   const [aiQuestionCount, setAiQuestionCount] = useState("5");
@@ -295,8 +308,10 @@ export function CreateQuizStandalone({
         const successMsg = `Đã lưu bài quiz "${quizTitle}" thành công!`;
         setSaveSuccess(successMsg);
         setIsSaving(false);
-        // Auto-hide after 3 seconds
-        setTimeout(() => setSaveSuccess(null), 3000);
+        // Auto-hide after 3 seconds and reset component
+        setTimeout(() => {
+          resetComponent();
+        }, 3000);
         return;
       }
     } catch (error) {
@@ -655,23 +670,27 @@ export function CreateQuizStandalone({
 
       {/* Action Buttons */}
       <div className="flex gap-3 items-start">
-        <Button
-          onClick={handleStartQuiz}
-          className="flex-1"
-          disabled={
-            questions.length === 0 || !selectedDocumentId || !quizTitle.trim()
-          }
-        >
-          {isSaving && <Loader2 className="size-4 mr-2 animate-spin" />}
-          {!isSaving && <Save className="size-4 mr-2" />}
-          {isSaving ? "Đang lưu..." : `Lưu Quiz (${questions.length} câu hỏi)`}
-        </Button>
-        {saveSuccess && (
-          <div className="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-md text-sm text-green-700 whitespace-nowrap">
-            <CheckCircle className="size-4 text-green-600" />
-            <span>{saveSuccess}</span>
-          </div>
-        )}
+        <div className="flex-1 flex flex-col gap-2">
+          <Button
+            onClick={handleStartQuiz}
+            className="w-full"
+            disabled={
+              questions.length === 0 || !selectedDocumentId || !quizTitle.trim()
+            }
+          >
+            {isSaving && <Loader2 className="size-4 mr-2 animate-spin" />}
+            {!isSaving && <Save className="size-4 mr-2" />}
+            {isSaving
+              ? "Đang lưu..."
+              : `Lưu Quiz (${questions.length} câu hỏi)`}
+          </Button>
+          {saveSuccess && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-md text-sm text-green-700">
+              <CheckCircle className="size-4 text-green-600 flex-shrink-0" />
+              <span>{saveSuccess}</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,5 +1,17 @@
 import { StudySetCard } from "./StudySetCard";
 
+type PageType =
+  | "home"
+  | "library"
+  | "quick-start"
+  | "upload-document"
+  | "create-quiz-standalone"
+  | "create-quiz"
+  | "take-quiz"
+  | "quiz-result"
+  | "view-document"
+  | "chatbot";
+
 const studySets = [
   {
     id: 1,
@@ -40,7 +52,8 @@ const studySets = [
     lastStudied: "5 giờ trước",
     type: "document" as const,
     status: "Riêng tư",
-    summary: "Tài liệu tổng hợp kiến thức sinh học lớp 10 chương 1, bao gồm các khái niệm cơ bản về tế bào, cấu trúc và chức năng của tế bào thực vật và động vật.",
+    summary:
+      "Tài liệu tổng hợp kiến thức sinh học lớp 10 chương 1, bao gồm các khái niệm cơ bản về tế bào, cấu trúc và chức năng của tế bào thực vật và động vật.",
     content: `# Sinh học lớp 10 - Chương 1: Tế bào
 
 ## Khái niệm tế bào
@@ -99,7 +112,8 @@ Các bào quan khác nhau đảm nhiệm các chức năng sinh học khác nhau
     lastStudied: "2 ngày trước",
     type: "document" as const,
     status: "Công khai",
-    summary: "Tài liệu về phương trình bậc 2, bao gồm công thức nghiệm, định lý Vi-ét và các bài tập áp dụng.",
+    summary:
+      "Tài liệu về phương trình bậc 2, bao gồm công thức nghiệm, định lý Vi-ét và các bài tập áp dụng.",
     content: `# Toán học - Phương trình bậc 2
 
 ## Định nghĩa
@@ -148,7 +162,12 @@ Với phương trình ax² + bx + c = 0 có 2 nghiệm x₁, x₂:
       {
         id: "2",
         question: "Hợp chất hữu cơ chứa nhóm chức nào?",
-        options: ["Chỉ Carbon", "Carbon và Hydrogen", "Carbon, Hydrogen và có thể có các nguyên tố khác", "Chỉ Hydrogen"],
+        options: [
+          "Chỉ Carbon",
+          "Carbon và Hydrogen",
+          "Carbon, Hydrogen và có thể có các nguyên tố khác",
+          "Chỉ Hydrogen",
+        ],
         correctAnswer: 2,
       },
     ],
@@ -162,7 +181,8 @@ Với phương trình ax² + bx + c = 0 có 2 nghiệm x₁, x₂:
     lastStudied: "1 tuần trước",
     type: "document" as const,
     status: "Công khai",
-    summary: "Tài liệu điện học cơ bản bao gồm định luật Ohm, mạch điện, công suất điện và năng lượng điện.",
+    summary:
+      "Tài liệu điện học cơ bản bao gồm định luật Ohm, mạch điện, công suất điện và năng lượng điện.",
     content: `# Vật lý - Điện học
 
 ## Định luật Ohm
@@ -193,17 +213,21 @@ Q = I² · R · t
 ];
 
 interface StudySetGridProps {
-  onNavigate?: (page: string) => void;
+  onNavigate?: (page: PageType, isFromQuickStart?: boolean) => void;
   onQuizSelected?: (quiz: any) => void;
   onDocumentSelected?: (document: any) => void;
 }
 
-export function StudySetGrid({ onNavigate, onQuizSelected, onDocumentSelected }: StudySetGridProps) {
+export function StudySetGrid({
+  onNavigate,
+  onQuizSelected,
+  onDocumentSelected,
+}: StudySetGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {studySets.map((set) => (
-        <StudySetCard 
-          key={set.id} 
+        <StudySetCard
+          key={set.id}
           studySet={set}
           onNavigate={onNavigate}
           onQuizSelected={onQuizSelected}

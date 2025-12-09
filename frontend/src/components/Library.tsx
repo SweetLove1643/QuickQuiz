@@ -1,8 +1,32 @@
-import { FileText, Brain, Eye, Download, Users, Clock, Star, MoreVertical, Edit, Trash2, Play } from "lucide-react";
+import {
+  FileText,
+  Brain,
+  Eye,
+  Download,
+  Users,
+  Clock,
+  Star,
+  MoreVertical,
+  Edit,
+  Trash2,
+  Play,
+} from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Badge } from "./ui/badge";
+
+type PageType =
+  | "home"
+  | "library"
+  | "quick-start"
+  | "upload-document"
+  | "create-quiz-standalone"
+  | "create-quiz"
+  | "take-quiz"
+  | "quiz-result"
+  | "view-document"
+  | "chatbot";
 
 const myDocuments = [
   {
@@ -14,7 +38,8 @@ const myDocuments = [
     pages: 45,
     uploadDate: "2 ngày trước",
     status: "Công khai",
-    summary: "Tài liệu này tổng hợp các triều đại phong kiến Việt Nam từ thời Đinh - Tiền Lê đến cuối thời Lý. Nội dung tập trung vào các sự kiện lịch sử quan trọng, các vị vua nổi bật và những đóng góp của họ cho đất nước.",
+    summary:
+      "Tài liệu này tổng hợp các triều đại phong kiến Việt Nam từ thời Đinh - Tiền Lê đến cuối thời Lý. Nội dung tập trung vào các sự kiện lịch sử quan trọng, các vị vua nổi bật và những đóng góp của họ cho đất nước.",
     content: `# Lịch sử Việt Nam - Thời kỳ Đại Việt
 
 ## Giới thiệu
@@ -49,7 +74,8 @@ Thời kỳ Đại Việt đặt nền móng cho sự phát triển lâu dài c�
     pages: 32,
     uploadDate: "1 tuần trước",
     status: "Riêng tư",
-    summary: "Chương này giải thích cấu trúc và chức năng của DNA và RNA, hai phân tử di truyền quan trọng nhất trong tế bào sống. Nội dung bao gồm cấu trúc xoắn kép, quá trình sao chép và phiên mã.",
+    summary:
+      "Chương này giải thích cấu trúc và chức năng của DNA và RNA, hai phân tử di truyền quan trọng nhất trong tế bào sống. Nội dung bao gồm cấu trúc xoắn kép, quá trình sao chép và phiên mã.",
     content: `# Sinh học phân tử - DNA và RNA
 
 ## Cấu trúc DNA
@@ -98,7 +124,8 @@ Thời kỳ Đại Việt đặt nền móng cho sự phát triển lâu dài c�
     pages: 56,
     uploadDate: "3 ngày trước",
     status: "Công khai",
-    summary: "Tài liệu giải tích cao cấp bao gồm lý thuyết về giới hạn, đạo hàm, tích phân và phương trình vi phân. Phù hợp cho sinh viên năm đầu đại học và học sinh chuyên toán.",
+    summary:
+      "Tài liệu giải tích cao cấp bao gồm lý thuyết về giới hạn, đạo hàm, tích phân và phương trình vi phân. Phù hợp cho sinh viên năm đầu đại học và học sinh chuyên toán.",
     content: `# Toán học cao cấp - Giải tích
 
 ## Chương 1: Giới hạn và Liên tục
@@ -239,12 +266,16 @@ const myQuizzes = [
 ];
 
 interface LibraryProps {
-  onNavigate?: (page: string) => void;
+  onNavigate?: (page: PageType, isFromQuickStart?: boolean) => void;
   onQuizSelected?: (quiz: any) => void;
   onDocumentSelected?: (document: any) => void;
 }
 
-export function Library({ onNavigate, onQuizSelected, onDocumentSelected }: LibraryProps) {
+export function Library({
+  onNavigate,
+  onQuizSelected,
+  onDocumentSelected,
+}: LibraryProps) {
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case "Dễ":
@@ -259,8 +290,8 @@ export function Library({ onNavigate, onQuizSelected, onDocumentSelected }: Libr
   };
 
   const getStatusColor = (status: string) => {
-    return status === "Công khai" 
-      ? "bg-green-100 text-green-700" 
+    return status === "Công khai"
+      ? "bg-green-100 text-green-700"
       : "bg-slate-100 text-slate-700";
   };
 
@@ -285,7 +316,10 @@ export function Library({ onNavigate, onQuizSelected, onDocumentSelected }: Libr
 
         <TabsContent value="documents" className="space-y-4">
           {myDocuments.map((doc) => (
-            <Card key={doc.id} className="p-6 hover:shadow-md transition-shadow">
+            <Card
+              key={doc.id}
+              className="p-6 hover:shadow-md transition-shadow"
+            >
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1">
                   {/* Icon */}
@@ -329,8 +363,8 @@ export function Library({ onNavigate, onQuizSelected, onDocumentSelected }: Libr
 
                 {/* Actions */}
                 <div className="flex items-center gap-2 ml-4">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => {
                       console.log("Viewing document:", doc.id);
@@ -352,7 +386,9 @@ export function Library({ onNavigate, onQuizSelected, onDocumentSelected }: Libr
             <div className="text-center py-12">
               <FileText className="size-16 text-slate-300 mx-auto mb-4" />
               <h3 className="text-slate-900 mb-2">Chưa có tài liệu nào</h3>
-              <p className="text-slate-600 mb-4">Bắt đầu upload tài liệu đầu tiên của bạn</p>
+              <p className="text-slate-600 mb-4">
+                Bắt đầu upload tài liệu đầu tiên của bạn
+              </p>
               <Button>Upload tài liệu</Button>
             </div>
           )}
@@ -360,7 +396,10 @@ export function Library({ onNavigate, onQuizSelected, onDocumentSelected }: Libr
 
         <TabsContent value="quizzes" className="space-y-4">
           {myQuizzes.map((quiz) => (
-            <Card key={quiz.id} className="p-6 hover:shadow-md transition-shadow">
+            <Card
+              key={quiz.id}
+              className="p-6 hover:shadow-md transition-shadow"
+            >
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4 flex-1">
                   {/* Icon */}
@@ -374,7 +413,9 @@ export function Library({ onNavigate, onQuizSelected, onDocumentSelected }: Libr
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <h3 className="text-slate-900">{quiz.title}</h3>
-                          <Badge className={getDifficultyColor(quiz.difficulty)}>
+                          <Badge
+                            className={getDifficultyColor(quiz.difficulty)}
+                          >
                             {quiz.difficulty}
                           </Badge>
                         </div>
@@ -413,8 +454,8 @@ export function Library({ onNavigate, onQuizSelected, onDocumentSelected }: Libr
 
                 {/* Actions */}
                 <div className="flex items-center gap-2 ml-4">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => {
                       console.log("Editing quiz:", quiz.id);
@@ -424,8 +465,8 @@ export function Library({ onNavigate, onQuizSelected, onDocumentSelected }: Libr
                     <Edit className="size-4 mr-2" />
                     Chỉnh sửa
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => {
                       console.log("Taking quiz:", quiz.id);
@@ -448,7 +489,9 @@ export function Library({ onNavigate, onQuizSelected, onDocumentSelected }: Libr
             <div className="text-center py-12">
               <Brain className="size-16 text-slate-300 mx-auto mb-4" />
               <h3 className="text-slate-900 mb-2">Chưa có quiz nào</h3>
-              <p className="text-slate-600 mb-4">Tạo bài quiz đầu tiên của bạn</p>
+              <p className="text-slate-600 mb-4">
+                Tạo bài quiz đầu tiên của bạn
+              </p>
               <Button>Tạo quiz mới</Button>
             </div>
           )}

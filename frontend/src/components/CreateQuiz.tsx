@@ -64,6 +64,16 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
 
+  // Reset component state for next quiz creation
+  const resetComponent = () => {
+    setQuizTitle(`Quiz - ${document?.fileName || "Tài liệu"}`);
+    setQuestions([]);
+    setError(null);
+    setSaveError(null);
+    setSaveSuccess(null);
+    setIsSavingQuiz(false);
+  };
+
   // Manual question type selection
   const [manualDialogOpen, setManualDialogOpen] = useState(false);
 
@@ -245,8 +255,10 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
       const successMsg = `Đã lưu bài quiz "${quizTitle}" thành công!`;
       setSaveSuccess(successMsg);
       setIsSavingQuiz(false);
-      // Auto-hide after 3 seconds
-      setTimeout(() => setSaveSuccess(null), 3000);
+      // Auto-hide after 3 seconds and reset component
+      setTimeout(() => {
+        resetComponent();
+      }, 3000);
       return;
     } catch (err) {
       console.error("Save quiz failed:", err);
@@ -529,22 +541,24 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
 
       {/* Action Buttons */}
       <div className="flex gap-3 items-start">
-        <Button
-          onClick={handleStartQuiz}
-          className="flex-1"
-          disabled={questions.length === 0 || isSavingQuiz}
-        >
-          {isSavingQuiz && <Loader2 className="size-4 mr-2 animate-spin" />}
-          {isSavingQuiz
-            ? "Đang lưu quiz..."
-            : `Bắt đầu làm Quiz (${questions.length} câu hỏi)`}
-        </Button>
-        {saveSuccess && (
-          <div className="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-md text-sm text-green-700 whitespace-nowrap">
-            <CheckCircle className="size-4 text-green-600" />
-            <span>{saveSuccess}</span>
-          </div>
-        )}
+        <div className="flex-1 flex flex-col gap-2">
+          <Button
+            onClick={handleStartQuiz}
+            className="w-full"
+            disabled={questions.length === 0 || isSavingQuiz}
+          >
+            {isSavingQuiz && <Loader2 className="size-4 mr-2 animate-spin" />}
+            {isSavingQuiz
+              ? "Đang lưu quiz..."
+              : `Bắt đầu làm Quiz (${questions.length} câu hỏi)`}
+          </Button>
+          {saveSuccess && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-md text-sm text-green-700">
+              <CheckCircle className="size-4 text-green-600 flex-shrink-0" />
+              <span>{saveSuccess}</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
