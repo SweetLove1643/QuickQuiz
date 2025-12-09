@@ -12,6 +12,20 @@ Services/VRD_OCR/
 image_test/
 PaddleOCR/
 
+# Byte-compiled / optimized / DLL files
+migrations/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.env
+.env.local
+db.sqlite3
+data/
+staticfiles/
+
 # Ignore virtual environment directories
 .venv/
 
