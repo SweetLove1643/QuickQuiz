@@ -597,6 +597,173 @@ class RAGChatbotClient(BaseServiceClient):
         return response.data
 
 
+class IAMServiceClient(BaseServiceClient):
+    """Enhanced client for IAM (Identity & Access Management) service."""
+
+    def __init__(self):
+        super().__init__("iam_service")
+
+    def register_user(self, user_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Register a new user with all required/optional fields for IAM UserCreateSerializer."""
+        logger.info(
+            f"[{self.service_name}] Registering user: {user_data.get('username')}"
+        )
+
+        # Ensure all fields expected by UserCreateSerializer are present
+        payload = {
+            "username": user_data.get("username", ""),
+            "email": user_data.get("email", ""),
+            "password": user_data.get("password", ""),
+            "password_confirm": user_data.get(
+                "password_confirm", user_data.get("password", "")
+            ),
+            "first_name": user_data.get("first_name", ""),
+            "last_name": user_data.get("last_name", ""),
+            "role": user_data.get("role", "student"),
+            "phone_number": user_data.get("phone_number", ""),
+            "avatar_url": user_data.get("avatar_url", ""),
+        }
+
+        response = self._make_request("POST", "/api/users/", data=payload)
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data
+
+    def login(self, username: str, password: str) -> Dict[str, Any]:
+        """Login user and get JWT tokens."""
+        logger.info(f"[{self.service_name}] Login attempt for user: {username}")
+
+        data = {"username": username, "password": password}
+        response = self._make_request("POST", "/api/users/login/", data=data)
+
+        if not response.success:
+            logger.warning(f"[{self.service_name}] Login failed for user: {username}")
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        logger.info(f"[{self.service_name}] Login successful for user: {username}")
+        return response.data
+
+    def logout(self, refresh_token: str) -> Dict[str, Any]:
+        """Logout user and blacklist token."""
+        logger.info(f"[{self.service_name}] Logging out user")
+
+        data = {"refresh": refresh_token}
+        response = self._make_request("POST", "/api/users/logout/", data=data)
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data
+
+    def get_current_user(self, access_token: str) -> Dict[str, Any]:
+        """Get current user information."""
+        headers = {"Authorization": f"Bearer {access_token}"}
+        response = self._make_request("GET", "/api/users/me/", headers=headers)
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data
+
+    def get_user(self, user_id: str, access_token: str) -> Dict[str, Any]:
+        """Get user by ID."""
+        headers = {"Authorization": f"Bearer {access_token}"}
+        response = self._make_request("GET", f"/api/users/{user_id}/", headers=headers)
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data
+
+    def update_user(
+        self, user_id: str, access_token: str, user_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Update user information."""
+        headers = {"Authorization": f"Bearer {access_token}"}
+        response = self._make_request(
+            "PUT", f"/api/users/{user_id}/", data=user_data, headers=headers
+        )
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data
+
+    def change_password(
+        self, user_id: str, access_token: str, password_data: Dict[str, str]
+    ) -> Dict[str, Any]:
+        """Change user password."""
+        headers = {"Authorization": f"Bearer {access_token}"}
+        response = self._make_request(
+            "POST",
+            f"/api/users/{user_id}/change_password/",
+            data=password_data,
+            headers=headers,
+        )
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data
+
+    def list_users(
+        self, access_token: str, page: int = 1, search: str = ""
+    ) -> Dict[str, Any]:
+        """List users with pagination and search."""
+        headers = {"Authorization": f"Bearer {access_token}"}
+        params = {"page": page}
+        if search:
+            params["search"] = search
+
+        response = self._make_request(
+            "GET", "/api/users/", params=params, headers=headers
+        )
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data
+
+    def verify_token(self, access_token: str) -> bool:
+        """Verify if token is valid."""
+        try:
+            headers = {"Authorization": f"Bearer {access_token}"}
+            response = self._make_request("GET", "/api/users/me/", headers=headers)
+            return response.success
+        except:
+            return False
+
+    def refresh_token(self, refresh_token: str) -> Dict[str, Any]:
+        """Refresh access token."""
+        data = {"refresh": refresh_token}
+        response = self._make_request("POST", "/api/token/refresh/", data=data)
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data
+
+
 class ServiceRegistry:
     """Registry for managing all service clients."""
 
@@ -607,6 +774,7 @@ class ServiceRegistry:
             "ocr_service": OCRServiceClient(),
             "summary_service": SummaryServiceClient(),
             "rag_chatbot_service": RAGChatbotClient(),
+            "iam_service": IAMServiceClient(),
         }
 
     def get_client(self, service_name: str) -> BaseServiceClient:
@@ -648,3 +816,4 @@ quiz_evaluator_client = service_registry.get_client("quiz_evaluator")
 ocr_service_client = service_registry.get_client("ocr_service")
 summary_service_client = service_registry.get_client("summary_service")
 rag_chatbot_client = service_registry.get_client("rag_chatbot_service")
+iam_service_client = service_registry.get_client("iam_service")

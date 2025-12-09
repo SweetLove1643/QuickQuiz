@@ -8,6 +8,12 @@ urlpatterns = [
     path("health/", views.health_check, name="health_check"),
     # API root
     path("", views.api_root, name="api_root"),
+    # Auth endpoints
+    path("auth/register/", views.register, name="register"),
+    path("auth/login/", views.login, name="login"),
+    path("auth/logout/", views.logout, name="logout"),
+    path("auth/refresh/", views.refresh_token, name="refresh_token"),
+    path("auth/me/", views.get_current_user, name="get_current_user"),
     # Quiz endpoints
     path("quiz/", views.QuizView.as_view(), name="quiz"),
     path("quiz/generate/", views.generate_quiz, name="generate_quiz"),

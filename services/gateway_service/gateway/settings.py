@@ -207,6 +207,13 @@ MICROSERVICES = {
         "timeout": 45,  # RAG processing might take time
         "retry_count": 3,
     },
+    "iam_service": {
+        "host": os.getenv("IAM_SERVICE_HOST", "localhost"),
+        "port": os.getenv("IAM_SERVICE_PORT", "8005"),
+        "health_endpoint": "/health",
+        "timeout": 30,
+        "retry_count": 3,
+    },
     # Legacy service for backward compatibility
     "extract_information": {
         "host": os.getenv("EXTRACT_INFORMATION_HOST", "localhost"),

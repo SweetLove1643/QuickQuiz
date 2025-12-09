@@ -16,6 +16,7 @@ from .service_clients import (
     OCRServiceClient,
     SummaryServiceClient,
     RAGChatbotClient,
+    IAMServiceClient,
 )
 import json
 import io
@@ -95,6 +96,7 @@ quiz_evaluator = QuizEvaluatorClient()
 ocr_service = OCRServiceClient()
 summary_service = SummaryServiceClient()
 rag_chatbot = RAGChatbotClient()
+iam_service = IAMServiceClient()
 
 
 @api_view(["GET"])
@@ -714,3 +716,182 @@ def list_documents(request):
     except Exception as e:
         logger.error(f"Document list failed: {str(e)}")
         return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+# ============= Authentication Endpoints =============
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def register(request):
+    """Register a new student account."""
+    try:
+        data = request.data
+        logger.info(f"Registration request for username: {data.get('username')}")
+
+        # Validate required fields
+        required_fields = ["username", "email", "password", "password_confirm"]
+        for field in required_fields:
+            if not data.get(field):
+                return Response(
+                    {"success": False, "error": f"Missing required field: {field}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        # Check password match
+        if data["password"] != data["password_confirm"]:
+            return Response(
+                {"success": False, "error": "Passwords do not match"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Register via IAM service
+        user_data = {
+            "username": data["username"],
+            "email": data["email"],
+            "password": data["password"],
+            "password_confirm": data["password_confirm"],
+        }
+
+        logger.info(f"Calling IAM service to register user: {user_data['username']}")
+        result = iam_service.register_user(user_data)
+
+        logger.info(f"User registered successfully: {data['username']}")
+        return Response(
+            {"success": True, "message": "Registration successful", "data": result},
+            status=status.HTTP_201_CREATED,
+        )
+
+    except Exception as e:
+        error_message = str(e)
+        logger.error(f"Registration failed for {data.get('username')}: {error_message}")
+        return Response(
+            {"success": False, "error": error_message},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def login(request):
+    """Login with username and password."""
+    try:
+        data = request.data
+        username = data.get("username")
+        password = data.get("password")
+
+        logger.info(f"Login attempt for username: {username}")
+
+        if not username or not password:
+            return Response(
+                {"success": False, "error": "Username and password are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Login via IAM service
+        logger.info(f"Calling IAM service to login user: {username}")
+        result = iam_service.login(username, password)
+
+        logger.info(f"User logged in successfully: {username}")
+        return Response(
+            {"success": True, "message": "Login successful", "data": result},
+            status=status.HTTP_200_OK,
+        )
+
+    except Exception as e:
+        error_message = str(e)
+        logger.error(f"Login failed for {username}: {error_message}")
+        return Response(
+            {"success": False, "error": error_message},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+
+@api_view(["POST"])
+def logout(request):
+    """Logout and blacklist refresh token."""
+    try:
+        data = request.data
+        refresh_token = data.get("refresh")
+
+        if not refresh_token:
+            return Response(
+                {"success": False, "error": "Refresh token is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Logout via IAM service
+        iam_service.logout(refresh_token)
+
+        logger.info("User logged out")
+        return Response(
+            {"success": True, "message": "Logout successful"},
+            status=status.HTTP_200_OK,
+        )
+
+    except Exception as e:
+        logger.error(f"Logout failed: {str(e)}")
+        return Response(
+            {"success": False, "error": str(e)},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def refresh_token(request):
+    """Refresh access token using refresh token."""
+    try:
+        data = request.data
+        refresh = data.get("refresh")
+
+        if not refresh:
+            return Response(
+                {"success": False, "error": "Refresh token is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Refresh via IAM service
+        result = iam_service.refresh_token(refresh)
+
+        return Response(
+            {"success": True, "data": result},
+            status=status.HTTP_200_OK,
+        )
+
+    except Exception as e:
+        logger.error(f"Token refresh failed: {str(e)}")
+        return Response(
+            {"success": False, "error": str(e)},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+
+@api_view(["GET"])
+def get_current_user(request):
+    """Get current user information."""
+    try:
+        # Get token from Authorization header
+        auth_header = request.headers.get("Authorization", "")
+        if not auth_header.startswith("Bearer "):
+            return Response(
+                {"success": False, "error": "Authorization header missing or invalid"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        access_token = auth_header.replace("Bearer ", "").strip()
+
+        # Get user info from IAM service
+        user_info = iam_service.get_current_user(access_token)
+
+        return Response(
+            {"success": True, "user": user_info},
+            status=status.HTTP_200_OK,
+        )
+
+    except Exception as e:
+        logger.error(f"Get current user failed: {str(e)}")
+        return Response(
+            {"success": False, "error": str(e)},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )

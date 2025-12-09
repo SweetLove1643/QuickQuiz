@@ -678,3 +678,408 @@
 [INFO] 2025-12-06 19:14:11,929 api.views 20936 12888 Saving quiz with 5 questions and title Quiz - test-document.txt
 [DEBUG] 2025-12-06 19:14:11,930 api.service_clients 20936 12888 [quiz_generator] POST http://localhost:8003/quiz/save
 [INFO] 2025-12-06 19:14:13,990 django.server 20936 12888 "POST /api/quiz/save/ HTTP/1.1" 200 82
+[INFO] 2025-12-06 19:16:43,534 django.server 20936 12888 "GET /api/documents/list/ HTTP/1.1" 200 2258
+[INFO] 2025-12-06 19:16:58,541 api.service_clients 20936 12888 [summary_service] Summarizing text: 623 characters
+[DEBUG] 2025-12-06 19:16:58,542 api.service_clients 20936 12888 [summary_service] POST http://localhost:8009/summarize_text
+[WARNING] 2025-12-06 19:17:05,822 api.service_clients 20936 12888 [summary_service] Slow request: 7.28s
+[INFO] 2025-12-06 19:17:05,822 django.server 20936 12888 "POST /api/summary/summarize_text/ HTTP/1.1" 200 1817
+[INFO] 2025-12-06 19:17:09,479 api.views 20936 12888 Saving document: test-document.txt (ID: doc_1765023425837_g7k7z004k)
+[INFO] 2025-12-06 19:17:09,494 django.server 20936 12888 "POST /api/documents/save/ HTTP/1.1" 200 153
+[INFO] 2025-12-06 19:17:35,884 api.service_clients 20936 12888 [summary_service] Summarizing text: 623 characters
+[DEBUG] 2025-12-06 19:17:35,886 api.service_clients 20936 12888 [summary_service] POST http://localhost:8009/summarize_text
+[WARNING] 2025-12-06 19:17:42,520 api.service_clients 20936 12888 [summary_service] Slow request: 6.63s
+[INFO] 2025-12-06 19:17:42,520 django.server 20936 12888 "POST /api/summary/summarize_text/ HTTP/1.1" 200 1874
+[INFO] 2025-12-06 19:20:53,067 api.views 20936 12888 Saving document: test-document.txt (ID: doc_1765023462532_qgi0z6efi)
+[INFO] 2025-12-06 19:20:53,081 django.server 20936 12888 "POST /api/documents/save/ HTTP/1.1" 200 153
+[INFO] 2025-12-06 19:21:04,340 django.server 20936 12888 "GET /api/documents/list/ HTTP/1.1" 200 6740
+[INFO] 2025-12-06 19:21:26,450 api.views 20936 12888 Generating quiz: 1 sections, 5 questions
+[INFO] 2025-12-06 19:21:26,451 api.service_clients 20936 12888 [quiz_generator] Generating quiz: 1 sections, 5 questions
+[DEBUG] 2025-12-06 19:21:26,452 api.service_clients 20936 12888 [quiz_generator] POST http://localhost:8003/quiz/generate
+[WARNING] 2025-12-06 19:21:37,088 api.service_clients 20936 12888 [quiz_generator] Slow request: 10.64s
+[INFO] 2025-12-06 19:21:37,094 django.server 20936 12888 "POST /api/quiz/generate/ HTTP/1.1" 200 2693
+[INFO] 2025-12-06 19:21:42,361 api.views 20936 12888 Saving quiz with 5 questions and title Quiz - test-document.txt 456
+[DEBUG] 2025-12-06 19:21:42,361 api.service_clients 20936 12888 [quiz_generator] POST http://localhost:8003/quiz/save
+[INFO] 2025-12-06 19:21:44,391 django.server 20936 12888 "POST /api/quiz/save/ HTTP/1.1" 200 82
+[INFO] 2025-12-06 19:23:23,465 django.server 20936 12888 "GET /api/documents/list/ HTTP/1.1" 200 6740
+[INFO] 2025-12-06 19:23:31,388 django.server 20936 12888 "GET /api/documents/list/ HTTP/1.1" 200 6740
+[INFO] 2025-12-06 19:23:37,037 api.views 20936 12888 Saving quiz with 5 questions and title Quiz - test-document.txt 456
+[DEBUG] 2025-12-06 19:23:37,038 api.service_clients 20936 12888 [quiz_generator] POST http://localhost:8003/quiz/save
+[INFO] 2025-12-06 19:23:39,119 django.server 20936 12888 "POST /api/quiz/save/ HTTP/1.1" 200 82
+[INFO] 2025-12-06 19:23:50,935 django.server 20936 12888 "GET /api/documents/list/ HTTP/1.1" 200 6740
+[INFO] 2025-12-06 19:25:22,322 django.server 20936 12888 "GET /api/documents/list/ HTTP/1.1" 200 6740
+[INFO] 2025-12-06 19:25:31,036 django.server 20936 12888 "GET /api/documents/list/ HTTP/1.1" 200 6740
+[INFO] 2025-12-06 19:25:51,376 api.views 20936 12888 Generating quiz: 1 sections, 5 questions
+[INFO] 2025-12-06 19:25:51,376 api.service_clients 20936 12888 [quiz_generator] Generating quiz: 1 sections, 5 questions
+[DEBUG] 2025-12-06 19:25:51,378 api.service_clients 20936 12888 [quiz_generator] POST http://localhost:8003/quiz/generate
+[WARNING] 2025-12-06 19:25:58,979 api.service_clients 20936 12888 [quiz_generator] Slow request: 7.60s
+[INFO] 2025-12-06 19:25:58,979 django.server 20936 12888 "POST /api/quiz/generate/ HTTP/1.1" 200 1673
+[INFO] 2025-12-06 19:26:05,238 api.views 20936 12888 Saving quiz with 5 questions and title Quiz 235
+[DEBUG] 2025-12-06 19:26:05,244 api.service_clients 20936 12888 [quiz_generator] POST http://localhost:8003/quiz/save
+[INFO] 2025-12-06 19:26:07,321 django.server 20936 12888 "POST /api/quiz/save/ HTTP/1.1" 200 82
+[INFO] 2025-12-06 19:33:24,104 api.service_clients 20936 16340 [summary_service] Summarizing text: 623 characters
+[DEBUG] 2025-12-06 19:33:24,104 api.service_clients 20936 16340 [summary_service] POST http://localhost:8009/summarize_text
+[WARNING] 2025-12-06 19:33:32,516 api.service_clients 20936 16340 [summary_service] Slow request: 8.41s
+[INFO] 2025-12-06 19:33:32,516 django.server 20936 16340 "POST /api/summary/summarize_text/ HTTP/1.1" 200 2803
+[INFO] 2025-12-06 19:33:34,618 api.views 20936 16340 Saving document: test-document.txt (ID: doc_1765024412523_60us1jfq6)
+[INFO] 2025-12-06 19:33:34,633 django.server 20936 16340 "POST /api/documents/save/ HTTP/1.1" 200 153
+[INFO] 2025-12-06 19:43:19,450 django.utils.autoreload 20936 17072 E:\QuickQuiz\services\gateway_service\api\service_clients.py changed, reloading.
+[INFO] 2025-12-06 19:43:20,978 django.utils.autoreload 6280 20860 Watching for file changes with StatReloader
+[INFO] 2025-12-06 19:45:21,948 django.utils.autoreload 6280 20860 E:\QuickQuiz\services\gateway_service\api\service_clients.py changed, reloading.
+[INFO] 2025-12-06 19:45:23,557 django.utils.autoreload 12996 8644 Watching for file changes with StatReloader
+[INFO] 2025-12-06 19:57:02,743 django.utils.autoreload 3192 14464 Watching for file changes with StatReloader
+[INFO] 2025-12-09 00:30:08,044 django.utils.autoreload 9236 20824 Watching for file changes with StatReloader
+[INFO] 2025-12-09 00:43:01,730 django.utils.autoreload 9236 20824 E:\QuickQuiz\services\gateway_service\gateway\settings.py changed, reloading.
+[INFO] 2025-12-09 00:43:03,044 django.utils.autoreload 20608 16212 Watching for file changes with StatReloader
+[INFO] 2025-12-09 00:43:07,587 django.utils.autoreload 20608 16212 E:\QuickQuiz\services\gateway_service\api\service_clients.py changed, reloading.
+[INFO] 2025-12-09 00:43:08,860 django.utils.autoreload 13868 380 Watching for file changes with StatReloader
+[INFO] 2025-12-09 00:44:19,915 django.utils.autoreload 13868 380 E:\QuickQuiz\services\gateway_service\api\service_clients.py changed, reloading.
+[INFO] 2025-12-09 00:44:21,356 django.utils.autoreload 12736 12748 Watching for file changes with StatReloader
+[INFO] 2025-12-09 00:44:24,865 django.utils.autoreload 12736 12748 E:\QuickQuiz\services\gateway_service\api\service_clients.py changed, reloading.
+[INFO] 2025-12-09 00:44:26,248 django.utils.autoreload 9132 4716 Watching for file changes with StatReloader
+[INFO] 2025-12-09 00:44:29,849 django.utils.autoreload 9132 4716 E:\QuickQuiz\services\gateway_service\api\service_clients.py changed, reloading.
+[INFO] 2025-12-09 00:44:31,157 django.utils.autoreload 6332 12456 Watching for file changes with StatReloader
+[INFO] 2025-12-09 00:44:34,683 django.utils.autoreload 6332 12456 E:\QuickQuiz\services\gateway_service\api\service_clients.py changed, reloading.
+[INFO] 2025-12-09 00:44:36,045 django.utils.autoreload 4984 1828 Watching for file changes with StatReloader
+[INFO] 2025-12-09 00:44:39,608 django.utils.autoreload 4984 1828 E:\QuickQuiz\services\gateway_service\api\service_clients.py changed, reloading.
+[INFO] 2025-12-09 00:44:40,889 django.utils.autoreload 19224 17524 Watching for file changes with StatReloader
+[INFO] 2025-12-09 00:46:07,964 django.utils.autoreload 17940 2884 Watching for file changes with StatReloader
+[INFO] 2025-12-09 00:47:52,635 django.utils.autoreload 17940 2884 E:\QuickQuiz\services\gateway_service\gateway\settings.py changed, reloading.
+[INFO] 2025-12-09 00:47:53,989 django.utils.autoreload 7248 18780 Watching for file changes with StatReloader
+[INFO] 2025-12-09 00:55:13,183 django.utils.autoreload 7248 18780 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-12-09 00:55:14,497 django.utils.autoreload 7648 16732 Watching for file changes with StatReloader
+[INFO] 2025-12-09 00:55:24,576 django.utils.autoreload 7648 16732 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-12-09 00:55:25,979 django.utils.autoreload 18040 2624 Watching for file changes with StatReloader
+[INFO] 2025-12-09 00:55:36,177 django.utils.autoreload 18040 2624 E:\QuickQuiz\services\gateway_service\api\urls.py changed, reloading.
+[INFO] 2025-12-09 00:55:37,570 django.utils.autoreload 6828 16916 Watching for file changes with StatReloader
+[INFO] 2025-12-09 01:02:42,874 django.server 6828 1900 "GET /api/health?id=ab46e82f-18a8-41de-992f-7b1fd2f4ef3e&vscodeBrowserReqId=1765216962492 HTTP/1.1" 301 0
+[DEBUG] 2025-12-09 01:02:43,059 api.service_clients 6828 17144 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-12-09 01:02:45,124 api.service_clients 6828 17144 [quiz_evaluator] GET http://localhost:8005/health
+[DEBUG] 2025-12-09 01:02:50,345 api.service_clients 6828 17436 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-12-09 01:02:52,383 api.service_clients 6828 17436 [quiz_evaluator] GET http://localhost:8005/health
+[DEBUG] 2025-12-09 01:02:52,816 api.service_clients 6828 6508 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-12-09 01:02:52,821 api.service_clients 6828 6508 [quiz_evaluator] GET http://localhost:8005/health
+[ERROR] 2025-12-09 01:03:07,433 api.service_clients 6828 17144 [quiz_evaluator] Connection failed to quiz_evaluator: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001D8F21316D0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[DEBUG] 2025-12-09 01:03:07,433 api.service_clients 6828 17144 [ocr_service] GET http://localhost:8007/health
+[DEBUG] 2025-12-09 01:03:09,485 api.service_clients 6828 17144 [summary_service] GET http://localhost:8009/health
+[ERROR] 2025-12-09 01:03:14,634 api.service_clients 6828 17436 [quiz_evaluator] Connection failed to quiz_evaluator: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001D8F216B450>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[DEBUG] 2025-12-09 01:03:14,634 api.service_clients 6828 17436 [ocr_service] GET http://localhost:8007/health
+[ERROR] 2025-12-09 01:03:15,158 api.service_clients 6828 6508 [quiz_evaluator] Connection failed to quiz_evaluator: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001D8F2132090>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[DEBUG] 2025-12-09 01:03:15,159 api.service_clients 6828 6508 [ocr_service] GET http://localhost:8007/health
+[DEBUG] 2025-12-09 01:03:16,661 api.service_clients 6828 17436 [summary_service] GET http://localhost:8009/health
+[DEBUG] 2025-12-09 01:03:17,220 api.service_clients 6828 6508 [summary_service] GET http://localhost:8009/health
+[DEBUG] 2025-12-09 01:03:22,490 api.service_clients 6828 2656 [quiz_generator] GET http://localhost:8003/health
+[DEBUG] 2025-12-09 01:03:24,546 api.service_clients 6828 2656 [quiz_evaluator] GET http://localhost:8005/health
+[ERROR] 2025-12-09 01:03:31,840 api.service_clients 6828 17144 [summary_service] Connection failed to summary_service: HTTPConnectionPool(host='localhost', port=8009): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001D8F21B94D0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[DEBUG] 2025-12-09 01:03:31,840 api.service_clients 6828 17144 [rag_chatbot_service] GET http://localhost:8011/health
+[ERROR] 2025-12-09 01:03:38,956 api.service_clients 6828 17436 [summary_service] Connection failed to summary_service: HTTPConnectionPool(host='localhost', port=8009): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001D8F2186C10>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[DEBUG] 2025-12-09 01:03:38,956 api.service_clients 6828 17436 [rag_chatbot_service] GET http://localhost:8011/health
+[ERROR] 2025-12-09 01:03:39,458 api.service_clients 6828 6508 [summary_service] Connection failed to summary_service: HTTPConnectionPool(host='localhost', port=8009): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001D8F2186410>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[DEBUG] 2025-12-09 01:03:39,458 api.service_clients 6828 6508 [rag_chatbot_service] GET http://localhost:8011/health
+[ERROR] 2025-12-09 01:03:46,835 api.service_clients 6828 2656 [quiz_evaluator] Connection failed to quiz_evaluator: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001D8F2124910>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[DEBUG] 2025-12-09 01:03:46,835 api.service_clients 6828 2656 [ocr_service] GET http://localhost:8007/health
+[DEBUG] 2025-12-09 01:03:48,892 api.service_clients 6828 2656 [summary_service] GET http://localhost:8009/health
+[ERROR] 2025-12-09 01:03:54,104 api.service_clients 6828 17144 [rag_chatbot_service] Connection failed to rag_chatbot_service: HTTPConnectionPool(host='localhost', port=8011): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001D8F216AED0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[INFO] 2025-12-09 01:03:54,104 django.server 6828 17144 - Broken pipe from ('127.0.0.1', 60799)
+[ERROR] 2025-12-09 01:04:01,287 api.service_clients 6828 17436 [rag_chatbot_service] Connection failed to rag_chatbot_service: HTTPConnectionPool(host='localhost', port=8011): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001D8F2169E90>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[INFO] 2025-12-09 01:04:01,287 django.server 6828 17436 - Broken pipe from ('127.0.0.1', 60801)
+[ERROR] 2025-12-09 01:04:01,838 api.service_clients 6828 6508 [rag_chatbot_service] Connection failed to rag_chatbot_service: HTTPConnectionPool(host='localhost', port=8011): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001D8F2168950>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[INFO] 2025-12-09 01:04:01,838 django.server 6828 6508 "GET /api/health/?id=ab46e82f-18a8-41de-992f-7b1fd2f4ef3e&vscodeBrowserReqId=1765216972502 HTTP/1.1" 200 411
+[ERROR] 2025-12-09 01:04:11,190 api.service_clients 6828 2656 [summary_service] Connection failed to summary_service: HTTPConnectionPool(host='localhost', port=8009): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001D8F21675D0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[DEBUG] 2025-12-09 01:04:11,190 api.service_clients 6828 2656 [rag_chatbot_service] GET http://localhost:8011/health
+[ERROR] 2025-12-09 01:04:33,552 api.service_clients 6828 2656 [rag_chatbot_service] Connection failed to rag_chatbot_service: HTTPConnectionPool(host='localhost', port=8011): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001D8F217B250>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[INFO] 2025-12-09 01:04:33,555 django.server 6828 2656 "GET /api/health/ HTTP/1.1" 200 411
+[INFO] 2025-12-09 01:04:49,875 api.service_clients 6828 2656 [iam_service] Registering user: teststudent
+[DEBUG] 2025-12-09 01:04:49,875 api.service_clients 6828 2656 [iam_service] POST http://localhost:8005/api/users/
+[ERROR] 2025-12-09 01:05:12,163 api.service_clients 6828 2656 [iam_service] Connection failed to iam_service: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/users/ (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001D8F2165610>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[ERROR] 2025-12-09 01:05:12,164 api.views 6828 2656 Registration failed: Connection failed to iam_service
+[WARNING] 2025-12-09 01:05:12,164 django.request 6828 2656 Bad Request: /api/auth/register/
+[WARNING] 2025-12-09 01:05:12,164 django.server 6828 2656 "POST /api/auth/register/ HTTP/1.1" 400 60
+[INFO] 2025-12-09 01:06:50,200 api.service_clients 6828 9616 [iam_service] Registering user: teststudent
+[DEBUG] 2025-12-09 01:06:50,200 api.service_clients 6828 9616 [iam_service] POST http://localhost:8005/api/users/
+[ERROR] 2025-12-09 01:07:12,520 api.service_clients 6828 9616 [iam_service] Connection failed to iam_service: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/users/ (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001D8F22B4BD0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[ERROR] 2025-12-09 01:07:12,521 api.views 6828 9616 Registration failed: Connection failed to iam_service
+[WARNING] 2025-12-09 01:07:12,521 django.request 6828 9616 Bad Request: /api/auth/register/
+[WARNING] 2025-12-09 01:07:12,524 django.server 6828 9616 "POST /api/auth/register/ HTTP/1.1" 400 60
+[INFO] 2025-12-09 01:07:12,749 django.server 6828 9616 - Broken pipe from ('127.0.0.1', 58000)
+[INFO] 2025-12-09 01:08:23,860 django.utils.autoreload 20536 2884 Watching for file changes with StatReloader
+[INFO] 2025-12-09 01:09:26,962 api.service_clients 20536 1528 [iam_service] Registering user: teststudent
+[DEBUG] 2025-12-09 01:09:26,962 api.service_clients 20536 1528 [iam_service] POST http://localhost:8005/api/users/
+[ERROR] 2025-12-09 01:09:49,314 api.service_clients 20536 1528 [iam_service] Connection failed to iam_service: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/users/ (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000205C4B8E190>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[ERROR] 2025-12-09 01:09:49,314 api.views 20536 1528 Registration failed: Connection failed to iam_service
+[WARNING] 2025-12-09 01:09:49,314 django.request 20536 1528 Bad Request: /api/auth/register/
+[WARNING] 2025-12-09 01:09:49,314 django.server 20536 1528 "POST /api/auth/register/ HTTP/1.1" 400 60
+[INFO] 2025-12-09 01:10:00,654 api.service_clients 20536 1528 [iam_service] Registering user: teststudent
+[DEBUG] 2025-12-09 01:10:00,655 api.service_clients 20536 1528 [iam_service] POST http://localhost:8005/api/users/
+[ERROR] 2025-12-09 01:10:22,991 api.service_clients 20536 1528 [iam_service] Connection failed to iam_service: HTTPConnectionPool(host='localhost', port=8005): Max retries exceeded with url: /api/users/ (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000205C4D96690>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[ERROR] 2025-12-09 01:10:22,991 api.views 20536 1528 Registration failed: Connection failed to iam_service
+[WARNING] 2025-12-09 01:10:22,991 django.request 20536 1528 Bad Request: /api/auth/register/
+[WARNING] 2025-12-09 01:10:22,991 django.server 20536 1528 "POST /api/auth/register/ HTTP/1.1" 400 60
+[INFO] 2025-12-09 01:10:36,766 django.utils.autoreload 20536 2884 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-12-09 01:10:38,170 django.utils.autoreload 21536 19680 Watching for file changes with StatReloader
+[INFO] 2025-12-09 01:14:39,962 django.utils.autoreload 19756 3612 Watching for file changes with StatReloader
+[WARNING] 2025-12-09 01:21:30,187 django.request 19756 12372 Bad Request: /api/auth/login/
+[WARNING] 2025-12-09 01:21:30,188 django.server 19756 12372 "POST /api/auth/login/ HTTP/1.1" 400 62
+[WARNING] 2025-12-09 01:21:51,998 django.request 19756 3600 Bad Request: /api/auth/login/
+[WARNING] 2025-12-09 01:21:52,000 django.server 19756 3600 "POST /api/auth/login/ HTTP/1.1" 400 62
+[ERROR] 2025-12-09 01:22:18,894 api.views 19756 10484 Login failed: JSON parse error - Expecting value: line 1 column 1 (char 0)
+[WARNING] 2025-12-09 01:22:18,894 django.request 19756 10484 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-09 01:22:18,894 django.server 19756 10484 "POST /api/auth/login/ HTTP/1.1" 401 88
+[INFO] 2025-12-09 01:25:22,999 api.service_clients 19756 18160 [iam_service] Login attempt for user: admin
+[DEBUG] 2025-12-09 01:25:22,999 api.service_clients 19756 18160 [iam_service] POST http://localhost:8005/api/users/login/
+[ERROR] 2025-12-09 01:25:25,051 api.service_clients 19756 18160 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-09 01:25:25,051 api.service_clients 19756 18160 [iam_service] Login failed for user: admin
+[ERROR] 2025-12-09 01:25:25,051 api.views 19756 18160 Login failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-09 01:25:25,051 django.request 19756 18160 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-09 01:25:25,051 django.server 19756 18160 "POST /api/auth/login/ HTTP/1.1" 401 116
+[INFO] 2025-12-09 01:26:18,318 django.server 19756 18160 - Broken pipe from ('127.0.0.1', 64618)
+[INFO] 2025-12-09 16:15:45,435 django.utils.autoreload 2768 16148 Watching for file changes with StatReloader
+[INFO] 2025-12-09 16:56:43,031 api.service_clients 2768 10528 [iam_service] Registering user: student_655825028
+[DEBUG] 2025-12-09 16:56:43,031 api.service_clients 2768 10528 [iam_service] POST http://localhost:8005/api/users/
+[ERROR] 2025-12-09 16:56:45,609 api.service_clients 2768 10528 [iam_service] HTTP 500: 500 Server Error: Internal Server Error for url: http://localhost:8005/api/users/
+[ERROR] 2025-12-09 16:56:45,609 api.views 2768 10528 Registration failed: HTTP 500: 500 Server Error: Internal Server Error for url: http://localhost:8005/api/users/
+[WARNING] 2025-12-09 16:56:45,627 django.request 2768 10528 Bad Request: /api/auth/register/
+[WARNING] 2025-12-09 16:56:45,627 django.server 2768 10528 "POST /api/auth/register/ HTTP/1.1" 400 119
+[INFO] 2025-12-09 16:57:35,413 api.service_clients 2768 10528 [iam_service] Registering user: testuser123
+[DEBUG] 2025-12-09 16:57:35,414 api.service_clients 2768 10528 [iam_service] POST http://localhost:8005/api/users/
+[ERROR] 2025-12-09 16:57:35,539 api.service_clients 2768 10528 [iam_service] HTTP 500: 500 Server Error: Internal Server Error for url: http://localhost:8005/api/users/
+[ERROR] 2025-12-09 16:57:35,540 api.views 2768 10528 Registration failed: HTTP 500: 500 Server Error: Internal Server Error for url: http://localhost:8005/api/users/
+[WARNING] 2025-12-09 16:57:35,542 django.request 2768 10528 Bad Request: /api/auth/register/
+[WARNING] 2025-12-09 16:57:35,543 django.server 2768 10528 "POST /api/auth/register/ HTTP/1.1" 400 119
+[INFO] 2025-12-09 16:57:41,932 api.service_clients 2768 10528 [iam_service] Registering user: testuser
+[DEBUG] 2025-12-09 16:57:41,933 api.service_clients 2768 10528 [iam_service] POST http://localhost:8005/api/users/
+[ERROR] 2025-12-09 16:57:42,039 api.service_clients 2768 10528 [iam_service] HTTP 500: 500 Server Error: Internal Server Error for url: http://localhost:8005/api/users/
+[ERROR] 2025-12-09 16:57:42,039 api.views 2768 10528 Registration failed: HTTP 500: 500 Server Error: Internal Server Error for url: http://localhost:8005/api/users/
+[WARNING] 2025-12-09 16:57:42,041 django.request 2768 10528 Bad Request: /api/auth/register/
+[WARNING] 2025-12-09 16:57:42,042 django.server 2768 10528 "POST /api/auth/register/ HTTP/1.1" 400 119
+[INFO] 2025-12-09 17:11:33,241 api.service_clients 2768 10032 [iam_service] Registering user: testuser
+[DEBUG] 2025-12-09 17:11:33,241 api.service_clients 2768 10032 [iam_service] POST http://localhost:8005/api/users/
+[ERROR] 2025-12-09 17:11:33,334 api.service_clients 2768 10032 [iam_service] HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/
+[ERROR] 2025-12-09 17:11:33,337 api.views 2768 10032 Registration failed: HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/
+[WARNING] 2025-12-09 17:11:33,341 django.request 2768 10032 Bad Request: /api/auth/register/
+[WARNING] 2025-12-09 17:11:33,342 django.server 2768 10032 "POST /api/auth/register/ HTTP/1.1" 400 109
+[INFO] 2025-12-09 17:11:53,053 api.service_clients 2768 10032 [iam_service] Registering user: testuser2
+[DEBUG] 2025-12-09 17:11:53,054 api.service_clients 2768 10032 [iam_service] POST http://localhost:8005/api/users/
+[ERROR] 2025-12-09 17:11:53,062 api.service_clients 2768 10032 [iam_service] HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/
+[ERROR] 2025-12-09 17:11:53,062 api.views 2768 10032 Registration failed: HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/
+[WARNING] 2025-12-09 17:11:53,062 django.request 2768 10032 Bad Request: /api/auth/register/
+[WARNING] 2025-12-09 17:11:53,062 django.server 2768 10032 "POST /api/auth/register/ HTTP/1.1" 400 109
+[INFO] 2025-12-09 23:43:17,961 api.service_clients 2768 20032 [iam_service] Registering user: student_262019730
+[DEBUG] 2025-12-09 23:43:17,961 api.service_clients 2768 20032 [iam_service] POST http://localhost:8005/api/users/
+[ERROR] 2025-12-09 23:43:17,970 api.service_clients 2768 20032 [iam_service] HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/
+[ERROR] 2025-12-09 23:43:17,970 api.views 2768 20032 Registration failed: HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/
+[WARNING] 2025-12-09 23:43:17,970 django.request 2768 20032 Bad Request: /api/auth/register/
+[WARNING] 2025-12-09 23:43:17,970 django.server 2768 20032 "POST /api/auth/register/ HTTP/1.1" 400 109
+[INFO] 2025-12-09 23:43:29,782 api.service_clients 2768 20032 [iam_service] Login attempt for user: student_xyz
+[DEBUG] 2025-12-09 23:43:29,782 api.service_clients 2768 20032 [iam_service] POST http://localhost:8005/api/users/login/
+[ERROR] 2025-12-09 23:43:29,787 api.service_clients 2768 20032 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-09 23:43:29,788 api.service_clients 2768 20032 [iam_service] Login failed for user: student_xyz
+[ERROR] 2025-12-09 23:43:29,788 api.views 2768 20032 Login failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-09 23:43:29,789 django.request 2768 20032 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-09 23:43:29,790 django.server 2768 20032 "POST /api/auth/login/ HTTP/1.1" 401 116
+[INFO] 2025-12-09 23:44:07,729 api.service_clients 2768 20032 [iam_service] Registering user: student_1205901946
+[DEBUG] 2025-12-09 23:44:07,730 api.service_clients 2768 20032 [iam_service] POST http://localhost:8005/api/users/
+[ERROR] 2025-12-09 23:44:07,746 api.service_clients 2768 20032 [iam_service] HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/
+[ERROR] 2025-12-09 23:44:07,747 api.views 2768 20032 Registration failed: HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/
+[WARNING] 2025-12-09 23:44:07,749 django.request 2768 20032 Bad Request: /api/auth/register/
+[WARNING] 2025-12-09 23:44:07,750 django.server 2768 20032 "POST /api/auth/register/ HTTP/1.1" 400 109
+[INFO] 2025-12-09 23:44:20,391 django.server 2768 20032 - Broken pipe from ('127.0.0.1', 50325)
+[INFO] 2025-12-09 23:45:26,697 django.server 2768 8276 "OPTIONS /api/auth/register/ HTTP/1.1" 200 0
+[INFO] 2025-12-09 23:45:26,697 api.service_clients 2768 8276 [iam_service] Registering user: student_$(Get-Random)
+[DEBUG] 2025-12-09 23:45:26,697 api.service_clients 2768 8276 [iam_service] POST http://localhost:8005/api/users/
+[ERROR] 2025-12-09 23:45:26,713 api.service_clients 2768 8276 [iam_service] HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/
+[ERROR] 2025-12-09 23:45:26,713 api.views 2768 8276 Registration failed: HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/
+[WARNING] 2025-12-09 23:45:26,713 django.request 2768 8276 Bad Request: /api/auth/register/
+[WARNING] 2025-12-09 23:45:26,713 django.server 2768 8276 "POST /api/auth/register/ HTTP/1.1" 400 109
+[INFO] 2025-12-09 23:46:29,927 api.service_clients 2768 8276 [iam_service] Registering user: student
+[DEBUG] 2025-12-09 23:46:29,927 api.service_clients 2768 8276 [iam_service] POST http://localhost:8005/api/users/
+[ERROR] 2025-12-09 23:46:29,939 api.service_clients 2768 8276 [iam_service] HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/
+[ERROR] 2025-12-09 23:46:29,940 api.views 2768 8276 Registration failed: HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/
+[WARNING] 2025-12-09 23:46:29,942 django.request 2768 8276 Bad Request: /api/auth/register/
+[WARNING] 2025-12-09 23:46:29,943 django.server 2768 8276 "POST /api/auth/register/ HTTP/1.1" 400 109
+[INFO] 2025-12-09 23:49:12,944 django.utils.autoreload 2768 16148 E:\QuickQuiz\services\gateway_service\api\service_clients.py changed, reloading.
+[INFO] 2025-12-09 23:49:14,491 django.utils.autoreload 872 9928 Watching for file changes with StatReloader
+[INFO] 2025-12-09 23:49:40,292 django.utils.autoreload 872 9928 E:\QuickQuiz\services\gateway_service\api\service_clients.py changed, reloading.
+[INFO] 2025-12-09 23:49:41,599 django.utils.autoreload 21844 21840 Watching for file changes with StatReloader
+[INFO] 2025-12-09 23:50:18,752 api.service_clients 21844 22452 [iam_service] Registering user: student
+[DEBUG] 2025-12-09 23:50:18,754 api.service_clients 21844 22452 [iam_service] POST http://localhost:8005/api/users/
+[ERROR] 2025-12-09 23:50:22,351 api.service_clients 21844 22452 [iam_service] HTTP 500: 500 Server Error: Internal Server Error for url: http://localhost:8005/api/users/
+[ERROR] 2025-12-09 23:50:22,351 api.views 21844 22452 Registration failed: HTTP 500: 500 Server Error: Internal Server Error for url: http://localhost:8005/api/users/
+[WARNING] 2025-12-09 23:50:22,357 django.request 21844 22452 Bad Request: /api/auth/register/
+[WARNING] 2025-12-09 23:50:22,357 django.server 21844 22452 "POST /api/auth/register/ HTTP/1.1" 400 119
+[INFO] 2025-12-09 23:53:04,219 api.service_clients 21844 22452 [iam_service] Registering user: student
+[DEBUG] 2025-12-09 23:53:04,219 api.service_clients 21844 22452 [iam_service] POST http://localhost:8005/api/users/
+[ERROR] 2025-12-09 23:53:06,342 api.service_clients 21844 22452 [iam_service] HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/
+[ERROR] 2025-12-09 23:53:06,342 api.views 21844 22452 Registration failed: HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/
+[WARNING] 2025-12-09 23:53:06,356 django.request 21844 22452 Bad Request: /api/auth/register/
+[WARNING] 2025-12-09 23:53:06,356 django.server 21844 22452 "POST /api/auth/register/ HTTP/1.1" 400 109
+[INFO] 2025-12-09 23:54:13,966 django.utils.autoreload 21520 4652 Watching for file changes with StatReloader
+[INFO] 2025-12-09 23:55:17,179 django.server 21520 2384 "OPTIONS /api/auth/login/ HTTP/1.1" 200 0
+[INFO] 2025-12-09 23:55:17,185 api.service_clients 21520 2384 [iam_service] Login attempt for user: admin
+[DEBUG] 2025-12-09 23:55:17,185 api.service_clients 21520 2384 [iam_service] POST http://localhost:8005/api/users/login/
+[ERROR] 2025-12-09 23:55:19,229 api.service_clients 21520 2384 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-09 23:55:19,229 api.service_clients 21520 2384 [iam_service] Login failed for user: admin
+[ERROR] 2025-12-09 23:55:19,230 api.views 21520 2384 Login failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-09 23:55:19,233 django.request 21520 2384 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-09 23:55:19,234 django.server 21520 2384 "POST /api/auth/login/ HTTP/1.1" 401 116
+[INFO] 2025-12-09 23:56:22,442 api.service_clients 21520 2384 [iam_service] Registering user: student
+[DEBUG] 2025-12-09 23:56:22,442 api.service_clients 21520 2384 [iam_service] POST http://localhost:8005/api/users/
+[ERROR] 2025-12-09 23:56:22,524 api.service_clients 21520 2384 [iam_service] HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/
+[ERROR] 2025-12-09 23:56:22,525 api.views 21520 2384 Registration failed: HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/
+[WARNING] 2025-12-09 23:56:22,526 django.request 21520 2384 Bad Request: /api/auth/register/
+[WARNING] 2025-12-09 23:56:22,526 django.server 21520 2384 "POST /api/auth/register/ HTTP/1.1" 400 109
+[INFO] 2025-12-10 00:02:03,569 api.service_clients 21520 8936 [iam_service] Login attempt for user: Admin
+[DEBUG] 2025-12-10 00:02:03,570 api.service_clients 21520 8936 [iam_service] POST http://localhost:8005/api/users/login/
+[ERROR] 2025-12-10 00:02:03,576 api.service_clients 21520 8936 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:02:03,576 api.service_clients 21520 8936 [iam_service] Login failed for user: Admin
+[ERROR] 2025-12-10 00:02:03,577 api.views 21520 8936 Login failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:02:03,579 django.request 21520 8936 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-10 00:02:03,580 django.server 21520 8936 "POST /api/auth/login/ HTTP/1.1" 401 116
+[INFO] 2025-12-10 00:12:05,538 api.service_clients 21520 4092 [iam_service] Login attempt for user: Admin
+[DEBUG] 2025-12-10 00:12:05,539 api.service_clients 21520 4092 [iam_service] POST http://localhost:8005/api/users/login/
+[ERROR] 2025-12-10 00:12:07,581 api.service_clients 21520 4092 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:12:07,584 api.service_clients 21520 4092 [iam_service] Login failed for user: Admin
+[ERROR] 2025-12-10 00:12:07,586 api.views 21520 4092 Login failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:12:07,587 django.request 21520 4092 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-10 00:12:07,589 django.server 21520 4092 "POST /api/auth/login/ HTTP/1.1" 401 116
+[INFO] 2025-12-10 00:13:13,969 api.service_clients 21520 4092 [iam_service] Login attempt for user: Admin
+[DEBUG] 2025-12-10 00:13:13,970 api.service_clients 21520 4092 [iam_service] POST http://localhost:8005/api/users/login/
+[ERROR] 2025-12-10 00:13:16,048 api.service_clients 21520 4092 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:13:16,049 api.service_clients 21520 4092 [iam_service] Login failed for user: Admin
+[ERROR] 2025-12-10 00:13:16,052 api.views 21520 4092 Login failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:13:16,053 django.request 21520 4092 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-10 00:13:16,055 django.server 21520 4092 "POST /api/auth/login/ HTTP/1.1" 401 116
+[INFO] 2025-12-10 00:15:50,240 django.utils.autoreload 21520 4652 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-12-10 00:15:51,619 django.utils.autoreload 6624 7972 Watching for file changes with StatReloader
+[INFO] 2025-12-10 00:18:17,833 django.utils.autoreload 6624 7972 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-12-10 00:18:19,049 django.utils.autoreload 19996 22152 Watching for file changes with StatReloader
+[INFO] 2025-12-10 00:18:40,222 api.views 19996 17524 Login attempt for username: Admin
+[INFO] 2025-12-10 00:18:40,223 api.views 19996 17524 Calling IAM service to login user: Admin
+[INFO] 2025-12-10 00:18:40,225 api.service_clients 19996 17524 [iam_service] Login attempt for user: Admin
+[DEBUG] 2025-12-10 00:18:40,225 api.service_clients 19996 17524 [iam_service] POST http://localhost:8005/api/users/login/
+[ERROR] 2025-12-10 00:18:42,300 api.service_clients 19996 17524 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:18:42,301 api.service_clients 19996 17524 [iam_service] Login failed for user: Admin
+[ERROR] 2025-12-10 00:18:42,303 api.views 19996 17524 Login failed for Admin: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:18:42,308 django.request 19996 17524 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-10 00:18:42,309 django.server 19996 17524 "POST /api/auth/login/ HTTP/1.1" 401 116
+[INFO] 2025-12-10 00:19:59,688 django.utils.autoreload 6088 13944 Watching for file changes with StatReloader
+[INFO] 2025-12-10 00:20:44,546 api.views 6088 3556 Login attempt for username: Admin
+[INFO] 2025-12-10 00:20:44,546 api.views 6088 3556 Calling IAM service to login user: Admin
+[INFO] 2025-12-10 00:20:44,547 api.service_clients 6088 3556 [iam_service] Login attempt for user: Admin
+[DEBUG] 2025-12-10 00:20:44,547 api.service_clients 6088 3556 [iam_service] POST http://localhost:8005/api/users/login/
+[ERROR] 2025-12-10 00:20:46,612 api.service_clients 6088 3556 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:20:46,613 api.service_clients 6088 3556 [iam_service] Login failed for user: Admin
+[ERROR] 2025-12-10 00:20:46,614 api.views 6088 3556 Login failed for Admin: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:20:46,617 django.request 6088 3556 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-10 00:20:46,618 django.server 6088 3556 "POST /api/auth/login/ HTTP/1.1" 401 116
+[INFO] 2025-12-10 00:25:47,986 api.views 6088 22376 Login attempt for username: Admin
+[INFO] 2025-12-10 00:25:47,986 api.views 6088 22376 Calling IAM service to login user: Admin
+[INFO] 2025-12-10 00:25:47,987 api.service_clients 6088 22376 [iam_service] Login attempt for user: Admin
+[DEBUG] 2025-12-10 00:25:47,988 api.service_clients 6088 22376 [iam_service] POST http://localhost:8005/api/users/login/
+[ERROR] 2025-12-10 00:25:50,032 api.service_clients 6088 22376 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:25:50,032 api.service_clients 6088 22376 [iam_service] Login failed for user: Admin
+[ERROR] 2025-12-10 00:25:50,033 api.views 6088 22376 Login failed for Admin: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:25:50,035 django.request 6088 22376 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-10 00:25:50,036 django.server 6088 22376 "POST /api/auth/login/ HTTP/1.1" 401 116
+[INFO] 2025-12-10 00:27:46,555 api.views 6088 22376 Login attempt for username: Admin
+[INFO] 2025-12-10 00:27:46,556 api.views 6088 22376 Calling IAM service to login user: Admin
+[INFO] 2025-12-10 00:27:46,558 api.service_clients 6088 22376 [iam_service] Login attempt for user: Admin
+[DEBUG] 2025-12-10 00:27:46,558 api.service_clients 6088 22376 [iam_service] POST http://localhost:8005/api/users/login/
+[ERROR] 2025-12-10 00:27:48,630 api.service_clients 6088 22376 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:27:48,631 api.service_clients 6088 22376 [iam_service] Login failed for user: Admin
+[ERROR] 2025-12-10 00:27:48,632 api.views 6088 22376 Login failed for Admin: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:27:48,633 django.request 6088 22376 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-10 00:27:48,636 django.server 6088 22376 "POST /api/auth/login/ HTTP/1.1" 401 116
+[INFO] 2025-12-10 00:28:35,605 api.views 6088 22376 Login attempt for username: Admin
+[INFO] 2025-12-10 00:28:35,606 api.views 6088 22376 Calling IAM service to login user: Admin
+[INFO] 2025-12-10 00:28:35,611 api.service_clients 6088 22376 [iam_service] Login attempt for user: Admin
+[DEBUG] 2025-12-10 00:28:35,612 api.service_clients 6088 22376 [iam_service] POST http://localhost:8005/api/users/login/
+[ERROR] 2025-12-10 00:28:37,652 api.service_clients 6088 22376 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:28:37,654 api.service_clients 6088 22376 [iam_service] Login failed for user: Admin
+[ERROR] 2025-12-10 00:28:37,656 api.views 6088 22376 Login failed for Admin: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:28:37,657 django.request 6088 22376 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-10 00:28:37,659 django.server 6088 22376 "POST /api/auth/login/ HTTP/1.1" 401 116
+[INFO] 2025-12-10 00:33:33,295 api.views 6088 22376 Login attempt for username: Admin
+[INFO] 2025-12-10 00:33:33,296 api.views 6088 22376 Calling IAM service to login user: Admin
+[INFO] 2025-12-10 00:33:33,298 api.service_clients 6088 22376 [iam_service] Login attempt for user: Admin
+[DEBUG] 2025-12-10 00:33:33,298 api.service_clients 6088 22376 [iam_service] POST http://localhost:8005/api/users/login/
+[ERROR] 2025-12-10 00:33:35,347 api.service_clients 6088 22376 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:33:35,348 api.service_clients 6088 22376 [iam_service] Login failed for user: Admin
+[ERROR] 2025-12-10 00:33:35,349 api.views 6088 22376 Login failed for Admin: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:33:35,350 django.request 6088 22376 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-10 00:33:35,351 django.server 6088 22376 "POST /api/auth/login/ HTTP/1.1" 401 116
+[INFO] 2025-12-10 00:34:29,605 api.views 6088 22376 Login attempt for username: Admin
+[INFO] 2025-12-10 00:34:29,605 api.views 6088 22376 Calling IAM service to login user: Admin
+[INFO] 2025-12-10 00:34:29,609 api.service_clients 6088 22376 [iam_service] Login attempt for user: Admin
+[DEBUG] 2025-12-10 00:34:29,609 api.service_clients 6088 22376 [iam_service] POST http://localhost:8005/api/users/login/
+[ERROR] 2025-12-10 00:34:31,701 api.service_clients 6088 22376 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:34:31,702 api.service_clients 6088 22376 [iam_service] Login failed for user: Admin
+[ERROR] 2025-12-10 00:34:31,703 api.views 6088 22376 Login failed for Admin: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:34:31,705 django.request 6088 22376 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-10 00:34:31,706 django.server 6088 22376 "POST /api/auth/login/ HTTP/1.1" 401 116
+[INFO] 2025-12-10 00:36:42,354 api.views 6088 22376 Login attempt for username: Admin
+[INFO] 2025-12-10 00:36:42,355 api.views 6088 22376 Calling IAM service to login user: Admin
+[INFO] 2025-12-10 00:36:42,357 api.service_clients 6088 22376 [iam_service] Login attempt for user: Admin
+[DEBUG] 2025-12-10 00:36:42,358 api.service_clients 6088 22376 [iam_service] POST http://localhost:8005/api/users/login/
+[INFO] 2025-12-10 00:36:46,780 api.service_clients 6088 22376 [iam_service] Login successful for user: Admin
+[INFO] 2025-12-10 00:36:46,781 api.views 6088 22376 User logged in successfully: Admin
+[INFO] 2025-12-10 00:36:46,784 django.server 6088 22376 "POST /api/auth/login/ HTTP/1.1" 200 1062
+[INFO] 2025-12-10 00:38:45,683 django.server 6088 22376 "OPTIONS /api/auth/logout/ HTTP/1.1" 200 0
+[INFO] 2025-12-10 00:38:45,688 api.service_clients 6088 22376 [iam_service] Logging out user
+[DEBUG] 2025-12-10 00:38:45,688 api.service_clients 6088 22376 [iam_service] POST http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-10 00:38:45,697 api.service_clients 6088 22376 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-10 00:38:45,698 api.views 6088 22376 Logout failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[WARNING] 2025-12-10 00:38:45,699 django.request 6088 22376 Bad Request: /api/auth/logout/
+[WARNING] 2025-12-10 00:38:45,700 django.server 6088 22376 "POST /api/auth/logout/ HTTP/1.1" 400 117
+[INFO] 2025-12-10 00:39:51,936 api.views 6088 22376 Registration request for username: Student01
+[INFO] 2025-12-10 00:39:51,936 api.views 6088 22376 Calling IAM service to register user: Student01
+[INFO] 2025-12-10 00:39:51,938 api.service_clients 6088 22376 [iam_service] Registering user: Student01
+[DEBUG] 2025-12-10 00:39:51,939 api.service_clients 6088 22376 [iam_service] POST http://localhost:8005/api/users/
+[INFO] 2025-12-10 00:39:53,195 api.views 6088 22376 User registered successfully: Student01
+[INFO] 2025-12-10 00:39:53,197 django.server 6088 22376 "POST /api/auth/register/ HTTP/1.1" 201 1341
+[INFO] 2025-12-10 00:39:53,203 api.views 6088 22376 Login attempt for username: Student01
+[INFO] 2025-12-10 00:39:53,203 api.views 6088 22376 Calling IAM service to login user: Student01
+[INFO] 2025-12-10 00:39:53,204 api.service_clients 6088 22376 [iam_service] Login attempt for user: Student01
+[DEBUG] 2025-12-10 00:39:53,206 api.service_clients 6088 22376 [iam_service] POST http://localhost:8005/api/users/login/
+[INFO] 2025-12-10 00:39:55,576 api.service_clients 6088 22376 [iam_service] Login successful for user: Student01
+[INFO] 2025-12-10 00:39:55,576 api.views 6088 22376 User logged in successfully: Student01
+[INFO] 2025-12-10 00:39:55,579 django.server 6088 22376 "POST /api/auth/login/ HTTP/1.1" 200 1359
+[INFO] 2025-12-10 00:42:14,476 api.service_clients 6088 22376 [iam_service] Logging out user
+[DEBUG] 2025-12-10 00:42:14,476 api.service_clients 6088 22376 [iam_service] POST http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-10 00:42:16,555 api.service_clients 6088 22376 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-10 00:42:16,556 api.views 6088 22376 Logout failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[WARNING] 2025-12-10 00:42:16,558 django.request 6088 22376 Bad Request: /api/auth/logout/
+[WARNING] 2025-12-10 00:42:16,560 django.server 6088 22376 "POST /api/auth/logout/ HTTP/1.1" 400 117
+[INFO] 2025-12-10 00:42:54,813 api.views 6088 22376 Login attempt for username: admin
+[INFO] 2025-12-10 00:42:54,814 api.views 6088 22376 Calling IAM service to login user: admin
+[INFO] 2025-12-10 00:42:54,817 api.service_clients 6088 22376 [iam_service] Login attempt for user: admin
+[DEBUG] 2025-12-10 00:42:54,818 api.service_clients 6088 22376 [iam_service] POST http://localhost:8005/api/users/login/
+[ERROR] 2025-12-10 00:42:55,971 api.service_clients 6088 22376 [iam_service] HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:42:55,972 api.service_clients 6088 22376 [iam_service] Login failed for user: admin
+[ERROR] 2025-12-10 00:42:55,973 api.views 6088 22376 Login failed for admin: HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:42:55,974 django.request 6088 22376 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-10 00:42:55,975 django.server 6088 22376 "POST /api/auth/login/ HTTP/1.1" 401 115
+[INFO] 2025-12-10 00:43:12,974 api.views 6088 22376 Login attempt for username: admin
+[INFO] 2025-12-10 00:43:12,975 api.views 6088 22376 Calling IAM service to login user: admin
+[INFO] 2025-12-10 00:43:12,978 api.service_clients 6088 22376 [iam_service] Login attempt for user: admin
+[DEBUG] 2025-12-10 00:43:12,980 api.service_clients 6088 22376 [iam_service] POST http://localhost:8005/api/users/login/
+[ERROR] 2025-12-10 00:43:14,134 api.service_clients 6088 22376 [iam_service] HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:43:14,135 api.service_clients 6088 22376 [iam_service] Login failed for user: admin
+[ERROR] 2025-12-10 00:43:14,136 api.views 6088 22376 Login failed for admin: HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:43:14,137 django.request 6088 22376 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-10 00:43:14,138 django.server 6088 22376 "POST /api/auth/login/ HTTP/1.1" 401 115
+[INFO] 2025-12-10 00:43:35,917 api.views 6088 22376 Login attempt for username: Admin@123
+[INFO] 2025-12-10 00:43:35,918 api.views 6088 22376 Calling IAM service to login user: Admin@123
+[INFO] 2025-12-10 00:43:35,921 api.service_clients 6088 22376 [iam_service] Login attempt for user: Admin@123
+[DEBUG] 2025-12-10 00:43:35,921 api.service_clients 6088 22376 [iam_service] POST http://localhost:8005/api/users/login/
+[ERROR] 2025-12-10 00:43:37,077 api.service_clients 6088 22376 [iam_service] HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:43:37,078 api.service_clients 6088 22376 [iam_service] Login failed for user: Admin@123
+[ERROR] 2025-12-10 00:43:37,080 api.views 6088 22376 Login failed for Admin@123: HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-10 00:43:37,081 django.request 6088 22376 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-10 00:43:37,082 django.server 6088 22376 "POST /api/auth/login/ HTTP/1.1" 401 115
+[INFO] 2025-12-10 00:44:15,224 api.views 6088 22376 Login attempt for username: Admin
+[INFO] 2025-12-10 00:44:15,225 api.views 6088 22376 Calling IAM service to login user: Admin
+[INFO] 2025-12-10 00:44:15,226 api.service_clients 6088 22376 [iam_service] Login attempt for user: Admin
+[DEBUG] 2025-12-10 00:44:15,227 api.service_clients 6088 22376 [iam_service] POST http://localhost:8005/api/users/login/
+[INFO] 2025-12-10 00:44:19,638 api.service_clients 6088 22376 [iam_service] Login successful for user: Admin
+[INFO] 2025-12-10 00:44:19,639 api.views 6088 22376 User logged in successfully: Admin
+[INFO] 2025-12-10 00:44:19,641 django.server 6088 22376 "POST /api/auth/login/ HTTP/1.1" 200 1062
