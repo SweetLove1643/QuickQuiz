@@ -577,3 +577,4 @@
 [WARNING] 2025-12-06 18:00:06,092 api.service_clients 5940 3792 [quiz_evaluator] Slow request: 9.38s
 [INFO] 2025-12-06 18:00:06,092 api.service_clients 5940 3792 [quiz_evaluator] Quiz quiz-1765018796700 evaluated: 60.0% (3/5)
 [INFO] 2025-12-06 18:00:06,092 django.server 5940 3792 "POST /api/quiz/evaluate/ HTTP/1.1" 200 3519
+[INFO] 2025-12-06 20:11:37,730 django.utils.autoreload 18388 11440 Watching for file changes with StatReloader
