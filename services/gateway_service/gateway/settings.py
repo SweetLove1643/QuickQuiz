@@ -174,42 +174,42 @@ CORS_ALLOW_ALL_ORIGINS = DEBUG  # Only for development
 MICROSERVICES = {
     "quiz_generator": {
         "host": os.getenv("QUIZ_GENERATOR_HOST", "localhost"),
-        "port": os.getenv("QUIZ_GENERATOR_PORT", "8003"),
+        "port": os.getenv("QUIZ_GENERATOR_PORT", "8002"),
         "health_endpoint": "/health",
         "timeout": 30,
         "retry_count": 3,
     },
     "quiz_evaluator": {
         "host": os.getenv("QUIZ_EVALUATOR_HOST", "localhost"),
-        "port": os.getenv("QUIZ_EVALUATOR_PORT", "8004"),
+        "port": os.getenv("QUIZ_EVALUATOR_PORT", "8003"),
         "health_endpoint": "/health",
         "timeout": 60,
         "retry_count": 3,
     },
     "ocr_service": {
         "host": os.getenv("OCR_SERVICE_HOST", "localhost"),
-        "port": os.getenv("OCR_SERVICE_PORT", "8007"),
+        "port": os.getenv("OCR_SERVICE_PORT", "8004"),
         "health_endpoint": "/health",
         "timeout": 60,  # OCR might take longer
         "retry_count": 3,
     },
     "summary_service": {
         "host": os.getenv("SUMMARY_SERVICE_HOST", "localhost"),
-        "port": os.getenv("SUMMARY_SERVICE_PORT", "8008"),
+        "port": os.getenv("SUMMARY_SERVICE_PORT", "8005"),
         "health_endpoint": "/health",
         "timeout": 60,  # Summarization might take longer
         "retry_count": 3,
     },
     "rag_chatbot_service": {
         "host": os.getenv("RAG_CHATBOT_HOST", "localhost"),
-        "port": os.getenv("RAG_CHATBOT_PORT", "8011"),
+        "port": os.getenv("RAG_CHATBOT_PORT", "8006"),
         "health_endpoint": "/health",
         "timeout": 45,  # RAG processing might take time
         "retry_count": 3,
     },
     "iam_service": {
         "host": os.getenv("IAM_SERVICE_HOST", "localhost"),
-        "port": os.getenv("IAM_SERVICE_PORT", "8005"),
+        "port": os.getenv("IAM_SERVICE_PORT", "8001"),
         "health_endpoint": "/health",
         "timeout": 30,
         "retry_count": 3,
@@ -217,7 +217,7 @@ MICROSERVICES = {
     # Legacy service for backward compatibility
     "extract_information": {
         "host": os.getenv("EXTRACT_INFORMATION_HOST", "localhost"),
-        "port": os.getenv("EXTRACT_INFORMATION_PORT", "8007"),
+        "port": os.getenv("EXTRACT_INFORMATION_PORT", "8004"),
         "health_endpoint": "/health",
         "timeout": 30,
         "retry_count": 3,

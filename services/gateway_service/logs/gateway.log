@@ -1811,3 +1811,8 @@
 [ERROR] 2025-12-11 17:38:26,184 api.views 12856 19632 Login failed for Student01: HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/api/users/login/
 [WARNING] 2025-12-11 17:38:26,184 django.request 12856 19632 Unauthorized: /api/auth/login/
 [WARNING] 2025-12-11 17:38:26,184 django.server 12856 19632 "POST /api/auth/login/ HTTP/1.1" 401 113
+[INFO] 2025-12-11 17:43:39,775 django.utils.autoreload 14480 17476 Watching for file changes with StatReloader
+[INFO] 2025-12-11 17:48:36,481 django.utils.autoreload 14480 17476 E:\QuickQuiz\services\gateway_service\gateway\settings.py changed, reloading.
+[INFO] 2025-12-11 17:48:37,854 django.utils.autoreload 21324 20720 Watching for file changes with StatReloader
+[INFO] 2025-12-11 17:53:09,980 django.utils.autoreload 21324 20720 E:\QuickQuiz\services\gateway_service\gateway\settings.py changed, reloading.
+[INFO] 2025-12-11 17:53:11,361 django.utils.autoreload 16560 7472 Watching for file changes with StatReloader
