@@ -82,19 +82,19 @@ REM STEP 2: Start Microservices (Can run in parallel)
 REM ====================================================================
 echo [2/4] Starting Microservices...
 echo       - Quiz Generator (Port %QUIZ_GENERATOR_PORT%)
-start "Quiz Generator - Port %QUIZ_GENERATOR_PORT%" /%WINDOW_STYLE% cmd /c "cd services\quiz_generator_service && python api.py"
+start "Quiz Generator - Port %QUIZ_GENERATOR_PORT%" /%WINDOW_STYLE% cmd /c "cd services\quiz_generator_service && set PORT=%QUIZ_GENERATOR_PORT% && python api.py"
 
 echo       - Quiz Evaluator (Port %QUIZ_EVALUATOR_PORT%)
-start "Quiz Evaluator - Port %QUIZ_EVALUATOR_PORT%" /%WINDOW_STYLE% cmd /c "cd services\quiz_evaluator_service && python api.py"
+start "Quiz Evaluator - Port %QUIZ_EVALUATOR_PORT%" /%WINDOW_STYLE% cmd /c "cd services\quiz_evaluator_service && set PORT=%QUIZ_EVALUATOR_PORT% && python api.py"
 
 echo       - OCR Service (Port %OCR_PORT%)
-start "OCR Service - Port %OCR_PORT%" /%WINDOW_STYLE% cmd /c "cd services\ocr_service && python api.py"
+start "OCR Service - Port %OCR_PORT%" /%WINDOW_STYLE% cmd /c "cd services\ocr_service && python -m uvicorn api:app --host %SERVICE_HOST% --port %OCR_PORT%"
 
 echo       - Summary Service (Port %SUMMARY_PORT%)
-start "Summary Service - Port %SUMMARY_PORT%" /%WINDOW_STYLE% cmd /c "cd services\summary_service && python api.py"
+start "Summary Service - Port %SUMMARY_PORT%" /%WINDOW_STYLE% cmd /c "cd services\summary_service && python -m uvicorn api:app --host %SERVICE_HOST% --port %SUMMARY_PORT%"
 
 echo       - RAG Chatbot (Port %RAG_CHATBOT_PORT%)
-start "RAG Chatbot - Port %RAG_CHATBOT_PORT%" /%WINDOW_STYLE% cmd /c "cd services\rag_chatbot_service && python api.py"
+start "RAG Chatbot - Port %RAG_CHATBOT_PORT%" /%WINDOW_STYLE% cmd /c "cd services\rag_chatbot_service && python api.py --port %RAG_CHATBOT_PORT%"
 
 echo       Waiting %SERVICES_INIT_DELAY% seconds for microservices to initialize...
 timeout /t %SERVICES_INIT_DELAY% /nobreak >nul
