@@ -14,13 +14,13 @@ REM CONFIGURATION SECTION - Customize here
 REM ====================================================================
 
 REM Port Configuration (sorted by startup order)
-set IAM_PORT=8005
-set QUIZ_GENERATOR_PORT=8003
-set QUIZ_EVALUATOR_PORT=8004
-set OCR_PORT=8007
-set SUMMARY_PORT=8008
-set RAG_CHATBOT_PORT=8002
-set GATEWAY_PORT=8001
+set IAM_PORT=8001
+set QUIZ_GENERATOR_PORT=8002
+set QUIZ_EVALUATOR_PORT=8003
+set OCR_PORT=8004
+set SUMMARY_PORT=8005
+set RAG_CHATBOT_PORT=8006
+set GATEWAY_PORT=8007
 set FRONTEND_PORT=3000
 
 REM Service Host Configuration
