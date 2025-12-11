@@ -22,7 +22,7 @@ export interface AuthContextType {
   accessToken: string | null;
   refreshToken: string | null;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<User>;
   register: (
     username: string,
     email: string,
@@ -79,23 +79,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       // Extract tokens and user info from response
-      const tokens = data.data;
+      // Structure: data.data = { user: {...}, access: "...", refresh: "..." }
+      const responseData = data.data;
       const userInfo: User = {
-        id: String(tokens.user_id),
-        username: tokens.username,
-        email: tokens.email,
-        is_staff: tokens.is_staff || false,
-        is_active: tokens.is_active || true,
+        id: String(responseData.user.user_id),
+        username: responseData.user.username,
+        email: responseData.user.email,
+        is_staff: responseData.user.is_staff || false,
+        is_active: responseData.user.is_active || true,
       };
 
       // Save to state and localStorage
-      setAccessToken(tokens.access);
-      setRefreshToken(tokens.refresh);
+      setAccessToken(responseData.access);
+      setRefreshToken(responseData.refresh);
       setUser(userInfo);
 
-      localStorage.setItem("accessToken", tokens.access);
-      localStorage.setItem("refreshToken", tokens.refresh);
+      localStorage.setItem("accessToken", responseData.access);
+      localStorage.setItem("refreshToken", responseData.refresh);
       localStorage.setItem("user", JSON.stringify(userInfo));
+
+      // Return user info for immediate use
+      return userInfo;
     } catch (error: any) {
       throw new Error(error.message || "Login failed. Please try again.");
     } finally {

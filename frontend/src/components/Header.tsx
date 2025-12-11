@@ -1,7 +1,11 @@
-import { Search, Plus, Bell, User } from "lucide-react";
+import { Search, Plus, Bell } from "lucide-react";
 import { Button } from "./ui/button";
+import { useAuth } from "../contexts/AuthContext";
 
 export function Header() {
+  const { user } = useAuth();
+  console.log("Header - user:", user);
+
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
@@ -14,16 +18,25 @@ export function Header() {
               </div>
               <span className="text-slate-900">Quizlet</span>
             </div>
-            
+
             {/* Navigation */}
             <nav className="hidden md:flex items-center gap-6">
-              <a href="#" className="text-slate-700 hover:text-slate-900 transition-colors">
+              <a
+                href="#"
+                className="text-slate-700 hover:text-slate-900 transition-colors"
+              >
                 Trang chủ
               </a>
-              <a href="#" className="text-blue-600 hover:text-blue-700 transition-colors">
+              <a
+                href="#"
+                className="text-blue-600 hover:text-blue-700 transition-colors"
+              >
                 Gần đây
               </a>
-              <a href="#" className="text-slate-700 hover:text-slate-900 transition-colors">
+              <a
+                href="#"
+                className="text-slate-700 hover:text-slate-900 transition-colors"
+              >
                 Thư viện
               </a>
             </nav>
@@ -49,9 +62,9 @@ export function Header() {
             <Button variant="ghost" size="icon" className="hidden md:flex">
               <Bell className="size-5" />
             </Button>
-            <Button variant="ghost" size="icon">
-              <User className="size-5" />
-            </Button>
+            <div className="text-slate-700 font-medium">
+              Xin chào {user?.username || "Khách"}
+            </div>
           </div>
         </div>
       </div>

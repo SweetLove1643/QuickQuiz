@@ -7,7 +7,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { AdminUsers } from "./pages/admin/Users";
 
 export default function App() {
-  const { isLoading } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
 
   if (isLoading) {
     return (
@@ -22,13 +22,35 @@ export default function App() {
 
   return (
     <Routes>
-      {/* Auth Routes */}
-      <Route path="/auth/login" element={<Login />} />
-      <Route path="/auth/register" element={<Register />} />
-
-      {/* Dashboard Routes */}
+      {/* Auth Routes - accessible only when not authenticated */}
       <Route
-        path="/*"
+        path="/auth/login"
+        element={
+          isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />
+        }
+      />
+      <Route
+        path="/auth/register"
+        element={
+          isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />
+        }
+      />
+
+      {/* Root redirect based on auth status */}
+      <Route
+        path="/"
+        element={
+          isAuthenticated ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <Navigate to="/auth/login" replace />
+          )
+        }
+      />
+
+      {/* Dashboard Routes - for students */}
+      <Route
+        path="/dashboard/*"
         element={
           <ProtectedRoute>
             <Dashboard />
@@ -45,9 +67,6 @@ export default function App() {
           </ProtectedRoute>
         }
       />
-
-      {/* Default redirect */}
-      <Route path="/" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

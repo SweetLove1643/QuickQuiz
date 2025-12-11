@@ -1,4 +1,4 @@
-import { Menu, LogOut, User } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -72,16 +72,8 @@ export function TopBar({
         {/* User Profile Section */}
         {user && (
           <div className="flex items-center gap-3 ml-auto">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium text-slate-900">
-                {user.username}
-              </p>
-              <p className="text-xs text-slate-500">
-                {user.is_staff ? "Admin" : "Student"}
-              </p>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center">
-              <User className="w-5 h-5" />
+            <div className="text-slate-700 font-medium">
+              Xin chào {user?.username || "Khách"}
             </div>
             <button
               onClick={handleLogout}
