@@ -1339,3 +1339,131 @@
 [INFO] 2025-12-11 00:39:47,302 api.views 2816 2912 User logged in successfully: Student01
 [INFO] 2025-12-11 00:39:47,305 django.server 2816 2912 "POST /api/auth/login/ HTTP/1.1" 200 1359
 [INFO] 2025-12-11 14:05:47,777 django.utils.autoreload 8572 3988 Watching for file changes with StatReloader
+[INFO] 2025-12-11 14:06:08,501 django.server 8572 4396 "OPTIONS /api/auth/logout/ HTTP/1.1" 200 0
+[INFO] 2025-12-11 14:06:08,517 api.service_clients 8572 4396 [iam_service] Logging out user
+[DEBUG] 2025-12-11 14:06:08,518 api.service_clients 8572 4396 [iam_service] POST http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 14:06:10,604 api.service_clients 8572 4396 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 14:06:10,605 api.views 8572 4396 Logout failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[WARNING] 2025-12-11 14:06:10,609 django.request 8572 4396 Bad Request: /api/auth/logout/
+[WARNING] 2025-12-11 14:06:10,610 django.server 8572 4396 "POST /api/auth/logout/ HTTP/1.1" 400 117
+[INFO] 2025-12-11 14:06:29,129 django.server 8572 4396 "OPTIONS /api/auth/login/ HTTP/1.1" 200 0
+[INFO] 2025-12-11 14:06:29,132 api.views 8572 4396 Login attempt for username: Student01
+[INFO] 2025-12-11 14:06:29,132 api.views 8572 4396 Calling IAM service to login user: Student01
+[INFO] 2025-12-11 14:06:29,132 api.service_clients 8572 4396 [iam_service] Login attempt for user: Student01
+[DEBUG] 2025-12-11 14:06:29,132 api.service_clients 8572 4396 [iam_service] POST http://localhost:8005/api/users/login/
+[INFO] 2025-12-11 14:06:32,243 api.service_clients 8572 4396 [iam_service] Login successful for user: Student01
+[INFO] 2025-12-11 14:06:32,243 api.views 8572 4396 User logged in successfully: Student01
+[INFO] 2025-12-11 14:06:32,245 django.server 8572 4396 "POST /api/auth/login/ HTTP/1.1" 200 1359
+[INFO] 2025-12-11 14:06:33,819 api.service_clients 8572 4396 [iam_service] Logging out user
+[DEBUG] 2025-12-11 14:06:33,820 api.service_clients 8572 4396 [iam_service] POST http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 14:06:33,826 api.service_clients 8572 4396 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 14:06:33,827 api.views 8572 4396 Logout failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[WARNING] 2025-12-11 14:06:33,829 django.request 8572 4396 Bad Request: /api/auth/logout/
+[WARNING] 2025-12-11 14:06:33,830 django.server 8572 4396 "POST /api/auth/logout/ HTTP/1.1" 400 117
+[INFO] 2025-12-11 14:06:51,032 api.views 8572 4396 Login attempt for username: admin
+[INFO] 2025-12-11 14:06:51,033 api.views 8572 4396 Calling IAM service to login user: admin
+[INFO] 2025-12-11 14:06:51,033 api.service_clients 8572 4396 [iam_service] Login attempt for user: admin
+[DEBUG] 2025-12-11 14:06:51,033 api.service_clients 8572 4396 [iam_service] POST http://localhost:8005/api/users/login/
+[INFO] 2025-12-11 14:06:53,881 api.service_clients 8572 4396 [iam_service] Login successful for user: admin
+[INFO] 2025-12-11 14:06:53,881 api.views 8572 4396 User logged in successfully: admin
+[INFO] 2025-12-11 14:06:53,881 django.server 8572 4396 "POST /api/auth/login/ HTTP/1.1" 200 1064
+[INFO] 2025-12-11 14:07:19,881 api.service_clients 8572 4396 [iam_service] Logging out user
+[DEBUG] 2025-12-11 14:07:19,881 api.service_clients 8572 4396 [iam_service] POST http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 14:07:19,891 api.service_clients 8572 4396 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 14:07:19,892 api.views 8572 4396 Logout failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[WARNING] 2025-12-11 14:07:19,894 django.request 8572 4396 Bad Request: /api/auth/logout/
+[WARNING] 2025-12-11 14:07:19,895 django.server 8572 4396 "POST /api/auth/logout/ HTTP/1.1" 400 117
+[INFO] 2025-12-11 14:07:27,933 django.server 8572 9724 "OPTIONS /api/auth/logout/ HTTP/1.1" 200 0
+[INFO] 2025-12-11 14:07:27,938 api.service_clients 8572 9724 [iam_service] Logging out user
+[DEBUG] 2025-12-11 14:07:27,939 api.service_clients 8572 9724 [iam_service] POST http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 14:07:27,948 api.service_clients 8572 9724 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 14:07:27,949 api.views 8572 9724 Logout failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[WARNING] 2025-12-11 14:07:27,950 django.request 8572 9724 Bad Request: /api/auth/logout/
+[WARNING] 2025-12-11 14:07:27,951 django.server 8572 9724 "POST /api/auth/logout/ HTTP/1.1" 400 117
+[INFO] 2025-12-11 14:07:41,188 django.server 8572 9724 "OPTIONS /api/auth/login/ HTTP/1.1" 200 0
+[INFO] 2025-12-11 14:07:41,191 api.views 8572 9724 Login attempt for username: Admin
+[INFO] 2025-12-11 14:07:41,191 api.views 8572 9724 Calling IAM service to login user: Admin
+[INFO] 2025-12-11 14:07:41,191 api.service_clients 8572 9724 [iam_service] Login attempt for user: Admin
+[DEBUG] 2025-12-11 14:07:41,191 api.service_clients 8572 9724 [iam_service] POST http://localhost:8005/api/users/login/
+[ERROR] 2025-12-11 14:07:42,426 api.service_clients 8572 9724 [iam_service] HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-11 14:07:42,426 api.service_clients 8572 9724 [iam_service] Login failed for user: Admin
+[ERROR] 2025-12-11 14:07:42,426 api.views 8572 9724 Login failed for Admin: HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-11 14:07:42,426 django.request 8572 9724 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-11 14:07:42,426 django.server 8572 9724 "POST /api/auth/login/ HTTP/1.1" 401 115
+[INFO] 2025-12-11 14:07:55,469 api.views 8572 9724 Login attempt for username: admin
+[INFO] 2025-12-11 14:07:55,470 api.views 8572 9724 Calling IAM service to login user: admin
+[INFO] 2025-12-11 14:07:55,470 api.service_clients 8572 9724 [iam_service] Login attempt for user: admin
+[DEBUG] 2025-12-11 14:07:55,472 api.service_clients 8572 9724 [iam_service] POST http://localhost:8005/api/users/login/
+[ERROR] 2025-12-11 14:07:56,712 api.service_clients 8572 9724 [iam_service] HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-11 14:07:56,712 api.service_clients 8572 9724 [iam_service] Login failed for user: admin
+[ERROR] 2025-12-11 14:07:56,712 api.views 8572 9724 Login failed for admin: HTTP 500: 400 Client Error: Bad Request for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-11 14:07:56,712 django.request 8572 9724 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-11 14:07:56,712 django.server 8572 9724 "POST /api/auth/login/ HTTP/1.1" 401 115
+[INFO] 2025-12-11 14:08:05,834 api.views 8572 9724 Login attempt for username: admin
+[INFO] 2025-12-11 14:08:05,834 api.views 8572 9724 Calling IAM service to login user: admin
+[INFO] 2025-12-11 14:08:05,834 api.service_clients 8572 9724 [iam_service] Login attempt for user: admin
+[DEBUG] 2025-12-11 14:08:05,835 api.service_clients 8572 9724 [iam_service] POST http://localhost:8005/api/users/login/
+[INFO] 2025-12-11 14:08:08,279 api.service_clients 8572 9724 [iam_service] Login successful for user: admin
+[INFO] 2025-12-11 14:08:08,279 api.views 8572 9724 User logged in successfully: admin
+[INFO] 2025-12-11 14:08:08,279 django.server 8572 9724 "POST /api/auth/login/ HTTP/1.1" 200 1064
+[INFO] 2025-12-11 14:08:43,713 api.views 8572 4396 Login attempt for username: Student01
+[INFO] 2025-12-11 14:08:43,713 api.views 8572 4396 Calling IAM service to login user: Student01
+[INFO] 2025-12-11 14:08:43,714 api.service_clients 8572 4396 [iam_service] Login attempt for user: Student01
+[DEBUG] 2025-12-11 14:08:43,714 api.service_clients 8572 4396 [iam_service] POST http://localhost:8005/api/users/login/
+[INFO] 2025-12-11 14:08:46,244 api.service_clients 8572 4396 [iam_service] Login successful for user: Student01
+[INFO] 2025-12-11 14:08:46,255 api.views 8572 4396 User logged in successfully: Student01
+[INFO] 2025-12-11 14:08:46,255 django.server 8572 4396 "POST /api/auth/login/ HTTP/1.1" 200 1359
+[INFO] 2025-12-11 14:12:31,923 api.service_clients 8572 4396 [iam_service] Logging out user
+[DEBUG] 2025-12-11 14:12:31,924 api.service_clients 8572 4396 [iam_service] POST http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 14:12:31,931 api.service_clients 8572 4396 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 14:12:31,932 api.views 8572 4396 Logout failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[WARNING] 2025-12-11 14:12:31,933 django.request 8572 4396 Bad Request: /api/auth/logout/
+[WARNING] 2025-12-11 14:12:31,934 django.server 8572 4396 "POST /api/auth/logout/ HTTP/1.1" 400 117
+[INFO] 2025-12-11 14:12:43,545 api.views 8572 4396 Login attempt for username: Student01
+[INFO] 2025-12-11 14:12:43,545 api.views 8572 4396 Calling IAM service to login user: Student01
+[INFO] 2025-12-11 14:12:43,545 api.service_clients 8572 4396 [iam_service] Login attempt for user: Student01
+[DEBUG] 2025-12-11 14:12:43,548 api.service_clients 8572 4396 [iam_service] POST http://localhost:8005/api/users/login/
+[INFO] 2025-12-11 14:12:46,027 api.service_clients 8572 4396 [iam_service] Login successful for user: Student01
+[INFO] 2025-12-11 14:12:46,027 api.views 8572 4396 User logged in successfully: Student01
+[INFO] 2025-12-11 14:12:46,041 django.server 8572 4396 "POST /api/auth/login/ HTTP/1.1" 200 1359
+[INFO] 2025-12-11 14:12:51,446 api.service_clients 8572 4396 [iam_service] Logging out user
+[DEBUG] 2025-12-11 14:12:51,447 api.service_clients 8572 4396 [iam_service] POST http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 14:12:51,448 api.service_clients 8572 4396 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 14:12:51,448 api.views 8572 4396 Logout failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[WARNING] 2025-12-11 14:12:51,448 django.request 8572 4396 Bad Request: /api/auth/logout/
+[WARNING] 2025-12-11 14:12:51,448 django.server 8572 4396 "POST /api/auth/logout/ HTTP/1.1" 400 117
+[INFO] 2025-12-11 14:13:52,517 django.server 8572 2336 "OPTIONS /api/auth/logout/ HTTP/1.1" 200 0
+[INFO] 2025-12-11 14:13:52,524 api.service_clients 8572 2336 [iam_service] Logging out user
+[DEBUG] 2025-12-11 14:13:52,524 api.service_clients 8572 2336 [iam_service] POST http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 14:13:52,524 api.service_clients 8572 2336 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 14:13:52,533 api.views 8572 2336 Logout failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[WARNING] 2025-12-11 14:13:52,533 django.request 8572 2336 Bad Request: /api/auth/logout/
+[WARNING] 2025-12-11 14:13:52,533 django.server 8572 2336 "POST /api/auth/logout/ HTTP/1.1" 400 117
+[INFO] 2025-12-11 14:13:57,790 django.server 8572 2336 "OPTIONS /api/auth/login/ HTTP/1.1" 200 0
+[INFO] 2025-12-11 14:13:57,792 api.views 8572 2336 Login attempt for username: Student01
+[INFO] 2025-12-11 14:13:57,792 api.views 8572 2336 Calling IAM service to login user: Student01
+[INFO] 2025-12-11 14:13:57,792 api.service_clients 8572 2336 [iam_service] Login attempt for user: Student01
+[DEBUG] 2025-12-11 14:13:57,792 api.service_clients 8572 2336 [iam_service] POST http://localhost:8005/api/users/login/
+[INFO] 2025-12-11 14:14:00,233 api.service_clients 8572 2336 [iam_service] Login successful for user: Student01
+[INFO] 2025-12-11 14:14:00,233 api.views 8572 2336 User logged in successfully: Student01
+[INFO] 2025-12-11 14:14:00,233 django.server 8572 2336 "POST /api/auth/login/ HTTP/1.1" 200 1359
+[INFO] 2025-12-11 14:14:14,432 api.service_clients 8572 2336 [iam_service] Logging out user
+[DEBUG] 2025-12-11 14:14:14,433 api.service_clients 8572 2336 [iam_service] POST http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 14:14:14,441 api.service_clients 8572 2336 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 14:14:14,442 api.views 8572 2336 Logout failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[WARNING] 2025-12-11 14:14:14,442 django.request 8572 2336 Bad Request: /api/auth/logout/
+[WARNING] 2025-12-11 14:14:14,442 django.server 8572 2336 "POST /api/auth/logout/ HTTP/1.1" 400 117
+[INFO] 2025-12-11 14:14:51,918 api.views 8572 2336 Login attempt for username: Student01
+[INFO] 2025-12-11 14:14:51,918 api.views 8572 2336 Calling IAM service to login user: Student01
+[INFO] 2025-12-11 14:14:51,920 api.service_clients 8572 2336 [iam_service] Login attempt for user: Student01
+[DEBUG] 2025-12-11 14:14:51,920 api.service_clients 8572 2336 [iam_service] POST http://localhost:8005/api/users/login/
+[INFO] 2025-12-11 14:14:54,777 api.service_clients 8572 2336 [iam_service] Login successful for user: Student01
+[INFO] 2025-12-11 14:14:54,777 api.views 8572 2336 User logged in successfully: Student01
+[INFO] 2025-12-11 14:14:54,777 django.server 8572 2336 "POST /api/auth/login/ HTTP/1.1" 200 1359
+[INFO] 2025-12-11 14:15:39,959 api.views 8572 4396 Login attempt for username: Student01
+[INFO] 2025-12-11 14:15:39,959 api.views 8572 4396 Calling IAM service to login user: Student01
+[INFO] 2025-12-11 14:15:39,959 api.service_clients 8572 4396 [iam_service] Login attempt for user: Student01
+[DEBUG] 2025-12-11 14:15:39,959 api.service_clients 8572 4396 [iam_service] POST http://localhost:8005/api/users/login/
+[INFO] 2025-12-11 14:15:42,398 api.service_clients 8572 4396 [iam_service] Login successful for user: Student01
+[INFO] 2025-12-11 14:15:42,398 api.views 8572 4396 User logged in successfully: Student01
+[INFO] 2025-12-11 14:15:42,402 django.server 8572 4396 "POST /api/auth/login/ HTTP/1.1" 200 1359
