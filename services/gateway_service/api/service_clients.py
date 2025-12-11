@@ -313,6 +313,28 @@ class QuizGeneratorClient(BaseServiceClient):
 
         return response.data or {}
 
+    def get_quiz_details(self, quiz_id: str) -> Dict[str, Any]:
+        """Get full quiz details including all questions."""
+        response = self._make_request("GET", f"/quiz/{quiz_id}")
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data or {}
+
+    def delete_quiz(self, quiz_id: str) -> Dict[str, Any]:
+        """Delete a quiz by ID."""
+        response = self._make_request("DELETE", f"/quiz/{quiz_id}")
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data or {}
+
     def get_generator_info(self) -> Dict[str, Any]:
         """Get generator service information."""
         response = self._make_request("GET", "/")

@@ -280,6 +280,30 @@ def get_user_recent_quizzes(request, user_id):
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
+def get_quiz_details(request, quiz_id):
+    """Get full quiz details including all questions."""
+    try:
+        result = quiz_generator.get_quiz_details(quiz_id)
+        return Response(result, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Failed to get quiz details: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["DELETE"])
+@permission_classes([AllowAny])
+def delete_quiz(request, quiz_id):
+    """Delete a quiz by ID."""
+    try:
+        result = quiz_generator.delete_quiz(quiz_id)
+        return Response(result, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Failed to delete quiz: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
 def get_user_results(request, user_id):
     """Get all quiz results for a specific user."""
     try:
