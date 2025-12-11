@@ -1784,3 +1784,13 @@
 [ERROR] 2025-12-11 16:21:24,344 api.views 16136 12016 Quiz save failed: HTTP 500: 500 Server Error: Internal Server Error for url: http://localhost:8003/quiz/save
 [ERROR] 2025-12-11 16:21:24,352 django.request 16136 12016 Internal Server Error: /api/quiz/save/
 [ERROR] 2025-12-11 16:21:24,354 django.server 16136 12016 "POST /api/quiz/save/ HTTP/1.1" 500 102
+[INFO] 2025-12-11 17:33:37,792 django.utils.autoreload 12856 13056 Watching for file changes with StatReloader
+[INFO] 2025-12-11 17:33:42,554 django.server 12856 19632 "OPTIONS /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 0
+[INFO] 2025-12-11 17:33:42,554 django.server 12856 10308 "OPTIONS /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 0
+[DEBUG] 2025-12-11 17:33:42,571 api.service_clients 12856 10308 [quiz_generator] GET http://localhost:8003/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-11 17:33:42,573 api.service_clients 12856 19632 [quiz_evaluator] GET http://localhost:8004/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[INFO] 2025-12-11 17:33:44,631 django.server 12856 10308 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 85
+[ERROR] 2025-12-11 17:34:04,812 api.service_clients 12856 19632 [quiz_evaluator] Connection failed to quiz_evaluator: HTTPConnectionPool(host='localhost', port=8004): Max retries exceeded with url: /results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000027DA304AB50>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[ERROR] 2025-12-11 17:34:04,812 api.views 12856 19632 Failed to get recent results: Connection failed to quiz_evaluator
+[ERROR] 2025-12-11 17:34:04,812 django.request 12856 19632 Internal Server Error: /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 17:34:04,812 django.server 12856 19632 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 47
