@@ -70,7 +70,7 @@ REM ====================================================================
 REM STEP 1: Start IAM Service (Authentication - Required First)
 REM ====================================================================
 echo [1/4] Starting IAM Service (Port %IAM_PORT%)...
-start "IAM Service - Port %IAM_PORT%" /%WINDOW_STYLE% powershell -NoExit -Command "cd services\iam_service; python manage.py runserver %IAM_HOST%:%IAM_PORT%"
+start "IAM Service - Port %IAM_PORT%" /%WINDOW_STYLE% cmd /c "cd services\iam_service && python manage.py runserver %IAM_HOST%:%IAM_PORT%"
 
 echo       Waiting %IAM_INIT_DELAY% seconds for IAM to initialize...
 timeout /t %IAM_INIT_DELAY% /nobreak >nul
@@ -82,19 +82,19 @@ REM STEP 2: Start Microservices (Can run in parallel)
 REM ====================================================================
 echo [2/4] Starting Microservices...
 echo       - Quiz Generator (Port %QUIZ_GENERATOR_PORT%)
-start "Quiz Generator - Port %QUIZ_GENERATOR_PORT%" /%WINDOW_STYLE% powershell -NoExit -Command "cd services\quiz_generator_service; python api.py"
+start "Quiz Generator - Port %QUIZ_GENERATOR_PORT%" /%WINDOW_STYLE% cmd /c "cd services\quiz_generator_service && python api.py"
 
 echo       - Quiz Evaluator (Port %QUIZ_EVALUATOR_PORT%)
-start "Quiz Evaluator - Port %QUIZ_EVALUATOR_PORT%" /%WINDOW_STYLE% powershell -NoExit -Command "cd services\quiz_evaluator_service; python api.py"
+start "Quiz Evaluator - Port %QUIZ_EVALUATOR_PORT%" /%WINDOW_STYLE% cmd /c "cd services\quiz_evaluator_service && python api.py"
 
 echo       - OCR Service (Port %OCR_PORT%)
-start "OCR Service - Port %OCR_PORT%" /%WINDOW_STYLE% powershell -NoExit -Command "cd services\ocr_service; python api.py"
+start "OCR Service - Port %OCR_PORT%" /%WINDOW_STYLE% cmd /c "cd services\ocr_service && python api.py"
 
 echo       - Summary Service (Port %SUMMARY_PORT%)
-start "Summary Service - Port %SUMMARY_PORT%" /%WINDOW_STYLE% powershell -NoExit -Command "cd services\summary_service; python api.py"
+start "Summary Service - Port %SUMMARY_PORT%" /%WINDOW_STYLE% cmd /c "cd services\summary_service && python api.py"
 
 echo       - RAG Chatbot (Port %RAG_CHATBOT_PORT%)
-start "RAG Chatbot - Port %RAG_CHATBOT_PORT%" /%WINDOW_STYLE% powershell -NoExit -Command "cd services\rag_chatbot_service; python api.py"
+start "RAG Chatbot - Port %RAG_CHATBOT_PORT%" /%WINDOW_STYLE% cmd /c "cd services\rag_chatbot_service && python api.py"
 
 echo       Waiting %SERVICES_INIT_DELAY% seconds for microservices to initialize...
 timeout /t %SERVICES_INIT_DELAY% /nobreak >nul
@@ -105,7 +105,7 @@ REM ====================================================================
 REM STEP 3: Start API Gateway (Needs microservices ready)
 REM ====================================================================
 echo [3/4] Starting API Gateway (Port %GATEWAY_PORT%)...
-start "API Gateway - Port %GATEWAY_PORT%" /%WINDOW_STYLE% powershell -NoExit -Command "cd services\gateway_service; python manage.py runserver %GATEWAY_HOST%:%GATEWAY_PORT%"
+start "API Gateway - Port %GATEWAY_PORT%" /%WINDOW_STYLE% cmd /c "cd services\gateway_service && python manage.py runserver %GATEWAY_HOST%:%GATEWAY_PORT%"
 
 echo       Waiting %GATEWAY_INIT_DELAY% seconds for gateway to initialize...
 timeout /t %GATEWAY_INIT_DELAY% /nobreak >nul
@@ -116,7 +116,7 @@ REM ====================================================================
 REM STEP 4: Start Frontend (Needs gateway ready)
 REM ====================================================================
 echo [4/4] Starting Frontend (Port %FRONTEND_PORT%)...
-start "Frontend - Port %FRONTEND_PORT%" /%WINDOW_STYLE% powershell -NoExit -Command "cd frontend; npm run dev"
+start "Frontend - Port %FRONTEND_PORT%" /%WINDOW_STYLE% cmd /c "cd frontend && npm run dev"
  ====================================================================
 echo                QuickQuiz System is Running!
 echo ====================================================================

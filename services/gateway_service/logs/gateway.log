@@ -1794,3 +1794,20 @@
 [ERROR] 2025-12-11 17:34:04,812 api.views 12856 19632 Failed to get recent results: Connection failed to quiz_evaluator
 [ERROR] 2025-12-11 17:34:04,812 django.request 12856 19632 Internal Server Error: /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
 [ERROR] 2025-12-11 17:34:04,812 django.server 12856 19632 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 47
+[INFO] 2025-12-11 17:38:07,344 django.server 12856 19632 "OPTIONS /api/auth/logout/ HTTP/1.1" 200 0
+[INFO] 2025-12-11 17:38:07,349 api.service_clients 12856 19632 [iam_service] Logging out user
+[DEBUG] 2025-12-11 17:38:07,350 api.service_clients 12856 19632 [iam_service] POST http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 17:38:09,418 api.service_clients 12856 19632 [iam_service] HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 17:38:09,418 api.views 12856 19632 Logout failed: HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/api/users/logout/
+[WARNING] 2025-12-11 17:38:09,418 django.request 12856 19632 Bad Request: /api/auth/logout/
+[WARNING] 2025-12-11 17:38:09,418 django.server 12856 19632 "POST /api/auth/logout/ HTTP/1.1" 400 114
+[INFO] 2025-12-11 17:38:24,130 django.server 12856 19632 "OPTIONS /api/auth/login/ HTTP/1.1" 200 0
+[INFO] 2025-12-11 17:38:24,136 api.views 12856 19632 Login attempt for username: Student01
+[INFO] 2025-12-11 17:38:24,136 api.views 12856 19632 Calling IAM service to login user: Student01
+[INFO] 2025-12-11 17:38:24,137 api.service_clients 12856 19632 [iam_service] Login attempt for user: Student01
+[DEBUG] 2025-12-11 17:38:24,138 api.service_clients 12856 19632 [iam_service] POST http://localhost:8005/api/users/login/
+[ERROR] 2025-12-11 17:38:26,184 api.service_clients 12856 19632 [iam_service] HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-11 17:38:26,184 api.service_clients 12856 19632 [iam_service] Login failed for user: Student01
+[ERROR] 2025-12-11 17:38:26,184 api.views 12856 19632 Login failed for Student01: HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/api/users/login/
+[WARNING] 2025-12-11 17:38:26,184 django.request 12856 19632 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-11 17:38:26,184 django.server 12856 19632 "POST /api/auth/login/ HTTP/1.1" 401 113
