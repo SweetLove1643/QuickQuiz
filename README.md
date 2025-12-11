@@ -15,12 +15,13 @@
 
 **Microservices Backend:**
 
-- 🌐 **API Gateway** (Port 8001) - Unified entry point
+- 🌐 **API Gateway** (Port 8001) - Unified entry point & auth
+- 🔐 **IAM Service** (Port 8005) - User management & authentication
 - 🧩 **Quiz Generator** (Port 8003) - Quiz creation service
-- ✅ **Quiz Evaluator** (Port 8005) - Answer evaluation service
+- ✅ **Quiz Evaluator** (Port 8004) - Answer evaluation service
 - 👁️ **OCR Service** (Port 8007) - Document text extraction
-- 📄 **Summary Service** (Port 8009) - Content summarization
-- 💬 **RAG Chatbot** (Port 8011) - Conversational AI
+- 📄 **Summary Service** (Port 8008) - Content summarization
+- 💬 **RAG Chatbot** (Port 8002) - Conversational AI
 
 **Frontend:**
 
@@ -54,16 +55,65 @@ npm run dev
 
 - 🌐 **Frontend**: http://localhost:3000
 - 📡 **API Gateway**: http://localhost:8001
+- 🔐 **IAM Admin**: http://localhost:8005/admin/
 - 📊 **Health Check**: http://localhost:8001/api/health/
+
+## 📖 Documentation
+
+- 🔐 **[Authentication Guide](./AUTH.md)** - Complete auth system documentation
+- 🧪 **[Testing Guide](./TEST_AUTH.md)** - How to test login/registration
+- 📋 **[Implementation Summary](./IMPLEMENTATION_SUMMARY.md)** - What was built
+
+## 🔐 Authentication System
+
+QuickQuiz now includes a complete JWT-based authentication system:
+
+### Features
+
+- ✅ Student registration and login
+- ✅ Admin user management
+- ✅ Protected API endpoints
+- ✅ Token refresh mechanism
+- ✅ Secure password handling
+
+### Default Credentials
+
+```
+Admin Username: admin
+Admin Password: Admin123
+```
+
+### Quick Test
+
+```bash
+# Register new user via API
+curl -X POST http://localhost:8001/api/auth/register/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "student1",
+    "email": "student@example.com",
+    "password": "password123",
+    "password_confirm": "password123"
+  }'
+
+# Login
+curl -X POST http://localhost:8001/api/auth/login/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "student1",
+    "password": "password123"
+  }'
+```
 
 ## 📖 Usage Guide
 
 ### Creating Quizzes
 
-1. Upload document or paste text
-2. Configure quiz settings (question count, types)
-3. Generate quiz with AI
-4. Take quiz and get instant feedback
+1. Login or register account at http://localhost:3000
+2. Upload document or paste text
+3. Configure quiz settings (question count, types)
+4. Generate quiz with AI
+5. Take quiz and get instant feedback
 
 ### Document Processing
 
