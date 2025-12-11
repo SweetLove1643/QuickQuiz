@@ -17,6 +17,13 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Badge } from "./ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "./ui/dropdown-menu";
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { quizAPI } from "../api/quizAPI";
@@ -281,6 +288,13 @@ export function Library({
   onQuizSelected,
   onDocumentSelected,
 }: LibraryProps) {
+  // DEBUG: Verify new code is loaded
+  console.log(
+    "🔄 Library component rendered at:",
+    new Date().toLocaleTimeString()
+  );
+  console.log("📦 Version: DELETE_FIX_v3");
+
   const { user } = useAuth();
   const [userQuizzes, setUserQuizzes] = useState<any[]>([]);
   const [userDocuments, setUserDocuments] = useState<any[]>([]);
@@ -536,9 +550,19 @@ export function Library({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
+                      onClick={async () => {
                         console.log("Editing quiz:", quiz.quiz_id);
-                        onNavigate?.("create-quiz-standalone");
+                        try {
+                          // Load quiz details before navigating
+                          const quizData = await quizAPI.getQuizDetails(
+                            quiz.quiz_id
+                          );
+                          onQuizSelected?.(quizData.quiz);
+                          onNavigate?.("create-quiz-standalone");
+                        } catch (error) {
+                          console.error("Failed to load quiz:", error);
+                          alert("Không thể tải quiz. Vui lòng thử lại.");
+                        }
                       }}
                     >
                       <Edit className="size-4 mr-2" />
@@ -547,18 +571,155 @@ export function Library({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
+                      onClick={async () => {
                         console.log("Taking quiz:", quiz.quiz_id);
-                        onNavigate?.("take-quiz");
-                        onQuizSelected?.(quiz);
+                        try {
+                          // Load quiz details before navigating
+                          const quizData = await quizAPI.getQuizDetails(
+                            quiz.quiz_id
+                          );
+
+                          // Convert backend format to frontend format
+                          // Backend: answer is text, Frontend: correctAnswer is index
+                          const convertedQuiz = {
+                            ...quizData.quiz,
+                            questions: quizData.quiz.questions.map(
+                              (q: any) => ({
+                                ...q,
+                                question: q.stem || q.question,
+                                correctAnswer:
+                                  q.options?.indexOf(q.answer) ?? 0,
+                              })
+                            ),
+                          };
+
+                          console.log("Converted quiz data:", convertedQuiz);
+                          onQuizSelected?.(convertedQuiz);
+                          onNavigate?.("take-quiz");
+                        } catch (error) {
+                          console.error("Failed to load quiz:", error);
+                          alert("Không thể tải quiz. Vui lòng thử lại.");
+                        }
                       }}
                     >
                       <Play className="size-4 mr-2" />
                       Làm bài
                     </Button>
-                    <Button variant="ghost" size="icon">
-                      <MoreVertical className="size-4" />
+                    {/* Test Delete Button - Remove after testing */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        console.log(
+                          "TEST DELETE BUTTON CLICKED:",
+                          quiz.quiz_id
+                        );
+                        if (confirm(`Xóa quiz "${quiz.title}"?`)) {
+                          console.log("Calling deleteQuiz API...");
+                          quizAPI
+                            .deleteQuiz(quiz.quiz_id)
+                            .then((res) => {
+                              console.log("Delete success:", res);
+                              setUserQuizzes((prev) =>
+                                prev.filter((q) => q.quiz_id !== quiz.quiz_id)
+                              );
+                              alert("Đã xóa!");
+                            })
+                            .catch((err) => {
+                              console.error("Delete error:", err);
+                              alert("Lỗi xóa!");
+                            });
+                        }
+                      }}
+                    >
+                      <Trash2 className="size-4 mr-2" />
+                      TEST XÓA
                     </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreVertical className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onSelect={async (e) => {
+                            e.preventDefault();
+                            try {
+                              // Load quiz details for download
+                              const quizData = await quizAPI.getQuizDetails(
+                                quiz.quiz_id
+                              );
+                              const dataStr = JSON.stringify(
+                                quizData.quiz,
+                                null,
+                                2
+                              );
+                              const dataBlob = new Blob([dataStr], {
+                                type: "application/json",
+                              });
+                              const url = URL.createObjectURL(dataBlob);
+                              const link = document.createElement("a");
+                              link.href = url;
+                              link.download = `${quiz.title || "quiz"}.json`;
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                              URL.revokeObjectURL(url);
+                            } catch (error) {
+                              console.error("Failed to download quiz:", error);
+                              alert(
+                                "Không thể tải xuống quiz. Vui lòng thử lại."
+                              );
+                            }
+                          }}
+                        >
+                          <Download className="size-4 mr-2" />
+                          Tải xuống
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-red-600"
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            console.log(
+                              "Delete menu item clicked for:",
+                              quiz.quiz_id
+                            );
+
+                            const confirmDelete = confirm(
+                              `Bạn có chắc muốn xóa quiz "${quiz.title}"?`
+                            );
+
+                            if (!confirmDelete) {
+                              console.log("Delete cancelled by user");
+                              return;
+                            }
+
+                            console.log("Proceeding with deletion...");
+
+                            // Call delete API
+                            quizAPI
+                              .deleteQuiz(quiz.quiz_id)
+                              .then((response) => {
+                                console.log("Delete response:", response);
+                                // Refresh quiz list
+                                setUserQuizzes((prev) =>
+                                  prev.filter((q) => q.quiz_id !== quiz.quiz_id)
+                                );
+                                alert("Đã xóa quiz thành công!");
+                              })
+                              .catch((error) => {
+                                console.error("Failed to delete quiz:", error);
+                                alert("Không thể xóa quiz. Vui lòng thử lại.");
+                              });
+                          }}
+                        >
+                          <Trash2 className="size-4 mr-2" />
+                          Xóa
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               </Card>

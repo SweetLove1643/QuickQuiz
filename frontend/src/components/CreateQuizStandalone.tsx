@@ -38,6 +38,7 @@ import {
 
 interface CreateQuizStandaloneProps {
   onQuizCreated: (quiz: any) => void;
+  editingQuiz?: any; // Quiz data to edit
 }
 
 interface Question {
@@ -59,6 +60,7 @@ interface Document {
 
 export function CreateQuizStandalone({
   onQuizCreated,
+  editingQuiz,
 }: CreateQuizStandaloneProps) {
   const { user } = useAuth();
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -75,6 +77,32 @@ export function CreateQuizStandalone({
   const [validationInfo, setValidationInfo] = useState<any>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+
+  // Load editing quiz data if provided
+  useEffect(() => {
+    if (editingQuiz) {
+      console.log("Loading quiz for editing:", editingQuiz);
+      setQuizTitle(editingQuiz.title || "");
+      if (editingQuiz.questions && Array.isArray(editingQuiz.questions)) {
+        // Convert backend format to frontend format
+        const convertedQuestions = editingQuiz.questions.map(
+          (q: any, index: number) => ({
+            id: q.id || `q${index + 1}`,
+            question: q.stem || q.question || "",
+            options: q.options || [],
+            correctAnswer: q.options?.indexOf(q.answer) ?? 0,
+            type:
+              q.type === "mcq"
+                ? "multiple-choice"
+                : q.type === "tf"
+                ? "true-false"
+                : "fill-blank",
+          })
+        );
+        setQuestions(convertedQuestions);
+      }
+    }
+  }, [editingQuiz]);
 
   // Reset component state for next quiz creation
   const resetComponent = () => {

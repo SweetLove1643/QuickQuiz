@@ -341,6 +341,44 @@ class QuizAPI {
     });
   }
 
+  // Get full quiz details including all questions
+  async getQuizDetails(quizId: string): Promise<{
+    success: boolean;
+    quiz: {
+      quiz_id: string;
+      title: string;
+      document_id: string | null;
+      user_id: string | null;
+      created_at: string | null;
+      questions: Array<{
+        id: string;
+        type: string;
+        stem: string;
+        options?: string[];
+        answer: string;
+        difficulty?: string;
+        source_sections?: any;
+      }>;
+      metadata?: any;
+      questions_count: number;
+    };
+  }> {
+    return this.makeRequest(`/quiz/${quizId}/`, {
+      method: "GET",
+    });
+  }
+
+  // Delete a quiz by ID
+  async deleteQuiz(quizId: string): Promise<{
+    success: boolean;
+    message: string;
+    deleted_quiz_id: string;
+  }> {
+    return this.makeRequest(`/quiz/${quizId}/delete/`, {
+      method: "DELETE",
+    });
+  }
+
   // Get quiz results for a specific user
   async getUserResults(
     userId: string,
