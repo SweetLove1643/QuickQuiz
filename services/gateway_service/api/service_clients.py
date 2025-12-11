@@ -285,6 +285,34 @@ class QuizGeneratorClient(BaseServiceClient):
 
         return response.data or {}
 
+    def get_user_quizzes(
+        self, user_id: str, limit: int = 50, offset: int = 0
+    ) -> Dict[str, Any]:
+        """Get all quizzes created by a specific user."""
+        response = self._make_request(
+            "GET", f"/quiz/user/{user_id}", params={"limit": limit, "offset": offset}
+        )
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data or {}
+
+    def get_user_recent_quizzes(self, user_id: str, limit: int = 10) -> Dict[str, Any]:
+        """Get recent quizzes created by a user."""
+        response = self._make_request(
+            "GET", f"/quiz/user/{user_id}/recent", params={"limit": limit}
+        )
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data or {}
+
     def get_generator_info(self) -> Dict[str, Any]:
         """Get generator service information."""
         response = self._make_request("GET", "/")
@@ -516,6 +544,34 @@ class QuizEvaluatorClient(BaseServiceClient):
             )
 
         return response.data
+
+    def get_user_results(
+        self, user_id: str, limit: int = 50, offset: int = 0
+    ) -> Dict[str, Any]:
+        """Get all quiz results for a specific user."""
+        response = self._make_request(
+            "GET", f"/results/user/{user_id}", params={"limit": limit, "offset": offset}
+        )
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data or {}
+
+    def get_user_recent_results(self, user_id: str, limit: int = 10) -> Dict[str, Any]:
+        """Get recent quiz results for a user."""
+        response = self._make_request(
+            "GET", f"/results/user/{user_id}/recent", params={"limit": limit}
+        )
+
+        if not response.success:
+            raise ServiceClientError(
+                response.error, response.status_code, self.service_name
+            )
+
+        return response.data or {}
 
     def get_evaluator_info(self) -> Dict[str, Any]:
         """Get evaluator service information."""

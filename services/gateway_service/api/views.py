@@ -249,6 +249,64 @@ def evaluate_quiz(request):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_user_quizzes(request, user_id):
+    """Get all quizzes created by a specific user."""
+    try:
+        limit = request.GET.get("limit", 50)
+        offset = request.GET.get("offset", 0)
+
+        result = quiz_generator.get_user_quizzes(user_id, limit, offset)
+        return Response(result, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Failed to get user quizzes: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_user_recent_quizzes(request, user_id):
+    """Get recent quizzes created by a user."""
+    try:
+        limit = request.GET.get("limit", 10)
+
+        result = quiz_generator.get_user_recent_quizzes(user_id, limit)
+        return Response(result, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Failed to get recent quizzes: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_user_results(request, user_id):
+    """Get all quiz results for a specific user."""
+    try:
+        limit = request.GET.get("limit", 50)
+        offset = request.GET.get("offset", 0)
+
+        result = quiz_evaluator.get_user_results(user_id, limit, offset)
+        return Response(result, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Failed to get user results: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_user_recent_results(request, user_id):
+    """Get recent quiz results for a user."""
+    try:
+        limit = request.GET.get("limit", 10)
+
+        result = quiz_evaluator.get_user_recent_results(user_id, limit)
+        return Response(result, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Failed to get recent results: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 @method_decorator(csrf_exempt, name="dispatch")
 class QuizView(View):
     """

@@ -19,6 +19,21 @@ urlpatterns = [
     path("quiz/generate/", views.generate_quiz, name="generate_quiz"),
     path("quiz/evaluate/", views.evaluate_quiz, name="evaluate_quiz"),
     path("quiz/save/", views.save_quiz, name="save_quiz"),
+    path("quiz/user/<str:user_id>/", views.get_user_quizzes, name="get_user_quizzes"),
+    path(
+        "quiz/user/<str:user_id>/recent/",
+        views.get_user_recent_quizzes,
+        name="get_user_recent_quizzes",
+    ),
+    # Quiz results endpoints
+    path(
+        "results/user/<str:user_id>/", views.get_user_results, name="get_user_results"
+    ),
+    path(
+        "results/user/<str:user_id>/recent/",
+        views.get_user_recent_results,
+        name="get_user_recent_results",
+    ),
     # OCR endpoints
     path("ocr/", views.OCRView.as_view(), name="ocr"),
     path("ocr/extract_text/", views.extract_text_single, name="extract_text_single"),

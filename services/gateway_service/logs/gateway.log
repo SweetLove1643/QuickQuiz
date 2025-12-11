@@ -1467,3 +1467,320 @@
 [INFO] 2025-12-11 14:15:42,398 api.service_clients 8572 4396 [iam_service] Login successful for user: Student01
 [INFO] 2025-12-11 14:15:42,398 api.views 8572 4396 User logged in successfully: Student01
 [INFO] 2025-12-11 14:15:42,402 django.server 8572 4396 "POST /api/auth/login/ HTTP/1.1" 200 1359
+[INFO] 2025-12-11 14:29:32,974 django.utils.autoreload 8572 3988 E:\QuickQuiz\services\gateway_service\api\urls.py changed, reloading.
+[INFO] 2025-12-11 14:29:34,476 django.utils.autoreload 3716 18828 Watching for file changes with StatReloader
+[INFO] 2025-12-11 14:30:03,364 django.utils.autoreload 3716 18828 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-12-11 14:30:04,756 django.utils.autoreload 19432 16480 Watching for file changes with StatReloader
+[INFO] 2025-12-11 14:30:41,167 django.utils.autoreload 19432 16480 E:\QuickQuiz\services\gateway_service\api\service_clients.py changed, reloading.
+[INFO] 2025-12-11 14:30:42,714 django.utils.autoreload 16228 4652 Watching for file changes with StatReloader
+[INFO] 2025-12-11 14:31:05,137 django.utils.autoreload 16228 4652 E:\QuickQuiz\services\gateway_service\api\service_clients.py changed, reloading.
+[INFO] 2025-12-11 14:31:06,672 django.utils.autoreload 4136 19332 Watching for file changes with StatReloader
+[INFO] 2025-12-11 14:35:42,661 django.utils.autoreload 4136 19332 E:\QuickQuiz\services\gateway_service\api\service_clients.py changed, reloading.
+[INFO] 2025-12-11 14:35:44,071 django.utils.autoreload 1504 6040 Watching for file changes with StatReloader
+[INFO] 2025-12-11 14:39:09,095 django.server 1504 16596 "OPTIONS /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 0
+[INFO] 2025-12-11 14:39:09,095 django.server 1504 14332 "OPTIONS /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 0
+[DEBUG] 2025-12-11 14:39:09,109 api.service_clients 1504 14332 [quiz_generator] GET http://localhost:8003/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-11 14:39:09,110 api.service_clients 1504 16596 [quiz_evaluator] GET http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[INFO] 2025-12-11 14:39:09,220 django.server 1504 18648 "OPTIONS /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 0
+[INFO] 2025-12-11 14:39:09,221 django.server 1504 8552 "OPTIONS /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 0
+[DEBUG] 2025-12-11 14:39:09,227 api.service_clients 1504 8552 [quiz_generator] GET http://localhost:8003/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-11 14:39:09,229 api.service_clients 1504 18648 [quiz_evaluator] GET http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[ERROR] 2025-12-11 14:39:11,161 api.service_clients 1504 16596 [quiz_evaluator] HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 14:39:11,161 api.views 1504 16596 Failed to get recent results: HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 14:39:11,178 django.request 1504 16596 Internal Server Error: /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 14:39:11,179 django.server 1504 16596 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 145
+[ERROR] 2025-12-11 14:39:11,276 api.service_clients 1504 18648 [quiz_evaluator] HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 14:39:11,277 api.views 1504 18648 Failed to get recent results: HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 14:39:11,280 django.request 1504 18648 Internal Server Error: /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 14:39:11,281 django.server 1504 18648 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 145
+[ERROR] 2025-12-11 14:39:17,209 api.service_clients 1504 14332 [quiz_generator] Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 14:39:17,210 api.views 1504 14332 Failed to get recent quizzes: Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 14:39:17,213 django.request 1504 14332 Internal Server Error: /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 14:39:17,215 django.server 1504 14332 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 230
+[ERROR] 2025-12-11 14:39:17,287 api.service_clients 1504 8552 [quiz_generator] Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 14:39:17,288 api.views 1504 8552 Failed to get recent quizzes: Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 14:39:17,289 django.request 1504 8552 Internal Server Error: /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 14:39:17,291 django.server 1504 8552 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 230
+[DEBUG] 2025-12-11 15:01:24,207 api.service_clients 1504 11144 [quiz_generator] GET http://localhost:8003/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-11 15:01:24,210 api.service_clients 1504 5848 [quiz_evaluator] GET http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[ERROR] 2025-12-11 15:01:24,228 api.service_clients 1504 5848 [quiz_evaluator] HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 15:01:24,229 api.views 1504 5848 Failed to get recent results: HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 15:01:24,232 django.request 1504 5848 Internal Server Error: /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 15:01:24,234 django.server 1504 5848 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 145
+[DEBUG] 2025-12-11 15:01:24,239 api.service_clients 1504 9884 [quiz_generator] GET http://localhost:8003/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-11 15:01:24,241 api.service_clients 1504 14180 [quiz_evaluator] GET http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[ERROR] 2025-12-11 15:01:24,259 api.service_clients 1504 14180 [quiz_evaluator] HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 15:01:24,259 api.views 1504 14180 Failed to get recent results: HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 15:01:24,261 django.request 1504 14180 Internal Server Error: /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 15:01:24,262 django.server 1504 14180 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 145
+[ERROR] 2025-12-11 15:01:32,265 api.service_clients 1504 11144 [quiz_generator] Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:01:32,266 api.views 1504 11144 Failed to get recent quizzes: Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:01:32,268 django.request 1504 11144 Internal Server Error: /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 15:01:32,270 django.server 1504 11144 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 230
+[ERROR] 2025-12-11 15:01:32,309 api.service_clients 1504 9884 [quiz_generator] Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:01:32,310 api.views 1504 9884 Failed to get recent quizzes: Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:01:32,312 django.request 1504 9884 Internal Server Error: /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 15:01:32,313 django.server 1504 9884 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 230
+[INFO] 2025-12-11 15:03:27,552 api.service_clients 1504 11144 [iam_service] Logging out user
+[DEBUG] 2025-12-11 15:03:27,553 api.service_clients 1504 11144 [iam_service] POST http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 15:03:29,602 api.service_clients 1504 11144 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 15:03:29,602 api.views 1504 11144 Logout failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[WARNING] 2025-12-11 15:03:29,605 django.request 1504 11144 Bad Request: /api/auth/logout/
+[WARNING] 2025-12-11 15:03:29,606 django.server 1504 11144 "POST /api/auth/logout/ HTTP/1.1" 400 117
+[INFO] 2025-12-11 15:03:50,112 api.service_clients 1504 9884 [iam_service] Logging out user
+[DEBUG] 2025-12-11 15:03:50,112 api.service_clients 1504 9884 [iam_service] POST http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 15:03:50,122 api.service_clients 1504 9884 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 15:03:50,122 api.views 1504 9884 Logout failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[WARNING] 2025-12-11 15:03:50,123 django.request 1504 9884 Bad Request: /api/auth/logout/
+[WARNING] 2025-12-11 15:03:50,125 django.server 1504 9884 "POST /api/auth/logout/ HTTP/1.1" 400 117
+[INFO] 2025-12-11 15:03:52,749 api.views 1504 9884 Login attempt for username: Student01
+[INFO] 2025-12-11 15:03:52,749 api.views 1504 9884 Calling IAM service to login user: Student01
+[INFO] 2025-12-11 15:03:52,749 api.service_clients 1504 9884 [iam_service] Login attempt for user: Student01
+[DEBUG] 2025-12-11 15:03:52,749 api.service_clients 1504 9884 [iam_service] POST http://localhost:8005/api/users/login/
+[INFO] 2025-12-11 15:03:55,249 api.service_clients 1504 9884 [iam_service] Login successful for user: Student01
+[INFO] 2025-12-11 15:03:55,249 api.views 1504 9884 User logged in successfully: Student01
+[INFO] 2025-12-11 15:03:55,261 django.server 1504 9884 "POST /api/auth/login/ HTTP/1.1" 200 1359
+[DEBUG] 2025-12-11 15:03:55,304 api.service_clients 1504 9884 [quiz_generator] GET http://localhost:8003/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-11 15:03:55,306 api.service_clients 1504 14180 [quiz_evaluator] GET http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[ERROR] 2025-12-11 15:03:55,325 api.service_clients 1504 14180 [quiz_evaluator] HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 15:03:55,327 api.views 1504 14180 Failed to get recent results: HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 15:03:55,330 django.request 1504 14180 Internal Server Error: /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 15:03:55,331 django.server 1504 14180 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 145
+[ERROR] 2025-12-11 15:04:03,400 api.service_clients 1504 9884 [quiz_generator] Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:04:03,400 api.views 1504 9884 Failed to get recent quizzes: Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:04:03,400 django.request 1504 9884 Internal Server Error: /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 15:04:03,400 django.server 1504 9884 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 230
+[INFO] 2025-12-11 15:04:39,173 django.server 1504 9884 "OPTIONS /api/summary/summarize_text/ HTTP/1.1" 200 0
+[INFO] 2025-12-11 15:04:39,178 api.service_clients 1504 9884 [summary_service] Summarizing text: 623 characters
+[DEBUG] 2025-12-11 15:04:39,178 api.service_clients 1504 9884 [summary_service] POST http://localhost:8009/summarize_text
+[ERROR] 2025-12-11 15:05:01,392 api.service_clients 1504 9884 [summary_service] Connection failed to summary_service: HTTPConnectionPool(host='localhost', port=8009): Max retries exceeded with url: /summarize_text (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000173C4D79D10>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[ERROR] 2025-12-11 15:05:01,393 api.views 1504 9884 Text summarization failed: Connection failed to summary_service
+[ERROR] 2025-12-11 15:05:01,393 django.request 1504 9884 Internal Server Error: /api/summary/summarize_text/
+[ERROR] 2025-12-11 15:05:01,393 django.server 1504 9884 "POST /api/summary/summarize_text/ HTTP/1.1" 500 49
+[INFO] 2025-12-11 15:06:09,998 django.utils.autoreload 6328 18672 Watching for file changes with StatReloader
+[DEBUG] 2025-12-11 15:09:21,559 api.service_clients 6328 10732 [quiz_generator] GET http://localhost:8003/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-11 15:09:21,561 api.service_clients 6328 19168 [quiz_evaluator] GET http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[ERROR] 2025-12-11 15:09:23,613 api.service_clients 6328 19168 [quiz_evaluator] HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 15:09:23,613 api.views 6328 19168 Failed to get recent results: HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 15:09:23,624 django.request 6328 19168 Internal Server Error: /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 15:09:23,624 django.server 6328 19168 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 145
+[ERROR] 2025-12-11 15:09:29,626 api.service_clients 6328 10732 [quiz_generator] Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:09:29,626 api.views 6328 10732 Failed to get recent quizzes: Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:09:29,626 django.request 6328 10732 Internal Server Error: /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 15:09:29,633 django.server 6328 10732 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 230
+[INFO] 2025-12-11 15:09:32,329 django.server 6328 10732 "OPTIONS /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 0
+[INFO] 2025-12-11 15:09:32,329 django.server 6328 19168 "OPTIONS /api/documents/list/ HTTP/1.1" 200 0
+[DEBUG] 2025-12-11 15:09:32,333 api.service_clients 6328 19168 [quiz_generator] GET http://localhost:8003/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-11 15:09:32,346 django.server 6328 10732 "GET /api/documents/list/ HTTP/1.1" 200 8957
+[ERROR] 2025-12-11 15:09:38,365 api.service_clients 6328 19168 [quiz_generator] Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd?limit=50&offset=0 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:09:38,365 api.views 6328 19168 Failed to get user quizzes: Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd?limit=50&offset=0 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:09:38,367 django.request 6328 19168 Internal Server Error: /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/
+[ERROR] 2025-12-11 15:09:38,368 django.server 6328 19168 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 500 233
+[INFO] 2025-12-11 15:09:46,403 api.service_clients 6328 19168 [summary_service] Summarizing text: 623 characters
+[DEBUG] 2025-12-11 15:09:46,403 api.service_clients 6328 19168 [summary_service] POST http://localhost:8009/summarize_text
+[ERROR] 2025-12-11 15:10:08,623 api.service_clients 6328 19168 [summary_service] Connection failed to summary_service: HTTPConnectionPool(host='localhost', port=8009): Max retries exceeded with url: /summarize_text (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000002070C827010>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[ERROR] 2025-12-11 15:10:08,624 api.views 6328 19168 Text summarization failed: Connection failed to summary_service
+[ERROR] 2025-12-11 15:10:08,624 django.request 6328 19168 Internal Server Error: /api/summary/summarize_text/
+[ERROR] 2025-12-11 15:10:08,624 django.server 6328 19168 "POST /api/summary/summarize_text/ HTTP/1.1" 500 49
+[INFO] 2025-12-11 15:10:21,001 django.server 6328 19168 "GET /api/documents/list/ HTTP/1.1" 200 8957
+[INFO] 2025-12-11 15:10:52,224 django.server 6328 19168 "OPTIONS /api/quiz/generate/ HTTP/1.1" 200 0
+[INFO] 2025-12-11 15:10:52,229 api.views 6328 19168 Generating quiz: 1 sections, 10 questions
+[INFO] 2025-12-11 15:10:52,230 api.service_clients 6328 19168 [quiz_generator] Generating quiz: 1 sections, 10 questions
+[DEBUG] 2025-12-11 15:10:52,231 api.service_clients 6328 19168 [quiz_generator] POST http://localhost:8003/quiz/generate
+[WARNING] 2025-12-11 15:11:08,193 api.service_clients 6328 19168 [quiz_generator] Slow request: 15.96s
+[INFO] 2025-12-11 15:11:08,193 django.server 6328 19168 "POST /api/quiz/generate/ HTTP/1.1" 200 3645
+[INFO] 2025-12-11 15:11:28,981 django.server 6328 19168 "OPTIONS /api/quiz/save/ HTTP/1.1" 200 0
+[INFO] 2025-12-11 15:11:28,985 api.views 6328 19168 Saving quiz with 10 questions and title Quiz - test-document st01
+[DEBUG] 2025-12-11 15:11:28,986 api.service_clients 6328 19168 [quiz_generator] POST http://localhost:8003/quiz/save
+[ERROR] 2025-12-11 15:11:30,992 api.service_clients 6328 19168 [quiz_generator] HTTP 500: 500 Server Error: Internal Server Error for url: http://localhost:8003/quiz/save
+[ERROR] 2025-12-11 15:11:30,992 api.views 6328 19168 Quiz save failed: HTTP 500: 500 Server Error: Internal Server Error for url: http://localhost:8003/quiz/save
+[ERROR] 2025-12-11 15:11:31,000 django.request 6328 19168 Internal Server Error: /api/quiz/save/
+[ERROR] 2025-12-11 15:11:31,000 django.server 6328 19168 "POST /api/quiz/save/ HTTP/1.1" 500 102
+[DEBUG] 2025-12-11 15:11:42,883 api.service_clients 6328 19168 [quiz_generator] GET http://localhost:8003/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-11 15:11:42,891 django.server 6328 10732 "GET /api/documents/list/ HTTP/1.1" 200 8957
+[ERROR] 2025-12-11 15:11:50,963 api.service_clients 6328 19168 [quiz_generator] Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd?limit=50&offset=0 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:11:50,963 api.views 6328 19168 Failed to get user quizzes: Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd?limit=50&offset=0 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:11:50,963 django.request 6328 19168 Internal Server Error: /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/
+[ERROR] 2025-12-11 15:11:50,963 django.server 6328 19168 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 500 233
+[DEBUG] 2025-12-11 15:12:48,059 api.service_clients 6328 19168 [quiz_generator] GET http://localhost:8003/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-11 15:12:48,068 django.server 6328 10732 "GET /api/documents/list/ HTTP/1.1" 200 8957
+[ERROR] 2025-12-11 15:12:56,151 api.service_clients 6328 19168 [quiz_generator] Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd?limit=50&offset=0 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:12:56,151 api.views 6328 19168 Failed to get user quizzes: Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd?limit=50&offset=0 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:12:56,151 django.request 6328 19168 Internal Server Error: /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/
+[ERROR] 2025-12-11 15:12:56,151 django.server 6328 19168 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 500 233
+[DEBUG] 2025-12-11 15:13:08,825 api.service_clients 6328 19168 [quiz_generator] GET http://localhost:8003/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-11 15:13:08,832 django.server 6328 10732 "GET /api/documents/list/ HTTP/1.1" 200 8957
+[ERROR] 2025-12-11 15:13:16,902 api.service_clients 6328 19168 [quiz_generator] Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd?limit=50&offset=0 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:13:16,903 api.views 6328 19168 Failed to get user quizzes: Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd?limit=50&offset=0 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:13:16,905 django.request 6328 19168 Internal Server Error: /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/
+[ERROR] 2025-12-11 15:13:16,907 django.server 6328 19168 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 500 233
+[INFO] 2025-12-11 15:19:41,812 api.views 6328 11708 Login attempt for username: Student01
+[INFO] 2025-12-11 15:19:41,814 api.views 6328 11708 Calling IAM service to login user: Student01
+[INFO] 2025-12-11 15:19:41,815 api.service_clients 6328 11708 [iam_service] Login attempt for user: Student01
+[DEBUG] 2025-12-11 15:19:41,816 api.service_clients 6328 11708 [iam_service] POST http://localhost:8005/api/users/login/
+[INFO] 2025-12-11 15:19:46,483 api.service_clients 6328 11708 [iam_service] Login successful for user: Student01
+[INFO] 2025-12-11 15:19:46,483 api.views 6328 11708 User logged in successfully: Student01
+[INFO] 2025-12-11 15:19:46,485 django.server 6328 11708 "POST /api/auth/login/ HTTP/1.1" 200 1359
+[DEBUG] 2025-12-11 15:19:46,562 api.service_clients 6328 11708 [quiz_generator] GET http://localhost:8003/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-11 15:19:46,563 api.service_clients 6328 19116 [quiz_evaluator] GET http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[ERROR] 2025-12-11 15:19:46,580 api.service_clients 6328 19116 [quiz_evaluator] HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 15:19:46,582 api.views 6328 19116 Failed to get recent results: HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 15:19:46,583 django.request 6328 19116 Internal Server Error: /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 15:19:46,585 django.server 6328 19116 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 145
+[ERROR] 2025-12-11 15:19:54,660 api.service_clients 6328 11708 [quiz_generator] Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:19:54,660 api.views 6328 11708 Failed to get recent quizzes: Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:19:54,662 django.request 6328 11708 Internal Server Error: /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 15:19:54,662 django.server 6328 11708 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 230
+[INFO] 2025-12-11 15:20:36,066 django.server 6328 11708 "OPTIONS /api/summary/summarize_text/ HTTP/1.1" 200 0
+[INFO] 2025-12-11 15:20:36,074 api.service_clients 6328 11708 [summary_service] Summarizing text: 623 characters
+[DEBUG] 2025-12-11 15:20:36,074 api.service_clients 6328 11708 [summary_service] POST http://localhost:8009/summarize_text
+[ERROR] 2025-12-11 15:20:58,396 api.service_clients 6328 11708 [summary_service] Connection failed to summary_service: HTTPConnectionPool(host='localhost', port=8009): Max retries exceeded with url: /summarize_text (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000002070C987290>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[ERROR] 2025-12-11 15:20:58,396 api.views 6328 11708 Text summarization failed: Connection failed to summary_service
+[ERROR] 2025-12-11 15:20:58,398 django.request 6328 11708 Internal Server Error: /api/summary/summarize_text/
+[ERROR] 2025-12-11 15:20:58,399 django.server 6328 11708 "POST /api/summary/summarize_text/ HTTP/1.1" 500 49
+[INFO] 2025-12-11 15:27:22,398 django.utils.autoreload 6328 18672 E:\QuickQuiz\services\gateway_service\gateway\settings.py changed, reloading.
+[INFO] 2025-12-11 15:27:23,832 django.utils.autoreload 11144 18008 Watching for file changes with StatReloader
+[INFO] 2025-12-11 15:30:00,423 django.utils.autoreload 11144 18008 E:\QuickQuiz\services\gateway_service\gateway\settings.py changed, reloading.
+[INFO] 2025-12-11 15:30:01,895 django.utils.autoreload 20248 19944 Watching for file changes with StatReloader
+[INFO] 2025-12-11 15:30:11,489 api.service_clients 20248 2276 [summary_service] Summarizing text: 623 characters
+[DEBUG] 2025-12-11 15:30:11,489 api.service_clients 20248 2276 [summary_service] POST http://localhost:8008/summarize_text
+[WARNING] 2025-12-11 15:30:19,404 api.service_clients 20248 2276 [summary_service] Slow request: 7.91s
+[INFO] 2025-12-11 15:30:19,406 django.server 20248 2276 "POST /api/summary/summarize_text/ HTTP/1.1" 200 2104
+[INFO] 2025-12-11 15:30:32,742 django.server 20248 2276 "OPTIONS /api/documents/save/ HTTP/1.1" 200 0
+[INFO] 2025-12-11 15:30:32,748 api.views 20248 2276 Saving document: test-document.txt (ID: doc_1765441819410_59fqy72oi)
+[INFO] 2025-12-11 15:30:32,771 django.server 20248 2276 "POST /api/documents/save/ HTTP/1.1" 200 153
+[INFO] 2025-12-11 15:30:46,537 django.server 20248 2276 "OPTIONS /api/quiz/generate/ HTTP/1.1" 200 0
+[INFO] 2025-12-11 15:30:46,541 api.views 20248 2276 Generating quiz: 1 sections, 5 questions
+[INFO] 2025-12-11 15:30:46,542 api.service_clients 20248 2276 [quiz_generator] Generating quiz: 1 sections, 5 questions
+[DEBUG] 2025-12-11 15:30:46,543 api.service_clients 20248 2276 [quiz_generator] POST http://localhost:8003/quiz/generate
+[WARNING] 2025-12-11 15:30:56,732 api.service_clients 20248 2276 [quiz_generator] Slow request: 10.19s
+[INFO] 2025-12-11 15:30:56,735 django.server 20248 2276 "POST /api/quiz/generate/ HTTP/1.1" 200 2103
+[INFO] 2025-12-11 15:31:45,736 django.server 20248 2276 "OPTIONS /api/quiz/save/ HTTP/1.1" 200 0
+[INFO] 2025-12-11 15:31:45,741 api.views 20248 2276 Saving quiz with 5 questions and title Quiz - test-document St01
+[DEBUG] 2025-12-11 15:31:45,741 api.service_clients 20248 2276 [quiz_generator] POST http://localhost:8003/quiz/save
+[ERROR] 2025-12-11 15:31:47,809 api.service_clients 20248 2276 [quiz_generator] HTTP 500: 500 Server Error: Internal Server Error for url: http://localhost:8003/quiz/save
+[ERROR] 2025-12-11 15:31:47,810 api.views 20248 2276 Quiz save failed: HTTP 500: 500 Server Error: Internal Server Error for url: http://localhost:8003/quiz/save
+[ERROR] 2025-12-11 15:31:47,814 django.request 20248 2276 Internal Server Error: /api/quiz/save/
+[ERROR] 2025-12-11 15:31:47,815 django.server 20248 2276 "POST /api/quiz/save/ HTTP/1.1" 500 102
+[INFO] 2025-12-11 15:36:40,364 api.views 20248 2276 Saving quiz with 5 questions and title Quiz - test-document St01
+[DEBUG] 2025-12-11 15:36:40,365 api.service_clients 20248 2276 [quiz_generator] POST http://localhost:8003/quiz/save
+[ERROR] 2025-12-11 15:36:42,467 api.service_clients 20248 2276 [quiz_generator] HTTP 500: 500 Server Error: Internal Server Error for url: http://localhost:8003/quiz/save
+[ERROR] 2025-12-11 15:36:42,468 api.views 20248 2276 Quiz save failed: HTTP 500: 500 Server Error: Internal Server Error for url: http://localhost:8003/quiz/save
+[ERROR] 2025-12-11 15:36:42,471 django.request 20248 2276 Internal Server Error: /api/quiz/save/
+[ERROR] 2025-12-11 15:36:42,473 django.server 20248 2276 "POST /api/quiz/save/ HTTP/1.1" 500 102
+[INFO] 2025-12-11 15:37:53,763 django.utils.autoreload 15044 19232 Watching for file changes with StatReloader
+[DEBUG] 2025-12-11 15:37:57,921 api.service_clients 15044 16800 [quiz_generator] GET http://localhost:8003/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-11 15:37:57,925 api.service_clients 15044 17568 [quiz_evaluator] GET http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-11 15:37:58,306 api.service_clients 15044 15424 [quiz_generator] GET http://localhost:8003/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-11 15:37:58,309 api.service_clients 15044 19320 [quiz_evaluator] GET http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[ERROR] 2025-12-11 15:38:00,017 api.service_clients 15044 17568 [quiz_evaluator] HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 15:38:00,017 api.views 15044 17568 Failed to get recent results: HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 15:38:00,020 django.request 15044 17568 Internal Server Error: /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 15:38:00,022 django.server 15044 17568 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 145
+[ERROR] 2025-12-11 15:38:00,345 api.service_clients 15044 19320 [quiz_evaluator] HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 15:38:00,346 api.views 15044 19320 Failed to get recent results: HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 15:38:00,347 django.request 15044 19320 Internal Server Error: /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 15:38:00,348 django.server 15044 19320 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 145
+[ERROR] 2025-12-11 15:38:06,009 api.service_clients 15044 16800 [quiz_generator] Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:38:06,009 api.views 15044 16800 Failed to get recent quizzes: Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:38:06,009 django.request 15044 16800 Internal Server Error: /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 15:38:06,009 django.server 15044 16800 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 230
+[ERROR] 2025-12-11 15:38:06,374 api.service_clients 15044 15424 [quiz_generator] Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:38:06,374 api.views 15044 15424 Failed to get recent quizzes: Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:38:06,374 django.request 15044 15424 Internal Server Error: /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 15:38:06,374 django.server 15044 15424 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 230
+[INFO] 2025-12-11 15:50:11,706 django.server 15044 10388 "OPTIONS /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 0
+[INFO] 2025-12-11 15:50:11,706 django.server 15044 4948 "OPTIONS /api/documents/list/ HTTP/1.1" 200 0
+[DEBUG] 2025-12-11 15:50:11,706 api.service_clients 15044 4948 [quiz_generator] GET http://localhost:8003/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-11 15:50:11,725 django.server 15044 10388 "GET /api/documents/list/ HTTP/1.1" 200 11138
+[ERROR] 2025-12-11 15:50:19,831 api.service_clients 15044 4948 [quiz_generator] Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd?limit=50&offset=0 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:50:19,831 api.views 15044 4948 Failed to get user quizzes: Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd?limit=50&offset=0 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:50:19,831 django.request 15044 4948 Internal Server Error: /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/
+[ERROR] 2025-12-11 15:50:19,831 django.server 15044 4948 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 500 233
+[INFO] 2025-12-11 15:50:26,826 api.service_clients 15044 4948 [iam_service] Logging out user
+[DEBUG] 2025-12-11 15:50:26,827 api.service_clients 15044 4948 [iam_service] POST http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 15:50:28,856 api.service_clients 15044 4948 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 15:50:28,856 api.views 15044 4948 Logout failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[WARNING] 2025-12-11 15:50:28,856 django.request 15044 4948 Bad Request: /api/auth/logout/
+[WARNING] 2025-12-11 15:50:28,856 django.server 15044 4948 "POST /api/auth/logout/ HTTP/1.1" 400 117
+[INFO] 2025-12-11 15:50:38,152 api.service_clients 15044 8564 [iam_service] Logging out user
+[DEBUG] 2025-12-11 15:50:38,153 api.service_clients 15044 8564 [iam_service] POST http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 15:50:38,159 api.service_clients 15044 8564 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[ERROR] 2025-12-11 15:50:38,160 api.views 15044 8564 Logout failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8005/api/users/logout/
+[WARNING] 2025-12-11 15:50:38,161 django.request 15044 8564 Bad Request: /api/auth/logout/
+[WARNING] 2025-12-11 15:50:38,163 django.server 15044 8564 "POST /api/auth/logout/ HTTP/1.1" 400 117
+[INFO] 2025-12-11 15:50:39,744 api.views 15044 8564 Login attempt for username: Student01
+[INFO] 2025-12-11 15:50:39,745 api.views 15044 8564 Calling IAM service to login user: Student01
+[INFO] 2025-12-11 15:50:39,745 api.service_clients 15044 8564 [iam_service] Login attempt for user: Student01
+[DEBUG] 2025-12-11 15:50:39,746 api.service_clients 15044 8564 [iam_service] POST http://localhost:8005/api/users/login/
+[INFO] 2025-12-11 15:50:42,544 api.service_clients 15044 8564 [iam_service] Login successful for user: Student01
+[INFO] 2025-12-11 15:50:42,554 api.views 15044 8564 User logged in successfully: Student01
+[INFO] 2025-12-11 15:50:42,554 django.server 15044 8564 "POST /api/auth/login/ HTTP/1.1" 200 1359
+[DEBUG] 2025-12-11 15:50:42,598 api.service_clients 15044 8564 [quiz_generator] GET http://localhost:8003/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-11 15:50:42,599 api.service_clients 15044 2600 [quiz_evaluator] GET http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[ERROR] 2025-12-11 15:50:42,617 api.service_clients 15044 2600 [quiz_evaluator] HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 15:50:42,618 api.views 15044 2600 Failed to get recent results: HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 15:50:42,619 django.request 15044 2600 Internal Server Error: /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 15:50:42,622 django.server 15044 2600 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 145
+[ERROR] 2025-12-11 15:50:50,664 api.service_clients 15044 8564 [quiz_generator] Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:50:50,664 api.views 15044 8564 Failed to get recent quizzes: Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 15:50:50,664 django.request 15044 8564 Internal Server Error: /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 15:50:50,664 django.server 15044 8564 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 230
+[INFO] 2025-12-11 15:50:57,387 api.service_clients 15044 8564 [summary_service] Summarizing text: 623 characters
+[DEBUG] 2025-12-11 15:50:57,387 api.service_clients 15044 8564 [summary_service] POST http://localhost:8008/summarize_text
+[WARNING] 2025-12-11 15:51:05,412 api.service_clients 15044 8564 [summary_service] Slow request: 8.03s
+[INFO] 2025-12-11 15:51:05,417 django.server 15044 8564 "POST /api/summary/summarize_text/ HTTP/1.1" 200 1746
+[INFO] 2025-12-11 15:51:07,443 django.server 15044 8564 "OPTIONS /api/documents/save/ HTTP/1.1" 200 0
+[INFO] 2025-12-11 15:51:07,447 api.views 15044 8564 Saving document: test-document.txt (ID: doc_1765443065419_jmd5zlyi3)
+[INFO] 2025-12-11 15:51:07,449 django.server 15044 8564 "POST /api/documents/save/ HTTP/1.1" 200 153
+[INFO] 2025-12-11 15:51:48,453 api.views 15044 8564 Generating quiz: 1 sections, 5 questions
+[INFO] 2025-12-11 15:51:48,454 api.service_clients 15044 8564 [quiz_generator] Generating quiz: 1 sections, 5 questions
+[DEBUG] 2025-12-11 15:51:48,455 api.service_clients 15044 8564 [quiz_generator] POST http://localhost:8003/quiz/generate
+[DEBUG] 2025-12-11 15:59:22,072 api.service_clients 15044 17684 [quiz_evaluator] GET http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[INFO] 2025-12-11 16:09:54,590 django.utils.autoreload 5056 17008 Watching for file changes with StatReloader
+[INFO] 2025-12-11 16:11:15,253 django.utils.autoreload 20060 15740 Watching for file changes with StatReloader
+[INFO] 2025-12-11 16:11:31,178 api.views 20060 5264 Login attempt for username: Student01
+[INFO] 2025-12-11 16:11:31,178 api.views 20060 5264 Calling IAM service to login user: Student01
+[INFO] 2025-12-11 16:11:31,179 api.service_clients 20060 5264 [iam_service] Login attempt for user: Student01
+[DEBUG] 2025-12-11 16:11:31,179 api.service_clients 20060 5264 [iam_service] POST http://localhost:8005/api/users/login/
+[INFO] 2025-12-11 16:11:35,941 api.service_clients 20060 5264 [iam_service] Login successful for user: Student01
+[INFO] 2025-12-11 16:11:35,941 api.views 20060 5264 User logged in successfully: Student01
+[INFO] 2025-12-11 16:11:35,941 django.server 20060 5264 "POST /api/auth/login/ HTTP/1.1" 200 1359
+[DEBUG] 2025-12-11 16:11:36,004 api.service_clients 20060 5264 [quiz_generator] GET http://localhost:8003/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-11 16:11:36,007 api.service_clients 20060 18816 [quiz_evaluator] GET http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[ERROR] 2025-12-11 16:11:38,075 api.service_clients 20060 18816 [quiz_evaluator] HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 16:11:38,075 api.views 20060 18816 Failed to get recent results: HTTP 500: 404 Client Error: Not Found for url: http://localhost:8005/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5
+[ERROR] 2025-12-11 16:11:38,075 django.request 20060 18816 Internal Server Error: /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 16:11:38,081 django.server 20060 18816 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 145
+[ERROR] 2025-12-11 16:11:44,094 api.service_clients 20060 5264 [quiz_generator] Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 16:11:44,094 api.views 20060 5264 Failed to get recent quizzes: Unexpected error: HTTPConnectionPool(host='localhost', port=8003): Max retries exceeded with url: /quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent?limit=5 (Caused by ResponseError('too many 500 error responses'))
+[ERROR] 2025-12-11 16:11:44,097 django.request 20060 5264 Internal Server Error: /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/
+[ERROR] 2025-12-11 16:11:44,097 django.server 20060 5264 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 500 230
+[INFO] 2025-12-11 16:15:53,380 django.utils.autoreload 20060 15740 E:\QuickQuiz\services\gateway_service\gateway\settings.py changed, reloading.
+[INFO] 2025-12-11 16:15:54,744 django.utils.autoreload 8564 18044 Watching for file changes with StatReloader
+[INFO] 2025-12-11 16:19:30,961 api.service_clients 8564 4880 [summary_service] Summarizing text: 623 characters
+[DEBUG] 2025-12-11 16:19:30,961 api.service_clients 8564 4880 [summary_service] POST http://localhost:8008/summarize_text
+[WARNING] 2025-12-11 16:19:38,386 api.service_clients 8564 4880 [summary_service] Slow request: 7.42s
+[INFO] 2025-12-11 16:19:38,400 django.server 8564 4880 "POST /api/summary/summarize_text/ HTTP/1.1" 200 1957
+[INFO] 2025-12-11 16:19:42,422 api.views 8564 4880 Saving document: test-document.txt (ID: doc_1765444778404_7o5k00n0n)
+[INFO] 2025-12-11 16:19:42,439 django.server 8564 4880 "POST /api/documents/save/ HTTP/1.1" 200 153
+[INFO] 2025-12-11 16:20:00,371 django.server 8564 4880 "GET /api/documents/list/ HTTP/1.1" 200 15542
+[INFO] 2025-12-11 16:20:24,741 api.views 8564 4880 Generating quiz: 1 sections, 5 questions
+[INFO] 2025-12-11 16:20:24,742 api.service_clients 8564 4880 [quiz_generator] Generating quiz: 1 sections, 5 questions
+[DEBUG] 2025-12-11 16:20:24,743 api.service_clients 8564 4880 [quiz_generator] POST http://localhost:8003/quiz/generate
+[WARNING] 2025-12-11 16:20:34,522 api.service_clients 8564 4880 [quiz_generator] Slow request: 9.78s
+[INFO] 2025-12-11 16:20:34,525 django.server 8564 4880 "POST /api/quiz/generate/ HTTP/1.1" 200 2152
+[INFO] 2025-12-11 16:20:50,900 api.views 8564 4880 Saving quiz with 5 questions and title abcd
+[DEBUG] 2025-12-11 16:20:50,901 api.service_clients 8564 4880 [quiz_generator] POST http://localhost:8003/quiz/save
+[ERROR] 2025-12-11 16:20:52,932 api.service_clients 8564 4880 [quiz_generator] HTTP 500: 500 Server Error: Internal Server Error for url: http://localhost:8003/quiz/save
+[ERROR] 2025-12-11 16:20:52,932 api.views 8564 4880 Quiz save failed: HTTP 500: 500 Server Error: Internal Server Error for url: http://localhost:8003/quiz/save
+[ERROR] 2025-12-11 16:20:52,932 django.request 8564 4880 Internal Server Error: /api/quiz/save/
+[ERROR] 2025-12-11 16:20:52,932 django.server 8564 4880 "POST /api/quiz/save/ HTTP/1.1" 500 102
+[INFO] 2025-12-11 16:21:02,239 django.utils.autoreload 8564 18044 E:\QuickQuiz\services\gateway_service\gateway\settings.py changed, reloading.
+[INFO] 2025-12-11 16:21:03,808 django.utils.autoreload 16136 19912 Watching for file changes with StatReloader
+[INFO] 2025-12-11 16:21:22,283 api.views 16136 12016 Saving quiz with 5 questions and title abcd
+[DEBUG] 2025-12-11 16:21:22,283 api.service_clients 16136 12016 [quiz_generator] POST http://localhost:8003/quiz/save
+[ERROR] 2025-12-11 16:21:24,344 api.service_clients 16136 12016 [quiz_generator] HTTP 500: 500 Server Error: Internal Server Error for url: http://localhost:8003/quiz/save
+[ERROR] 2025-12-11 16:21:24,344 api.views 16136 12016 Quiz save failed: HTTP 500: 500 Server Error: Internal Server Error for url: http://localhost:8003/quiz/save
+[ERROR] 2025-12-11 16:21:24,352 django.request 16136 12016 Internal Server Error: /api/quiz/save/
+[ERROR] 2025-12-11 16:21:24,354 django.server 16136 12016 "POST /api/quiz/save/ HTTP/1.1" 500 102

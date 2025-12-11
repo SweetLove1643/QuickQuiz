@@ -181,7 +181,7 @@ MICROSERVICES = {
     },
     "quiz_evaluator": {
         "host": os.getenv("QUIZ_EVALUATOR_HOST", "localhost"),
-        "port": os.getenv("QUIZ_EVALUATOR_PORT", "8005"),
+        "port": os.getenv("QUIZ_EVALUATOR_PORT", "8004"),
         "health_endpoint": "/health",
         "timeout": 60,
         "retry_count": 3,
@@ -195,7 +195,7 @@ MICROSERVICES = {
     },
     "summary_service": {
         "host": os.getenv("SUMMARY_SERVICE_HOST", "localhost"),
-        "port": os.getenv("SUMMARY_SERVICE_PORT", "8009"),
+        "port": os.getenv("SUMMARY_SERVICE_PORT", "8008"),
         "health_endpoint": "/health",
         "timeout": 60,  # Summarization might take longer
         "retry_count": 3,
