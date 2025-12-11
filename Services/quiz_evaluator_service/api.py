@@ -145,6 +145,104 @@ async def get_grading_scale():
     }
 
 
+@app.get("/results/user/{user_id}")
+async def get_user_results(user_id: str, limit: int = 50, offset: int = 0):
+    """Get all quiz results for a specific user."""
+    try:
+        from database import QuizSubmission, get_db
+
+        db = next(get_db())
+        results = (
+            db.query(QuizSubmission)
+            .filter(QuizSubmission.user_id == user_id)
+            .order_by(QuizSubmission.submitted_at.desc())
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )
+
+        return {
+            "success": True,
+            "user_id": user_id,
+            "results": [
+                {
+                    "submission_id": r.submission_id,
+                    "quiz_id": r.quiz_id,
+                    "score_percentage": r.score_percentage,
+                    "grade": (
+                        "A"
+                        if r.score_percentage >= 90
+                        else (
+                            "B"
+                            if r.score_percentage >= 80
+                            else (
+                                "C"
+                                if r.score_percentage >= 70
+                                else "D" if r.score_percentage >= 60 else "F"
+                            )
+                        )
+                    ),
+                    "total_questions": r.total_questions,
+                    "correct_count": r.correct_count,
+                    "completion_time": r.completion_time,
+                    "submitted_at": (
+                        r.submitted_at.isoformat() if r.submitted_at else None
+                    ),
+                }
+                for r in results
+            ],
+            "total": len(results),
+        }
+    except Exception as e:
+        logger.error(f"Failed to get user results: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to retrieve results: {str(e)}"
+        )
+    finally:
+        if db:
+            db.close()
+
+
+@app.get("/results/user/{user_id}/recent")
+async def get_user_recent_results(user_id: str, limit: int = 10):
+    """Get recent quiz results for a user (for home page)."""
+    try:
+        from database import QuizSubmission, get_db
+
+        db = next(get_db())
+        results = (
+            db.query(QuizSubmission)
+            .filter(QuizSubmission.user_id == user_id)
+            .order_by(QuizSubmission.submitted_at.desc())
+            .limit(limit)
+            .all()
+        )
+
+        return {
+            "success": True,
+            "user_id": user_id,
+            "recent_results": [
+                {
+                    "submission_id": r.submission_id,
+                    "quiz_id": r.quiz_id,
+                    "score_percentage": r.score_percentage,
+                    "submitted_at": (
+                        r.submitted_at.isoformat() if r.submitted_at else None
+                    ),
+                }
+                for r in results
+            ],
+        }
+    except Exception as e:
+        logger.error(f"Failed to get recent results: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to retrieve recent results: {str(e)}"
+        )
+    finally:
+        if db:
+            db.close()
+
+
 @app.get("/")
 async def root():
     """Root endpoint with API information."""
@@ -156,6 +254,8 @@ async def root():
         "endpoints": {
             "evaluate_quiz": "POST /quiz/evaluate",
             "grading_scale": "GET /quiz/grading-scale",
+            "get_user_results": "GET /results/user/{user_id}",
+            "get_recent_results": "GET /results/user/{user_id}/recent",
         },
         "features": [
             "Automatic scoring and grading",
@@ -163,6 +263,7 @@ async def root():
             "AI-powered learning recommendations",
             "Detailed explanations for incorrect answers",
             "Evaluation history tracking",
+            "User-specific result management",
         ],
     }
 
