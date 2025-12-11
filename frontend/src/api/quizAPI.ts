@@ -8,7 +8,7 @@ const API_CONFIG = {
   // Individual services (fallback)
   SERVICES: {
     QUIZ_GENERATOR: "http://localhost:8003",
-    QUIZ_EVALUATOR: "http://localhost:8005",
+    QUIZ_EVALUATOR: "http://localhost:8003",
     GATEWAY: "http://localhost:8001",
   },
 

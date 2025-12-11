@@ -142,7 +142,7 @@ export const Login: React.FC = () => {
           {/* Admin Login Link */}
           <div className="mt-4 text-center">
             <a
-              href="http://localhost:8005/admin/"
+              href="http://localhost:8001/admin/"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
