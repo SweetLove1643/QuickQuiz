@@ -367,6 +367,82 @@ async def get_user_recent_quizzes(user_id: str, limit: int = 10):
             db.close()
 
 
+@app.get("/quiz/{quiz_id}")
+async def get_quiz_details(quiz_id: str):
+    """Get full quiz details including all questions."""
+    try:
+        db = get_db_session()
+        quiz = db.query(GeneratedQuiz).filter(GeneratedQuiz.quiz_id == quiz_id).first()
+
+        if not quiz:
+            raise HTTPException(status_code=404, detail="Quiz not found")
+
+        # Update last accessed time
+        quiz.last_accessed = datetime.utcnow()
+        quiz.access_count = (quiz.access_count or 0) + 1
+        db.commit()
+
+        return {
+            "success": True,
+            "quiz": {
+                "quiz_id": quiz.quiz_id,
+                "title": quiz.title or "Untitled Quiz",
+                "document_id": quiz.document_id,
+                "user_id": quiz.user_id,
+                "created_at": quiz.created_at.isoformat() if quiz.created_at else None,
+                "questions": (
+                    quiz.questions_data.get("questions", [])
+                    if quiz.questions_data
+                    else []
+                ),
+                "metadata": quiz.quiz_metadata,
+                "questions_count": (
+                    len(quiz.questions_data.get("questions", []))
+                    if quiz.questions_data
+                    else 0
+                ),
+            },
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get quiz details: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to retrieve quiz: {str(e)}"
+        )
+    finally:
+        if "db" in locals():
+            db.close()
+
+
+@app.delete("/quiz/{quiz_id}")
+async def delete_quiz(quiz_id: str):
+    """Delete a quiz by ID."""
+    try:
+        db = get_db_session()
+        quiz = db.query(GeneratedQuiz).filter(GeneratedQuiz.quiz_id == quiz_id).first()
+
+        if not quiz:
+            raise HTTPException(status_code=404, detail="Quiz not found")
+
+        db.delete(quiz)
+        db.commit()
+
+        return {
+            "success": True,
+            "message": f"Quiz {quiz_id} deleted successfully",
+            "deleted_quiz_id": quiz_id,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to delete quiz: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete quiz: {str(e)}")
+    finally:
+        if "db" in locals():
+            db.close()
+
+
 @app.get("/")
 async def root():
     """Root endpoint with API information."""
@@ -378,6 +454,8 @@ async def root():
         "endpoints": {
             "generate_quiz": "POST /quiz/generate",
             "save_quiz": "POST /quiz/save",
+            "get_quiz_details": "GET /quiz/{quiz_id}",
+            "delete_quiz": "DELETE /quiz/{quiz_id}",
             "get_user_quizzes": "GET /quiz/user/{user_id}",
             "get_recent_quizzes": "GET /quiz/user/{user_id}/recent",
             "validation_metrics": "GET /validation/metrics",
@@ -394,5 +472,7 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
+    import os
 
-    uvicorn.run(app, host="127.0.0.1", port=8003, reload=False, log_level="info")
+    port = int(os.getenv("PORT", "8002"))
+    uvicorn.run(app, host="127.0.0.1", port=port, reload=False, log_level="info")
