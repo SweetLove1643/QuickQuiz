@@ -3,13 +3,13 @@
 
 const API_CONFIG = {
   // API Gateway endpoint
-  BASE_URL: "http://localhost:8001/api",
+  BASE_URL: "http://localhost:8007/api",
 
   // Individual services (fallback)
   SERVICES: {
-    QUIZ_GENERATOR: "http://localhost:8003",
+    QUIZ_GENERATOR: "http://localhost:8002",
     QUIZ_EVALUATOR: "http://localhost:8003",
-    GATEWAY: "http://localhost:8001",
+    GATEWAY: "http://localhost:8007",
   },
 
   // Request timeout
