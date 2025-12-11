@@ -10,11 +10,16 @@ import {
   Edit,
   Trash2,
   Play,
+  Loader2,
+  Plus,
 } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Badge } from "./ui/badge";
+import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { quizAPI } from "../api/quizAPI";
 
 type PageType =
   | "home"
@@ -276,6 +281,64 @@ export function Library({
   onQuizSelected,
   onDocumentSelected,
 }: LibraryProps) {
+  const { user } = useAuth();
+  const [userQuizzes, setUserQuizzes] = useState<any[]>([]);
+  const [userDocuments, setUserDocuments] = useState<any[]>([]);
+  const [isLoadingQuizzes, setIsLoadingQuizzes] = useState(true);
+  const [isLoadingDocuments, setIsLoadingDocuments] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load user's quizzes
+  useEffect(() => {
+    const loadUserQuizzes = async () => {
+      if (!user?.id) {
+        setIsLoadingQuizzes(false);
+        return;
+      }
+
+      try {
+        setIsLoadingQuizzes(true);
+        const response = await quizAPI.getUserQuizzes(user.id);
+        if (response.success) {
+          setUserQuizzes(response.quizzes || []);
+        }
+      } catch (err) {
+        console.error("Failed to load user quizzes:", err);
+        setError("Không thể tải danh sách quiz");
+      } finally {
+        setIsLoadingQuizzes(false);
+      }
+    };
+
+    loadUserQuizzes();
+  }, [user?.id]);
+
+  // Load user's documents
+  useEffect(() => {
+    const loadUserDocuments = async () => {
+      if (!user?.id) {
+        setIsLoadingDocuments(false);
+        return;
+      }
+
+      try {
+        setIsLoadingDocuments(true);
+        const response = await quizAPI.getDocuments();
+        if (response.success) {
+          // TODO: Filter by user_id when backend supports it
+          setUserDocuments(response.documents || []);
+        }
+      } catch (err) {
+        console.error("Failed to load user documents:", err);
+        setError("Không thể tải danh sách tài liệu");
+      } finally {
+        setIsLoadingDocuments(false);
+      }
+    };
+
+    loadUserDocuments();
+  }, [user?.id]);
+
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case "Dễ":
@@ -306,194 +369,200 @@ export function Library({
         <TabsList className="mb-6">
           <TabsTrigger value="documents">
             <FileText className="size-4 mr-2" />
-            Tài liệu của tôi ({myDocuments.length})
+            Tài liệu của tôi ({userDocuments.length})
           </TabsTrigger>
           <TabsTrigger value="quizzes">
             <Brain className="size-4 mr-2" />
-            Quiz của tôi ({myQuizzes.length})
+            Quiz của tôi ({userQuizzes.length})
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="documents" className="space-y-4">
-          {myDocuments.map((doc) => (
-            <Card
-              key={doc.id}
-              className="p-6 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4 flex-1">
-                  {/* Icon */}
-                  <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
-                    <FileText className="size-8 text-blue-600" />
-                  </div>
+          {isLoadingDocuments ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="size-8 animate-spin text-blue-600" />
+              <span className="ml-3 text-slate-600">Đang tải tài liệu...</span>
+            </div>
+          ) : userDocuments.length === 0 ? (
+            <div className="text-center py-12">
+              <FileText className="size-16 mx-auto text-slate-300 mb-4" />
+              <h3 className="text-lg font-medium text-slate-900 mb-2">
+                Chưa có tài liệu nào
+              </h3>
+              <p className="text-slate-600 mb-4">
+                Upload tài liệu đầu tiên của bạn để bắt đầu
+              </p>
+              <Button onClick={() => onNavigate?.("upload-document")}>
+                <Plus className="size-4 mr-2" />
+                Upload tài liệu
+              </Button>
+            </div>
+          ) : (
+            userDocuments.map((doc) => (
+              <Card
+                key={doc.id}
+                className="p-6 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-4 flex-1">
+                    {/* Icon */}
+                    <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                      <FileText className="size-8 text-blue-600" />
+                    </div>
 
-                  {/* Content */}
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <h3 className="text-slate-900 mb-2">{doc.title}</h3>
-                        <div className="flex items-center gap-3 text-slate-600">
-                          <span>{doc.pages} trang</span>
-                          <span>•</span>
-                          <span>{doc.uploadDate}</span>
-                          <Badge className={getStatusColor(doc.status)}>
-                            {doc.status}
-                          </Badge>
+                    {/* Content */}
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <h3 className="text-slate-900 mb-2">{doc.title}</h3>
+                          <div className="flex items-center gap-3 text-slate-600">
+                            <span>{doc.pages} trang</span>
+                            <span>•</span>
+                            <span>{doc.uploadDate}</span>
+                            <Badge className={getStatusColor(doc.status)}>
+                              {doc.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Stats */}
+                      <div className="flex items-center gap-6 text-slate-600 mt-4">
+                        <div className="flex items-center gap-2">
+                          <Eye className="size-4" />
+                          <span>{doc.views} lượt xem</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Download className="size-4" />
+                          <span>{doc.downloads} lượt tải</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Star className="size-4 fill-yellow-400 text-yellow-400" />
+                          <span>{doc.rating}</span>
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    {/* Stats */}
-                    <div className="flex items-center gap-6 text-slate-600 mt-4">
-                      <div className="flex items-center gap-2">
-                        <Eye className="size-4" />
-                        <span>{doc.views} lượt xem</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Download className="size-4" />
-                        <span>{doc.downloads} lượt tải</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Star className="size-4 fill-yellow-400 text-yellow-400" />
-                        <span>{doc.rating}</span>
-                      </div>
-                    </div>
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 ml-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        console.log("Viewing document:", doc.id);
+                        onDocumentSelected?.(doc);
+                      }}
+                    >
+                      <Eye className="size-4 mr-2" />
+                      Xem
+                    </Button>
+                    <Button variant="ghost" size="icon">
+                      <MoreVertical className="size-4" />
+                    </Button>
                   </div>
                 </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2 ml-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      console.log("Viewing document:", doc.id);
-                      onDocumentSelected?.(doc);
-                    }}
-                  >
-                    <Eye className="size-4 mr-2" />
-                    Xem
-                  </Button>
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical className="size-4" />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))}
-
-          {myDocuments.length === 0 && (
-            <div className="text-center py-12">
-              <FileText className="size-16 text-slate-300 mx-auto mb-4" />
-              <h3 className="text-slate-900 mb-2">Chưa có tài liệu nào</h3>
-              <p className="text-slate-600 mb-4">
-                Bắt đầu upload tài liệu đầu tiên của bạn
-              </p>
-              <Button>Upload tài liệu</Button>
-            </div>
+              </Card>
+            ))
           )}
         </TabsContent>
 
         <TabsContent value="quizzes" className="space-y-4">
-          {myQuizzes.map((quiz) => (
-            <Card
-              key={quiz.id}
-              className="p-6 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4 flex-1">
-                  {/* Icon */}
-                  <div className="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center shrink-0">
-                    <Brain className="size-8 text-purple-600" />
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="text-slate-900">{quiz.title}</h3>
-                          <Badge
-                            className={getDifficultyColor(quiz.difficulty)}
-                          >
-                            {quiz.difficulty}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-3 text-slate-600">
-                          <Badge variant="outline">{quiz.category}</Badge>
-                          <span>{quiz.questions.length} câu hỏi</span>
-                          <span>•</span>
-                          <span>{quiz.createdDate}</span>
-                          <Badge className={getStatusColor(quiz.status)}>
-                            {quiz.status}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="flex items-center gap-6 text-slate-600 mt-4">
-                      <div className="flex items-center gap-2">
-                        <Users className="size-4" />
-                        <span>{quiz.participants} người tham gia</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="size-4" />
-                        <span>TB: {quiz.avgTime}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Star className="size-4 fill-yellow-400 text-yellow-400" />
-                        <span>{quiz.rating}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-green-600">
-                        <span>Điểm TB: {quiz.avgScore}%</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2 ml-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      console.log("Editing quiz:", quiz.id);
-                      onNavigate?.("create-quiz-standalone");
-                    }}
-                  >
-                    <Edit className="size-4 mr-2" />
-                    Chỉnh sửa
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      console.log("Taking quiz:", quiz.id);
-                      onNavigate?.("take-quiz");
-                      onQuizSelected?.(quiz);
-                    }}
-                  >
-                    <Play className="size-4 mr-2" />
-                    Làm bài
-                  </Button>
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical className="size-4" />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))}
-
-          {myQuizzes.length === 0 && (
-            <div className="text-center py-12">
-              <Brain className="size-16 text-slate-300 mx-auto mb-4" />
-              <h3 className="text-slate-900 mb-2">Chưa có quiz nào</h3>
-              <p className="text-slate-600 mb-4">
-                Tạo bài quiz đầu tiên của bạn
-              </p>
-              <Button>Tạo quiz mới</Button>
+          {isLoadingQuizzes ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="size-8 animate-spin text-blue-600" />
+              <span className="ml-3 text-slate-600">Đang tải quiz...</span>
             </div>
+          ) : userQuizzes.length === 0 ? (
+            <div className="text-center py-12">
+              <Brain className="size-16 mx-auto text-slate-300 mb-4" />
+              <h3 className="text-lg font-medium text-slate-900 mb-2">
+                Chưa có quiz nào
+              </h3>
+              <p className="text-slate-600 mb-4">
+                Tạo quiz đầu tiên của bạn từ tài liệu
+              </p>
+              <Button onClick={() => onNavigate?.("create-quiz-standalone")}>
+                <Brain className="size-4 mr-2" />
+                Tạo Quiz
+              </Button>
+            </div>
+          ) : (
+            userQuizzes.map((quiz) => (
+              <Card
+                key={quiz.quiz_id}
+                className="p-6 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-4 flex-1">
+                    {/* Icon */}
+                    <div className="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center shrink-0">
+                      <Brain className="size-8 text-purple-600" />
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="text-slate-900">{quiz.title}</h3>
+                          </div>
+                          <div className="flex items-center gap-3 text-slate-600 text-sm">
+                            <span>{quiz.questions_count} câu hỏi</span>
+                            <span>•</span>
+                            <span>
+                              {quiz.created_at
+                                ? new Date(quiz.created_at).toLocaleDateString(
+                                    "vi-VN"
+                                  )
+                                : "Không rõ"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Document info */}
+                      {quiz.document_id && (
+                        <div className="mt-2 text-sm text-slate-600">
+                          <FileText className="size-3 inline mr-1" />
+                          Từ tài liệu
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 ml-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        console.log("Editing quiz:", quiz.quiz_id);
+                        onNavigate?.("create-quiz-standalone");
+                      }}
+                    >
+                      <Edit className="size-4 mr-2" />
+                      Chỉnh sửa
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        console.log("Taking quiz:", quiz.quiz_id);
+                        onNavigate?.("take-quiz");
+                        onQuizSelected?.(quiz);
+                      }}
+                    >
+                      <Play className="size-4 mr-2" />
+                      Làm bài
+                    </Button>
+                    <Button variant="ghost" size="icon">
+                      <MoreVertical className="size-4" />
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))
           )}
         </TabsContent>
       </Tabs>

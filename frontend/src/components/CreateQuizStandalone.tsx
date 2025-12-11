@@ -11,6 +11,7 @@ import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
 import {
   quizAPI,
   convertToBackendFormat,
@@ -59,6 +60,7 @@ interface Document {
 export function CreateQuizStandalone({
   onQuizCreated,
 }: CreateQuizStandaloneProps) {
+  const { user } = useAuth();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [selectedDocumentId, setSelectedDocumentId] = useState("");
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(
@@ -271,8 +273,13 @@ export function CreateQuizStandalone({
     setApiError(null);
 
     try {
+      if (!user?.id) {
+        throw new Error("Bạn cần đăng nhập để lưu quiz");
+      }
+
       // Convert questions to backend format
       const quizPayload = {
+        user_id: user.id,
         title: quizTitle,
         document_id: selectedDocument?.document_id,
         document_name: selectedDocument?.file_name || "Không có tài liệu",

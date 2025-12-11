@@ -4,6 +4,7 @@ import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
 import {
   Dialog,
   DialogContent,
@@ -44,6 +45,7 @@ interface Question {
 }
 
 export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
+  const { user } = useAuth();
   const [quizTitle, setQuizTitle] = useState(
     `Quiz - ${document?.fileName || "Tài liệu"}`
   );
@@ -217,7 +219,12 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
     setSaveError(null);
 
     try {
+      if (!user?.id) {
+        throw new Error("Bạn cần đăng nhập để lưu quiz");
+      }
+
       const payload = {
+        user_id: user.id,
         title: quizTitle,
         document_id: document?.documentId,
         document_name: document?.fileName,

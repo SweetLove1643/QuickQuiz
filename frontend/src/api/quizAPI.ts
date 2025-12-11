@@ -271,6 +271,7 @@ class QuizAPI {
 
   // Save generated quiz to database
   async saveQuiz(quiz: {
+    user_id: string; // Required: user who creates the quiz
     title: string;
     document_id?: string;
     document_name?: string;
@@ -285,11 +286,105 @@ class QuizAPI {
   }): Promise<{
     success: boolean;
     quiz_id: string;
+    user_id: string;
     saved_at: string;
   }> {
     return this.makeRequest("/quiz/save/", {
       method: "POST",
       body: JSON.stringify(quiz),
+    });
+  }
+
+  // Get quizzes created by a specific user
+  async getUserQuizzes(
+    userId: string,
+    limit: number = 50,
+    offset: number = 0
+  ): Promise<{
+    success: boolean;
+    user_id: string;
+    quizzes: Array<{
+      quiz_id: string;
+      title: string;
+      document_id: string | null;
+      created_at: string | null;
+      questions_count: number;
+      last_accessed: string | null;
+    }>;
+    total: number;
+  }> {
+    return this.makeRequest(
+      `/quiz/user/${userId}/?limit=${limit}&offset=${offset}`,
+      {
+        method: "GET",
+      }
+    );
+  }
+
+  // Get recent quizzes created by a user (for home page)
+  async getUserRecentQuizzes(
+    userId: string,
+    limit: number = 10
+  ): Promise<{
+    success: boolean;
+    user_id: string;
+    recent_quizzes: Array<{
+      quiz_id: string;
+      title: string;
+      document_id: string | null;
+      created_at: string | null;
+      questions_count: number;
+    }>;
+  }> {
+    return this.makeRequest(`/quiz/user/${userId}/recent/?limit=${limit}`, {
+      method: "GET",
+    });
+  }
+
+  // Get quiz results for a specific user
+  async getUserResults(
+    userId: string,
+    limit: number = 50,
+    offset: number = 0
+  ): Promise<{
+    success: boolean;
+    user_id: string;
+    results: Array<{
+      submission_id: string;
+      quiz_id: string;
+      score_percentage: number;
+      grade: string;
+      total_questions: number;
+      correct_count: number;
+      completion_time: number;
+      submitted_at: string | null;
+    }>;
+    total: number;
+  }> {
+    return this.makeRequest(
+      `/results/user/${userId}/?limit=${limit}&offset=${offset}`,
+      {
+        method: "GET",
+      }
+    );
+  }
+
+  // Get recent quiz results for a user (for home page)
+  async getUserRecentResults(
+    userId: string,
+    limit: number = 10
+  ): Promise<{
+    success: boolean;
+    user_id: string;
+    recent_results: Array<{
+      submission_id: string;
+      quiz_id: string;
+      score_percentage: number;
+      submitted_at: string | null;
+    }>;
+  }> {
+    return this.makeRequest(`/results/user/${userId}/recent/?limit=${limit}`, {
+      method: "GET",
     });
   }
 
