@@ -7,6 +7,7 @@ RESTful API endpoints for generating quizzes from Vietnamese text content.
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, ValidationError
 import logging
 import json
@@ -15,6 +16,8 @@ from pathlib import Path
 from typing import Dict, Any, List
 from datetime import datetime
 import uuid
+import tempfile
+import os
 
 # Add ai_validation to Python path
 ai_validation_path = Path(__file__).parent.parent / "ai_validation"
@@ -438,6 +441,210 @@ async def delete_quiz(quiz_id: str):
     except Exception as e:
         logger.error(f"Failed to delete quiz: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to delete quiz: {str(e)}")
+    finally:
+        if "db" in locals():
+            db.close()
+
+
+@app.get("/quiz/{quiz_id}/pdf")
+async def generate_quiz_pdf(quiz_id: str):
+    """Generate PDF file for a quiz with full Unicode support."""
+    try:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib import colors
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.platypus import (
+            SimpleDocTemplate,
+            Table,
+            TableStyle,
+            Paragraph,
+            Spacer,
+        )
+        from reportlab.pdfbase import pdfmetrics
+        from reportlab.pdfbase.ttfonts import TTFont
+        from reportlab.lib.units import inch
+
+        db = get_db_session()
+        quiz_record = (
+            db.query(GeneratedQuiz).filter(GeneratedQuiz.quiz_id == quiz_id).first()
+        )
+
+        if not quiz_record:
+            raise HTTPException(status_code=404, detail="Quiz not found")
+
+        # Handle both string and dict formats
+        if isinstance(quiz_record.questions_data, str):
+            quiz_data = json.loads(quiz_record.questions_data)
+        else:
+            quiz_data = quiz_record.questions_data
+
+        # Register Unicode font (Arial Unicode MS on Windows)
+        try:
+            # Try to use Arial Unicode MS first (best for Vietnamese)
+            arial_unicode_path = "C:/Windows/Fonts/ARIALUNI.TTF"
+            if os.path.exists(arial_unicode_path):
+                pdfmetrics.registerFont(TTFont("ArialUnicode", arial_unicode_path))
+                unicode_font = "ArialUnicode"
+            else:
+                # Fallback to Arial
+                arial_path = "C:/Windows/Fonts/arial.ttf"
+                if os.path.exists(arial_path):
+                    pdfmetrics.registerFont(TTFont("Arial", arial_path))
+                    unicode_font = "Arial"
+                else:
+                    # Last resort: use Helvetica (limited Unicode)
+                    unicode_font = "Helvetica"
+        except:
+            unicode_font = "Helvetica"
+
+        # Create temporary PDF file
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+        temp_file.close()
+
+        # Create PDF
+        doc = SimpleDocTemplate(
+            temp_file.name,
+            pagesize=A4,
+            leftMargin=0.75 * inch,
+            rightMargin=0.75 * inch,
+            topMargin=0.75 * inch,
+            bottomMargin=0.75 * inch,
+        )
+
+        # Build content
+        story = []
+        styles = getSampleStyleSheet()
+
+        # Title style with Unicode font
+        title_style = ParagraphStyle(
+            "CustomTitle",
+            parent=styles["Heading1"],
+            fontName=unicode_font,
+            fontSize=20,
+            textColor=colors.HexColor("#1a1a1a"),
+            spaceAfter=20,
+            alignment=1,  # Center
+        )
+
+        # Add title
+        title = quiz_data.get("title", "Quiz")
+        story.append(Paragraph(title, title_style))
+        story.append(Spacer(1, 0.2 * inch))
+
+        # Add metadata
+        meta_data = [
+            [
+                "Ngày tạo:",
+                (
+                    quiz_record.created_at.strftime("%d/%m/%Y %H:%M")
+                    if quiz_record.created_at
+                    else "N/A"
+                ),
+            ],
+            ["Số câu hỏi:", str(len(quiz_data.get("questions", [])))],
+        ]
+
+        meta_table = Table(meta_data, colWidths=[1.5 * inch, 4 * inch])
+        meta_table.setStyle(
+            TableStyle(
+                [
+                    ("FONTNAME", (0, 0), (-1, -1), unicode_font),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("TEXTCOLOR", (0, 0), (0, -1), colors.grey),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ]
+            )
+        )
+        story.append(meta_table)
+        story.append(Spacer(1, 0.3 * inch))
+
+        # Add questions
+        for idx, question in enumerate(quiz_data.get("questions", []), 1):
+            # Question header
+            q_data = [
+                [f"Câu {idx}", question.get("stem", question.get("question", ""))]
+            ]
+            q_table = Table(q_data, colWidths=[0.8 * inch, 5.7 * inch])
+            q_table.setStyle(
+                TableStyle(
+                    [
+                        ("FONTNAME", (0, 0), (0, 0), unicode_font),
+                        ("FONTNAME", (1, 0), (1, 0), unicode_font),
+                        ("FONTSIZE", (0, 0), (-1, -1), 11),
+                        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f0f0f0")),
+                        ("ALIGN", (0, 0), (0, 0), "CENTER"),
+                        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                        ("TOPPADDING", (0, 0), (-1, -1), 8),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                    ]
+                )
+            )
+            story.append(q_table)
+            story.append(Spacer(1, 0.1 * inch))
+
+            # Options
+            q_type = question.get("type", "mcq")
+            options_data = []
+
+            if q_type in ["mcq", "tf"]:
+                for opt_idx, option in enumerate(question.get("options", [])):
+                    label = chr(65 + opt_idx)  # A, B, C, D
+                    is_correct = option == question.get("answer")
+                    if is_correct:
+                        options_data.append(["", f"{label}. {option} ✓"])
+                    else:
+                        options_data.append(["", f"{label}. {option}"])
+            elif q_type == "fill_blank":
+                answer = question.get("answer") or (
+                    question.get("options", [None])[0]
+                    if question.get("options")
+                    else "___"
+                )
+                options_data.append(["", f"Đáp án: {answer}"])
+
+            if options_data:
+                opt_table = Table(options_data, colWidths=[0.8 * inch, 5.7 * inch])
+                styles_list = [
+                    ("FONTNAME", (0, 0), (-1, -1), unicode_font),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                    ("TOPPADDING", (0, 0), (-1, -1), 4),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ]
+
+                # Highlight correct answers
+                for i, row in enumerate(options_data):
+                    if "✓" in row[1] or "Đáp án:" in row[1]:
+                        styles_list.append(("TEXTCOLOR", (1, i), (1, i), colors.green))
+                        styles_list.append(("FONTNAME", (1, i), (1, i), unicode_font))
+
+                opt_table.setStyle(TableStyle(styles_list))
+                story.append(opt_table)
+
+            story.append(Spacer(1, 0.2 * inch))
+
+        # Build PDF
+        doc.build(story)
+
+        # Return file
+        filename = f"{quiz_data.get('title', 'quiz')}.pdf"
+
+        return FileResponse(
+            temp_file.name,
+            media_type="application/pdf",
+            filename=filename,
+            background=None,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to generate PDF: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {str(e)}")
     finally:
         if "db" in locals():
             db.close()
