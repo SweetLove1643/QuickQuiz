@@ -101,21 +101,15 @@ class BaseServiceClient:
         try:
             logger.debug(f"[{self.service_name}] {method} {url}")
 
-            # Prepare request kwargs
-            request_kwargs = {
-                "method": method,
-                "url": url,
-                "params": params,
-                "timeout": self.timeout,
+            response = self.session.request(
+                method=method,
+                url=url,
+                json=data,
+                params=params,
+                headers={"Content-Type": "application/json"},
+                timeout=self.timeout,
                 **kwargs,
-            }
-
-            # Only add json and Content-Type header if not sending files
-            if "files" not in kwargs:
-                request_kwargs["json"] = data
-                request_kwargs["headers"] = {"Content-Type": "application/json"}
-
-            response = self.session.request(**request_kwargs)
+            )
 
             response_time = time.time() - start_time
 
