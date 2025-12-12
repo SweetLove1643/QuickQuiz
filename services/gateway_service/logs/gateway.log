@@ -2760,3 +2760,34 @@ NameError: name 'FileResponse' is not defined
 [DEBUG] 2025-12-12 16:26:24,798 api.service_clients 8124 16956 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
 [INFO] 2025-12-12 16:26:24,807 django.server 8124 11248 "GET /api/documents/list/ HTTP/1.1" 200 2258
 [INFO] 2025-12-12 16:26:26,886 django.server 8124 16956 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[INFO] 2025-12-12 16:29:26,676 django.utils.autoreload 18668 15736 Watching for file changes with StatReloader
+[DEBUG] 2025-12-12 16:29:30,309 api.service_clients 18668 12640 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 16:29:30,317 django.server 18668 7772 "GET /api/documents/list/ HTTP/1.1" 200 2258
+[DEBUG] 2025-12-12 16:29:31,350 api.service_clients 18668 18964 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 16:29:31,356 django.server 18668 9904 "GET /api/documents/list/ HTTP/1.1" 200 2258
+[INFO] 2025-12-12 16:29:32,384 django.server 18668 12640 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[INFO] 2025-12-12 16:29:33,391 django.server 18668 18964 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[INFO] 2025-12-12 16:54:01,004 django.server 18668 7700 "OPTIONS /api/auth/logout/ HTTP/1.1" 200 0
+[INFO] 2025-12-12 16:54:01,007 api.service_clients 18668 7700 [iam_service] Logging out user
+[DEBUG] 2025-12-12 16:54:01,008 api.service_clients 18668 7700 [iam_service] POST http://localhost:8001/api/users/logout/
+[ERROR] 2025-12-12 16:54:03,072 api.service_clients 18668 7700 [iam_service] HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8001/api/users/logout/
+[ERROR] 2025-12-12 16:54:03,073 api.views 18668 7700 Logout failed: HTTP 500: 401 Client Error: Unauthorized for url: http://localhost:8001/api/users/logout/
+[WARNING] 2025-12-12 16:54:03,076 django.request 18668 7700 Bad Request: /api/auth/logout/
+[WARNING] 2025-12-12 16:54:03,077 django.server 18668 7700 "POST /api/auth/logout/ HTTP/1.1" 400 117
+[INFO] 2025-12-12 16:54:06,908 django.server 18668 7700 "OPTIONS /api/auth/login/ HTTP/1.1" 200 0
+[INFO] 2025-12-12 16:54:06,912 api.views 18668 7700 Login attempt for username: Student01
+[INFO] 2025-12-12 16:54:06,912 api.views 18668 7700 Calling IAM service to login user: Student01
+[INFO] 2025-12-12 16:54:06,912 api.service_clients 18668 7700 [iam_service] Login attempt for user: Student01
+[DEBUG] 2025-12-12 16:54:06,912 api.service_clients 18668 7700 [iam_service] POST http://localhost:8001/api/users/login/
+[INFO] 2025-12-12 16:54:09,457 api.service_clients 18668 7700 [iam_service] Login successful for user: Student01
+[INFO] 2025-12-12 16:54:09,458 api.views 18668 7700 User logged in successfully: Student01
+[INFO] 2025-12-12 16:54:09,459 django.server 18668 7700 "POST /api/auth/login/ HTTP/1.1" 200 1359
+[DEBUG] 2025-12-12 16:54:09,486 api.service_clients 18668 8408 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 16:54:09,492 django.server 18668 7700 "GET /api/documents/list/ HTTP/1.1" 200 2258
+[INFO] 2025-12-12 16:54:11,574 django.server 18668 8408 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[DEBUG] 2025-12-12 16:54:18,748 api.service_clients 18668 8408 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 16:54:18,754 django.server 18668 7700 "GET /api/documents/list/ HTTP/1.1" 200 2258
+[INFO] 2025-12-12 16:54:20,813 django.server 18668 8408 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[DEBUG] 2025-12-12 16:55:20,606 api.service_clients 18668 8408 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 16:55:20,613 django.server 18668 7700 "GET /api/documents/list/ HTTP/1.1" 200 2258
+[INFO] 2025-12-12 16:55:22,662 django.server 18668 8408 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
