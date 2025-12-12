@@ -12,9 +12,12 @@ import {
   FileEdit,
   Sparkles,
   MessageCircle,
+  LogOut,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -29,6 +32,13 @@ export function Sidebar({
   currentPage,
   onNavigate,
 }: SidebarProps) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/auth/login");
+  };
   return (
     <>
       {/* Overlay for mobile */}
@@ -129,6 +139,32 @@ export function Sidebar({
               <span>Chatbot</span>
             </button>
           </nav>
+
+          {/* User Section at Bottom - Only show when authenticated */}
+          {user && (
+            <div className="p-4 border-t border-slate-200">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50">
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <User className="size-5 text-blue-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-slate-900 text-sm font-medium truncate">
+                    {user.username}
+                  </p>
+                  <p className="text-slate-500 text-xs">
+                    {user.is_staff ? "Quản trị viên" : "Học viên"}
+                  </p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Đăng xuất"
+                >
+                  <LogOut className="size-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </aside>
     </>

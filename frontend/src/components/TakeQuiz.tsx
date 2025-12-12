@@ -84,7 +84,7 @@ export function TakeQuiz({ quiz, onQuizCompleted }: TakeQuizProps) {
       let userAnswer;
       let isCorrect = false;
 
-      if (q.type === "fill_blank") {
+      if (q.type === "fill_blank" || q.type === "fill-blank") {
         // For fill-in-the-blank, compare text answer
         userAnswer = textAnswers[idx] || "";
         const correctAnswer = q.options?.[0] || q.answer || "";
@@ -102,13 +102,13 @@ export function TakeQuiz({ quiz, onQuizCompleted }: TakeQuizProps) {
       return {
         question: q.question || q.stem,
         userAnswer:
-          q.type === "fill_blank"
+          q.type === "fill_blank" || q.type === "fill-blank"
             ? textAnswers[idx] || "Không trả lời"
             : userAnswers[idx] !== undefined
             ? q.options?.[userAnswers[idx]]
             : "Không trả lời",
         correctAnswer:
-          q.type === "fill_blank"
+          q.type === "fill_blank" || q.type === "fill-blank"
             ? q.options?.[0] || q.answer
             : q.options?.[q.correctAnswer],
         isCorrect,
@@ -164,7 +164,8 @@ export function TakeQuiz({ quiz, onQuizCompleted }: TakeQuizProps) {
         </h2>
 
         {/* Fill-in-the-blank question */}
-        {currentQuestion.type === "fill_blank" ? (
+        {currentQuestion.type === "fill_blank" ||
+        currentQuestion.type === "fill-blank" ? (
           <div className="space-y-4">
             <label className="block text-slate-700 mb-2">
               Nhập câu trả lời của bạn:
@@ -230,11 +231,11 @@ export function TakeQuiz({ quiz, onQuizCompleted }: TakeQuizProps) {
           Câu trước
         </Button>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap max-w-2xl">
           {quiz.questions.map((q: any, idx: number) => {
             const isAnswered =
-              q.type === "fill_blank"
-                ? textAnswers[idx]?.trim() !== ""
+              q.type === "fill_blank" || q.type === "fill-blank"
+                ? textAnswers[idx]?.trim() && textAnswers[idx]?.trim() !== ""
                 : userAnswers[idx] !== undefined;
 
             return (

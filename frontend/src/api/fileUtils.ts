@@ -117,6 +117,10 @@ export const processDocument = async (
       });
 
       // Backend returns { extracted_text, summary, ... } directly
+      if (!result || !result.extracted_text) {
+        throw new Error("Không nhận được dữ liệu từ server. Vui lòng thử lại.");
+      }
+
       extractedText = result.extracted_text;
       summaryResponse = { summary: result.summary, confidence_score: 0.9 };
       ocrResponse = {

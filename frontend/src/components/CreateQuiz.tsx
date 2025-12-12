@@ -258,14 +258,21 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
         throw new Error("Không thể lưu quiz");
       }
 
-      // Show success message
-      const successMsg = `Đã lưu bài quiz "${quizTitle}" thành công!`;
+      // Show success message and navigate to Take Quiz step
+      const successMsg = `Đã lưu bài quiz "${quizTitle}" thành công! Đang chuyển sang bước làm bài...`;
       setSaveSuccess(successMsg);
       setIsSavingQuiz(false);
-      // Auto-hide after 3 seconds and reset component
+
+      // Trigger navigation to Take Quiz step with quiz data
       setTimeout(() => {
-        resetComponent();
-      }, 3000);
+        onQuizCreated({
+          quiz_id: result.quiz?.quiz_id || `quiz-${Date.now()}`,
+          title: quizTitle,
+          questions: questions,
+          documentName: document?.fileName,
+          savedAt: new Date().toISOString(),
+        });
+      }, 1000);
       return;
     } catch (err) {
       console.error("Save quiz failed:", err);

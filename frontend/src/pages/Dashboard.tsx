@@ -11,6 +11,7 @@ import { TakeQuiz } from "../components/TakeQuiz";
 import { QuizResult } from "../components/QuizResult";
 import { ViewDocument } from "../components/ViewDocument";
 import { Chatbot } from "../components/Chatbot";
+import { quizAPI } from "../api/quizAPI";
 import { useState } from "react";
 
 type PageType =
@@ -132,7 +133,12 @@ export const Dashboard = () => {
             quiz={currentQuiz}
             onQuizCompleted={(result) => {
               setQuizResult(result);
-              setCurrentPage("quiz-result");
+              // Keep quick-start flow flag when navigating to results
+              if (isInQuickStartFlow) {
+                navigateToPage("quiz-result", true);
+              } else {
+                setCurrentPage("quiz-result");
+              }
             }}
           />
         );

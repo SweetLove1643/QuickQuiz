@@ -69,22 +69,6 @@ export function TopBar({
           )}
         </div>
 
-        {/* User Profile Section */}
-        {user && (
-          <div className="flex items-center gap-3 ml-auto">
-            <div className="text-slate-700 font-medium">
-              Xin chào {user?.username || "Khách"}
-            </div>
-            <button
-              onClick={handleLogout}
-              className="ml-2 p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-              title="Logout"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
-        )}
-
         {showProgress && (
           <div className="flex-1 max-w-4xl mx-auto px-8 py-4">
             <div className="relative flex items-center justify-between">
