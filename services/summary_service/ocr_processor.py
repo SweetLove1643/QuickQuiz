@@ -28,15 +28,28 @@ class OCRProcessor:
 
             for file in files:
                 content = await file.read()
+                filename = file.filename or ""
+                content_type = file.content_type or ""
 
-                if file.content_type == "application/pdf":
+                # Check by content type or filename extension
+                is_pdf = content_type == "application/pdf" or filename.lower().endswith(
+                    ".pdf"
+                )
+                is_image = content_type.startswith("image/") or any(
+                    filename.lower().endswith(ext)
+                    for ext in [".jpg", ".jpeg", ".png", ".bmp", ".tiff"]
+                )
+
+                if is_pdf:
                     # Handle PDF files
                     text = await self._extract_from_pdf(content)
-                elif file.content_type.startswith("image/"):
+                elif is_image:
                     # Handle image files
                     text = await self._extract_from_image(content)
                 else:
-                    logger.warning(f"Unsupported file type: {file.content_type}")
+                    logger.warning(
+                        f"Unsupported file: {filename} (type: {content_type})"
+                    )
                     continue
 
                 if text:
