@@ -109,17 +109,20 @@ export const processDocument = async (
 
   try {
     // Handle different file types
-    if (isImageFile(file)) {
-      // OCR processing for images
-      const base64 = await fileToBase64(file);
-      const combined = await quizAPI.ocrAndSummarize(base64, {
+    if (isImageFile(file) || file.type === "application/pdf") {
+      // OCR processing for images and PDFs
+      const result = await quizAPI.ocrAndSummarize(file, {
         style: "detailed",
         max_length: 500,
       });
 
-      ocrResponse = combined.ocr;
-      summaryResponse = combined.summary;
-      extractedText = ocrResponse.extracted_text;
+      // Backend returns { extracted_text, summary, ... } directly
+      extractedText = result.extracted_text;
+      summaryResponse = { summary: result.summary, confidence_score: 0.9 };
+      ocrResponse = {
+        extracted_text: result.extracted_text,
+        confidence_score: 0.9,
+      };
     } else if (file.type === "text/plain") {
       // Direct text extraction for text files
       extractedText = await extractTextFromTextFile(file);

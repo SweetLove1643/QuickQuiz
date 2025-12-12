@@ -2,28 +2,18 @@ import {
   FileText,
   Brain,
   Eye,
-  Download,
   Users,
   Clock,
-  Star,
-  MoreVertical,
   Edit,
   Trash2,
   Play,
   Loader2,
   Plus,
+  Printer,
 } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Badge } from "./ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "./ui/dropdown-menu";
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { quizAPI } from "../api/quizAPI";
@@ -353,25 +343,6 @@ export function Library({
     loadUserDocuments();
   }, [user?.id]);
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "Dễ":
-        return "bg-green-100 text-green-700";
-      case "Trung bình":
-        return "bg-yellow-100 text-yellow-700";
-      case "Khó":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-slate-100 text-slate-700";
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    return status === "Công khai"
-      ? "bg-green-100 text-green-700"
-      : "bg-slate-100 text-slate-700";
-  };
-
   return (
     <div>
       <div className="mb-8">
@@ -428,33 +399,31 @@ export function Library({
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
-                          <h3 className="text-slate-900 mb-2">{doc.title}</h3>
-                          <div className="flex items-center gap-3 text-slate-600">
-                            <span>{doc.pages} trang</span>
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="text-slate-900">
+                              {doc.file_name || doc.title}
+                            </h3>
+                          </div>
+                          <div className="flex items-center gap-3 text-slate-600 text-sm">
+                            <span>{doc.file_type || "Document"}</span>
                             <span>•</span>
-                            <span>{doc.uploadDate}</span>
-                            <Badge className={getStatusColor(doc.status)}>
-                              {doc.status}
-                            </Badge>
+                            <span>
+                              {doc.created_at
+                                ? new Date(doc.created_at).toLocaleDateString(
+                                    "vi-VN"
+                                  )
+                                : "Không rõ"}
+                            </span>
                           </div>
                         </div>
                       </div>
 
-                      {/* Stats */}
-                      <div className="flex items-center gap-6 text-slate-600 mt-4">
-                        <div className="flex items-center gap-2">
-                          <Eye className="size-4" />
-                          <span>{doc.views} lượt xem</span>
+                      {/* Summary preview */}
+                      {doc.summary && (
+                        <div className="mt-2 text-sm text-slate-600 line-clamp-2">
+                          {doc.summary}
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Download className="size-4" />
-                          <span>{doc.downloads} lượt tải</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Star className="size-4 fill-yellow-400 text-yellow-400" />
-                          <span>{doc.rating}</span>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </div>
 
@@ -464,15 +433,114 @@ export function Library({
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        console.log("Viewing document:", doc.id);
+                        console.log("Viewing document:", doc.document_id);
                         onDocumentSelected?.(doc);
                       }}
                     >
                       <Eye className="size-4 mr-2" />
                       Xem
                     </Button>
-                    <Button variant="ghost" size="icon">
-                      <MoreVertical className="size-4" />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        console.log("Editing document:", doc.document_id);
+                        onDocumentSelected?.(doc);
+                      }}
+                    >
+                      <Edit className="size-4 mr-2" />
+                      Chỉnh sửa
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          // Download PDF from backend (server-side generation with full Unicode support)
+                          const response = await fetch(
+                            `http://localhost:8007/api/documents/${doc.document_id}/pdf/`,
+                            {
+                              method: "GET",
+                              headers: {
+                                "Content-Type": "application/pdf",
+                              },
+                            }
+                          );
+
+                          if (!response.ok) {
+                            throw new Error("Failed to generate PDF");
+                          }
+
+                          // Get filename from header or use default
+                          const contentDisposition = response.headers.get(
+                            "content-disposition"
+                          );
+                          let filename = `${doc.file_name || "document"}.pdf`;
+                          if (contentDisposition) {
+                            const matches = /filename="?([^"]+)"?/.exec(
+                              contentDisposition
+                            );
+                            if (matches && matches[1]) {
+                              filename = matches[1];
+                            }
+                          }
+
+                          // Download blob
+                          const blob = await response.blob();
+                          const url = URL.createObjectURL(blob);
+                          const link = document.createElement("a");
+                          link.href = url;
+                          link.download = filename;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          URL.revokeObjectURL(url);
+                        } catch (error) {
+                          console.error("Failed to generate PDF:", error);
+                          alert("Không thể tạo PDF. Vui lòng thử lại.");
+                        }
+                      }}
+                    >
+                      <Printer className="size-4 mr-2" />
+                      In PDF
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      onClick={async () => {
+                        if (
+                          confirm(
+                            `Bạn có chắc muốn xóa tài liệu "${
+                              doc.file_name || doc.title
+                            }"?`
+                          )
+                        ) {
+                          try {
+                            const response = await quizAPI.deleteDocument(
+                              doc.document_id
+                            );
+                            if (response.success) {
+                              setUserDocuments((prev) =>
+                                prev.filter(
+                                  (d) => d.document_id !== doc.document_id
+                                )
+                              );
+                              alert("Đã xóa tài liệu thành công!");
+                            } else {
+                              throw new Error(
+                                response.error || "Failed to delete document"
+                              );
+                            }
+                          } catch (error) {
+                            console.error("Failed to delete document:", error);
+                            alert("Không thể xóa tài liệu. Vui lòng thử lại.");
+                          }
+                        }
+                      }}
+                    >
+                      <Trash2 className="size-4 mr-2" />
+                      Xóa
                     </Button>
                   </div>
                 </div>
@@ -534,14 +602,6 @@ export function Library({
                           </div>
                         </div>
                       </div>
-
-                      {/* Document info */}
-                      {quiz.document_id && (
-                        <div className="mt-2 text-sm text-slate-600">
-                          <FileText className="size-3 inline mr-1" />
-                          Từ tài liệu
-                        </div>
-                      )}
                     </div>
                   </div>
 
@@ -605,121 +665,84 @@ export function Library({
                       <Play className="size-4 mr-2" />
                       Làm bài
                     </Button>
-                    {/* Test Delete Button - Remove after testing */}
                     <Button
                       variant="outline"
                       size="sm"
+                      onClick={async () => {
+                        try {
+                          // Download PDF from backend (server-side generation with full Unicode support)
+                          const response = await fetch(
+                            `http://localhost:8007/api/quiz/${quiz.quiz_id}/pdf/`,
+                            {
+                              method: "GET",
+                              headers: {
+                                "Content-Type": "application/pdf",
+                              },
+                            }
+                          );
+
+                          if (!response.ok) {
+                            throw new Error("Failed to generate PDF");
+                          }
+
+                          // Get filename from header or use default
+                          const contentDisposition = response.headers.get(
+                            "content-disposition"
+                          );
+                          let filename = `${quiz.title || "quiz"}.pdf`;
+                          if (contentDisposition) {
+                            const match =
+                              contentDisposition.match(/filename="?([^"]+)"?/);
+                            if (match) {
+                              filename = match[1];
+                            }
+                          }
+
+                          // Download file
+                          const blob = await response.blob();
+                          const url = URL.createObjectURL(blob);
+                          const link = document.createElement("a");
+                          link.href = url;
+                          link.download = filename;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          URL.revokeObjectURL(url);
+                        } catch (error) {
+                          console.error("Failed to generate PDF:", error);
+                          alert("Không thể tạo PDF. Vui lòng thử lại.");
+                        }
+                      }}
+                    >
+                      <Printer className="size-4 mr-2" />
+                      In PDF
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       onClick={() => {
-                        console.log(
-                          "TEST DELETE BUTTON CLICKED:",
-                          quiz.quiz_id
-                        );
-                        if (confirm(`Xóa quiz "${quiz.title}"?`)) {
-                          console.log("Calling deleteQuiz API...");
+                        if (
+                          confirm(`Bạn có chắc muốn xóa quiz "${quiz.title}"?`)
+                        ) {
                           quizAPI
                             .deleteQuiz(quiz.quiz_id)
                             .then((res) => {
-                              console.log("Delete success:", res);
                               setUserQuizzes((prev) =>
                                 prev.filter((q) => q.quiz_id !== quiz.quiz_id)
                               );
-                              alert("Đã xóa!");
+                              alert("Đã xóa quiz thành công!");
                             })
                             .catch((err) => {
                               console.error("Delete error:", err);
-                              alert("Lỗi xóa!");
+                              alert("Không thể xóa quiz. Vui lòng thử lại.");
                             });
                         }
                       }}
                     >
                       <Trash2 className="size-4 mr-2" />
-                      TEST XÓA
+                      Xóa
                     </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="size-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onSelect={async (e) => {
-                            e.preventDefault();
-                            try {
-                              // Load quiz details for download
-                              const quizData = await quizAPI.getQuizDetails(
-                                quiz.quiz_id
-                              );
-                              const dataStr = JSON.stringify(
-                                quizData.quiz,
-                                null,
-                                2
-                              );
-                              const dataBlob = new Blob([dataStr], {
-                                type: "application/json",
-                              });
-                              const url = URL.createObjectURL(dataBlob);
-                              const link = document.createElement("a");
-                              link.href = url;
-                              link.download = `${quiz.title || "quiz"}.json`;
-                              document.body.appendChild(link);
-                              link.click();
-                              document.body.removeChild(link);
-                              URL.revokeObjectURL(url);
-                            } catch (error) {
-                              console.error("Failed to download quiz:", error);
-                              alert(
-                                "Không thể tải xuống quiz. Vui lòng thử lại."
-                              );
-                            }
-                          }}
-                        >
-                          <Download className="size-4 mr-2" />
-                          Tải xuống
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="text-red-600"
-                          onSelect={(e) => {
-                            e.preventDefault();
-                            console.log(
-                              "Delete menu item clicked for:",
-                              quiz.quiz_id
-                            );
-
-                            const confirmDelete = confirm(
-                              `Bạn có chắc muốn xóa quiz "${quiz.title}"?`
-                            );
-
-                            if (!confirmDelete) {
-                              console.log("Delete cancelled by user");
-                              return;
-                            }
-
-                            console.log("Proceeding with deletion...");
-
-                            // Call delete API
-                            quizAPI
-                              .deleteQuiz(quiz.quiz_id)
-                              .then((response) => {
-                                console.log("Delete response:", response);
-                                // Refresh quiz list
-                                setUserQuizzes((prev) =>
-                                  prev.filter((q) => q.quiz_id !== quiz.quiz_id)
-                                );
-                                alert("Đã xóa quiz thành công!");
-                              })
-                              .catch((error) => {
-                                console.error("Failed to delete quiz:", error);
-                                alert("Không thể xóa quiz. Vui lòng thử lại.");
-                              });
-                          }}
-                        >
-                          <Trash2 className="size-4 mr-2" />
-                          Xóa
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
                   </div>
                 </div>
               </Card>
