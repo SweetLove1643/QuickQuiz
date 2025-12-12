@@ -2757,3 +2757,6 @@ NameError: name 'FileResponse' is not defined
 [INFO] 2025-12-12 16:26:01,987 django.server 9544 14976 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
 [INFO] 2025-12-12 16:26:02,798 django.utils.autoreload 9544 18464 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
 [INFO] 2025-12-12 16:26:04,190 django.utils.autoreload 8124 20460 Watching for file changes with StatReloader
+[DEBUG] 2025-12-12 16:26:24,798 api.service_clients 8124 16956 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 16:26:24,807 django.server 8124 11248 "GET /api/documents/list/ HTTP/1.1" 200 2258
+[INFO] 2025-12-12 16:26:26,886 django.server 8124 16956 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
