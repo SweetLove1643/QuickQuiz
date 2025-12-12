@@ -40,9 +40,6 @@ __pycache__/
 *.log
 */logs/
 
-# Ignore SQLite database files
-*.sqlite3
-*.db
 
 # Ignore documentation build files
 *.ini
