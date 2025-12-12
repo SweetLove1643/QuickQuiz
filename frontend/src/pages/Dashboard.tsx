@@ -111,6 +111,7 @@ export const Dashboard = () => {
       case "create-quiz-standalone":
         return (
           <CreateQuizStandalone
+            editingQuiz={currentQuiz}
             onQuizCreated={(quiz) => {
               setCurrentQuiz(quiz);
               setCurrentPage("take-quiz");

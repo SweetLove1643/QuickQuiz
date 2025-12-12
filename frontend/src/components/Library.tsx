@@ -12,6 +12,7 @@ import {
   Play,
   Loader2,
   Plus,
+  Printer,
 } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
@@ -605,121 +606,84 @@ export function Library({
                       <Play className="size-4 mr-2" />
                       Làm bài
                     </Button>
-                    {/* Test Delete Button - Remove after testing */}
                     <Button
                       variant="outline"
                       size="sm"
+                      onClick={async () => {
+                        try {
+                          // Download PDF from backend (server-side generation with full Unicode support)
+                          const response = await fetch(
+                            `http://localhost:8007/api/quiz/${quiz.quiz_id}/pdf/`,
+                            {
+                              method: "GET",
+                              headers: {
+                                "Content-Type": "application/pdf",
+                              },
+                            }
+                          );
+
+                          if (!response.ok) {
+                            throw new Error("Failed to generate PDF");
+                          }
+
+                          // Get filename from header or use default
+                          const contentDisposition = response.headers.get(
+                            "content-disposition"
+                          );
+                          let filename = `${quiz.title || "quiz"}.pdf`;
+                          if (contentDisposition) {
+                            const match =
+                              contentDisposition.match(/filename="?([^"]+)"?/);
+                            if (match) {
+                              filename = match[1];
+                            }
+                          }
+
+                          // Download file
+                          const blob = await response.blob();
+                          const url = URL.createObjectURL(blob);
+                          const link = document.createElement("a");
+                          link.href = url;
+                          link.download = filename;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          URL.revokeObjectURL(url);
+                        } catch (error) {
+                          console.error("Failed to generate PDF:", error);
+                          alert("Không thể tạo PDF. Vui lòng thử lại.");
+                        }
+                      }}
+                    >
+                      <Printer className="size-4 mr-2" />
+                      In PDF
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       onClick={() => {
-                        console.log(
-                          "TEST DELETE BUTTON CLICKED:",
-                          quiz.quiz_id
-                        );
-                        if (confirm(`Xóa quiz "${quiz.title}"?`)) {
-                          console.log("Calling deleteQuiz API...");
+                        if (
+                          confirm(`Bạn có chắc muốn xóa quiz "${quiz.title}"?`)
+                        ) {
                           quizAPI
                             .deleteQuiz(quiz.quiz_id)
                             .then((res) => {
-                              console.log("Delete success:", res);
                               setUserQuizzes((prev) =>
                                 prev.filter((q) => q.quiz_id !== quiz.quiz_id)
                               );
-                              alert("Đã xóa!");
+                              alert("Đã xóa quiz thành công!");
                             })
                             .catch((err) => {
                               console.error("Delete error:", err);
-                              alert("Lỗi xóa!");
+                              alert("Không thể xóa quiz. Vui lòng thử lại.");
                             });
                         }
                       }}
                     >
                       <Trash2 className="size-4 mr-2" />
-                      TEST XÓA
+                      Xóa
                     </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="size-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onSelect={async (e) => {
-                            e.preventDefault();
-                            try {
-                              // Load quiz details for download
-                              const quizData = await quizAPI.getQuizDetails(
-                                quiz.quiz_id
-                              );
-                              const dataStr = JSON.stringify(
-                                quizData.quiz,
-                                null,
-                                2
-                              );
-                              const dataBlob = new Blob([dataStr], {
-                                type: "application/json",
-                              });
-                              const url = URL.createObjectURL(dataBlob);
-                              const link = document.createElement("a");
-                              link.href = url;
-                              link.download = `${quiz.title || "quiz"}.json`;
-                              document.body.appendChild(link);
-                              link.click();
-                              document.body.removeChild(link);
-                              URL.revokeObjectURL(url);
-                            } catch (error) {
-                              console.error("Failed to download quiz:", error);
-                              alert(
-                                "Không thể tải xuống quiz. Vui lòng thử lại."
-                              );
-                            }
-                          }}
-                        >
-                          <Download className="size-4 mr-2" />
-                          Tải xuống
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="text-red-600"
-                          onSelect={(e) => {
-                            e.preventDefault();
-                            console.log(
-                              "Delete menu item clicked for:",
-                              quiz.quiz_id
-                            );
-
-                            const confirmDelete = confirm(
-                              `Bạn có chắc muốn xóa quiz "${quiz.title}"?`
-                            );
-
-                            if (!confirmDelete) {
-                              console.log("Delete cancelled by user");
-                              return;
-                            }
-
-                            console.log("Proceeding with deletion...");
-
-                            // Call delete API
-                            quizAPI
-                              .deleteQuiz(quiz.quiz_id)
-                              .then((response) => {
-                                console.log("Delete response:", response);
-                                // Refresh quiz list
-                                setUserQuizzes((prev) =>
-                                  prev.filter((q) => q.quiz_id !== quiz.quiz_id)
-                                );
-                                alert("Đã xóa quiz thành công!");
-                              })
-                              .catch((error) => {
-                                console.error("Failed to delete quiz:", error);
-                                alert("Không thể xóa quiz. Vui lòng thử lại.");
-                              });
-                          }}
-                        >
-                          <Trash2 className="size-4 mr-2" />
-                          Xóa
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
                   </div>
                 </div>
               </Card>
