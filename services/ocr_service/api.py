@@ -5,6 +5,7 @@ import logging
 import time
 from io import BytesIO
 from PIL import Image
+from pdf2image import convert_from_bytes
 
 from schemas import OCRResponse, OCRMultiResponse, HealthResponse
 from ocr_processor import OCRProcessor
@@ -47,20 +48,53 @@ async def health_check():
 
 @app.post("/extract_text", response_model=OCRResponse)
 async def extract_text_single(file: UploadFile = File(...)):
-    """Extract text from a single image file"""
-    if not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="File must be an image")
+    """Extract text from a single image or PDF file"""
+    allowed_types = ["image/png", "image/jpeg", "image/jpg", "application/pdf"]
+
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Định dạng file {file.content_type} chưa được hỗ trợ. Chỉ hỗ trợ: PNG, JPEG, PDF",
+        )
 
     try:
         start_time = time.time()
-
-        # Read and process image
         contents = await file.read()
-        image = Image.open(BytesIO(contents)).convert("RGB")
+        images = []
+
+        # Handle PDF files
+        if file.content_type == "application/pdf" or file.filename.lower().endswith(
+            ".pdf"
+        ):
+            try:
+                pdf_pages = convert_from_bytes(contents, dpi=200, fmt="jpeg")
+                images.extend(pdf_pages)
+                logger.info(f"Converted PDF to {len(pdf_pages)} pages")
+            except Exception as e:
+                logger.error(f"PDF conversion error: {str(e)}")
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"File '{file.filename}' không phải PDF hợp lệ hoặc không thể đọc",
+                )
+        else:
+            # Handle image files
+            try:
+                image = Image.open(BytesIO(contents)).convert("RGB")
+                images.append(image)
+            except Exception as e:
+                logger.error(f"Image open error: {str(e)}")
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"File '{file.filename}' không phải là ảnh hợp lệ",
+                )
+
+        if not images:
+            raise HTTPException(
+                status_code=400, detail="Không có trang ảnh nào để xử lý"
+            )
 
         # Extract text
-        extracted_text = await ocr_processor.extract_text([image])
-
+        extracted_text = await ocr_processor.extract_text(images)
         processing_time = time.time() - start_time
 
         # Log to database
@@ -68,7 +102,7 @@ async def extract_text_single(file: UploadFile = File(...)):
             filename=file.filename,
             file_size=len(contents),
             processing_time=processing_time,
-            num_images=1,
+            num_images=len(images),
             extracted_text=extracted_text,
         )
 
@@ -76,16 +110,20 @@ async def extract_text_single(file: UploadFile = File(...)):
             text=extracted_text, processing_time=processing_time, filename=file.filename
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error processing single image: {str(e)}")
-        raise HTTPException(status_code=500, detail="Error processing image")
+        logger.error(f"Error processing file: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Lỗi xử lý file: {str(e)}")
 
 
 @app.post("/extract_text_multi", response_model=OCRMultiResponse)
 async def extract_text_multi(files: List[UploadFile] = File(...)):
-    """Extract text from multiple image files"""
+    """Extract text from multiple image and PDF files"""
     if not files:
-        raise HTTPException(status_code=400, detail="No files uploaded")
+        raise HTTPException(status_code=400, detail="Chưa upload file nào")
+
+    allowed_types = ["image/png", "image/jpeg", "image/jpg", "application/pdf"]
 
     try:
         start_time = time.time()
@@ -95,21 +133,49 @@ async def extract_text_multi(files: List[UploadFile] = File(...)):
 
         # Process all uploaded files
         for file in files:
-            if not file.content_type.startswith("image/"):
+            if file.content_type not in allowed_types:
                 raise HTTPException(
-                    status_code=400, detail=f"File '{file.filename}' is not an image"
+                    status_code=400,
+                    detail=f"File '{file.filename}' không hỗ trợ. Chỉ hỗ trợ: PNG, JPEG, PDF",
                 )
 
             contents = await file.read()
             total_size += len(contents)
             filenames.append(file.filename)
 
-            image = Image.open(BytesIO(contents)).convert("RGB")
-            images.append(image)
+            # Handle PDF files
+            if file.content_type == "application/pdf" or file.filename.lower().endswith(
+                ".pdf"
+            ):
+                try:
+                    pdf_pages = convert_from_bytes(contents, dpi=200, fmt="jpeg")
+                    images.extend(pdf_pages)
+                    logger.info(f"Converted {file.filename} to {len(pdf_pages)} pages")
+                except Exception as e:
+                    logger.error(f"PDF conversion error for {file.filename}: {str(e)}")
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"File '{file.filename}' không phải PDF hợp lệ hoặc không thể đọc",
+                    )
+            else:
+                # Handle image files
+                try:
+                    image = Image.open(BytesIO(contents)).convert("RGB")
+                    images.append(image)
+                except Exception as e:
+                    logger.error(f"Image open error for {file.filename}: {str(e)}")
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"File '{file.filename}' không phải là ảnh hợp lệ",
+                    )
+
+        if not images:
+            raise HTTPException(
+                status_code=400, detail="Không có trang ảnh nào để xử lý"
+            )
 
         # Extract text from all images
         extracted_text = await ocr_processor.extract_text(images)
-
         processing_time = time.time() - start_time
 
         # Log to database
@@ -128,9 +194,11 @@ async def extract_text_multi(files: List[UploadFile] = File(...)):
             filenames=filenames,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error processing multiple images: {str(e)}")
-        raise HTTPException(status_code=500, detail="Error processing images")
+        logger.error(f"Error processing files: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Lỗi xử lý files: {str(e)}")
 
 
 # Backward compatibility endpoint
