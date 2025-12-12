@@ -68,16 +68,55 @@ class OCRProcessor:
             doc = fitz.open(stream=pdf_content, filetype="pdf")
             extracted_text = ""
 
+            logger.info(f"Processing PDF with {len(doc)} pages")
+
             for page_num in range(len(doc)):
                 page = doc.load_page(page_num)
                 text = page.get_text()
                 extracted_text += f"\n--- Trang {page_num + 1} ---\n{text}"
 
             doc.close()
+
+            if not extracted_text.strip():
+                logger.warning(
+                    "PDF has no extractable text - attempting OCR on PDF pages"
+                )
+                # Image-based PDF - need to convert to images and OCR
+                doc = fitz.open(stream=pdf_content, filetype="pdf")
+                ocr_texts = []
+
+                for page_num in range(
+                    min(len(doc), 10)
+                ):  # Limit to 10 pages for performance
+                    page = doc.load_page(page_num)
+                    # Convert page to image
+                    pix = page.get_pixmap(dpi=150)
+                    img_bytes = pix.tobytes("png")
+
+                    # OCR the image
+                    page_text = await self._extract_from_image(img_bytes)
+                    if page_text:
+                        ocr_texts.append(f"\n--- Trang {page_num + 1} ---\n{page_text}")
+
+                doc.close()
+                extracted_text = "\n\n".join(ocr_texts)
+
+                if extracted_text.strip():
+                    logger.info(
+                        f"Successfully OCR'd {len(extracted_text)} characters from PDF images"
+                    )
+                else:
+                    logger.warning("No text extracted even after OCR")
+                    return ""
+            else:
+                logger.info(
+                    f"Successfully extracted {len(extracted_text)} characters from PDF"
+                )
+
             return extracted_text.strip()
 
         except Exception as e:
-            logger.error(f"Error extracting text from PDF: {e}")
+            logger.error(f"Error extracting text from PDF: {e}", exc_info=True)
             return ""
 
     async def _extract_from_image(self, image_content: bytes) -> str:
