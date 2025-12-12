@@ -221,16 +221,29 @@ class QuizAPI {
 
   // OCR + Summary combined workflow
   async ocrAndSummarize(
-    imageBase64: string,
+    file: File,
     summaryConfig?: SummaryRequest["config"]
   ): Promise<{ ocr: OCRResponse; summary: SummaryResponse }> {
-    return this.makeRequest("/summary/ocr_and_summarize/", {
-      method: "POST",
-      body: JSON.stringify({
-        image: imageBase64,
-        summary_config: summaryConfig || { style: "detailed" },
-      }),
-    });
+    const formData = new FormData();
+    formData.append("files", file);
+    if (summaryConfig) {
+      formData.append("summary_config", JSON.stringify(summaryConfig));
+    }
+
+    // Use fetch directly for FormData (makeRequest adds JSON headers)
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/summary/ocr_and_summarize/`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+    }
+
+    return response.json();
   }
 
   // Get validation metrics
