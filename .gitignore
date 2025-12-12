@@ -50,3 +50,5 @@ __pycache__/
 # Ignore build files frontend
 node_modules/
 
+frontend/node_modules/
+frontend/build/
