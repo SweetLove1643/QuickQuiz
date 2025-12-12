@@ -1,9 +1,10 @@
-import { Plus, Trash2, Loader2, Sparkles } from "lucide-react";
+import { Plus, Trash2, Loader2, Sparkles, CheckCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
 import {
   Dialog,
   DialogContent,
@@ -44,6 +45,7 @@ interface Question {
 }
 
 export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
+  const { user } = useAuth();
   const [quizTitle, setQuizTitle] = useState(
     `Quiz - ${document?.fileName || "Tài liệu"}`
   );
@@ -62,6 +64,17 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSavingQuiz, setIsSavingQuiz] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+
+  // Reset component state for next quiz creation
+  const resetComponent = () => {
+    setQuizTitle(`Quiz - ${document?.fileName || "Tài liệu"}`);
+    setQuestions([]);
+    setError(null);
+    setSaveError(null);
+    setSaveSuccess(null);
+    setIsSavingQuiz(false);
+  };
 
   // Manual question type selection
   const [manualDialogOpen, setManualDialogOpen] = useState(false);
@@ -76,10 +89,9 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
     setIsGenerating(true);
     setError(null);
 
-    const requestedTypes: ("multiple_choice" | "true_false" | "fill_blank")[] =
-      [];
-    if (aiQuestionTypes.multipleChoice) requestedTypes.push("multiple_choice");
-    if (aiQuestionTypes.trueFalse) requestedTypes.push("true_false");
+    const requestedTypes: ("mcq" | "tf" | "fill_blank")[] = [];
+    if (aiQuestionTypes.multipleChoice) requestedTypes.push("mcq");
+    if (aiQuestionTypes.trueFalse) requestedTypes.push("tf");
     if (aiQuestionTypes.fillBlank) requestedTypes.push("fill_blank");
     if (requestedTypes.length === 0) {
       requestedTypes.push("multiple_choice");
@@ -207,7 +219,12 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
     setSaveError(null);
 
     try {
+      if (!user?.id) {
+        throw new Error("Bạn cần đăng nhập để lưu quiz");
+      }
+
       const payload = {
+        user_id: user.id,
         title: quizTitle,
         document_id: document?.documentId,
         document_name: document?.fileName,
@@ -224,8 +241,10 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
           answer:
             q.type === "true-false"
               ? q.correctAnswer === 0
-                ? "True"
-                : "False"
+                ? "Đúng"
+                : "Sai"
+              : q.type === "fill-blank"
+              ? q.options[0]
               : q.options[q.correctAnswer] || "",
         })),
         metadata: {
@@ -239,13 +258,15 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
         throw new Error("Không thể lưu quiz");
       }
 
-      onQuizCreated({
-        quizId: result.quiz_id,
-        title: quizTitle,
-        questions,
-        documentName: document?.fileName,
-        savedAt: result.saved_at,
-      });
+      // Show success message
+      const successMsg = `Đã lưu bài quiz "${quizTitle}" thành công!`;
+      setSaveSuccess(successMsg);
+      setIsSavingQuiz(false);
+      // Auto-hide after 3 seconds and reset component
+      setTimeout(() => {
+        resetComponent();
+      }, 3000);
+      return;
     } catch (err) {
       console.error("Save quiz failed:", err);
       const message = err instanceof Error ? err.message : "Không thể lưu quiz";
@@ -355,26 +376,36 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
               <label className="block text-slate-700 mb-2">
                 Các đáp án (chọn đáp án đúng)
               </label>
-              {question.options.map((option, optIndex) => (
-                <div key={optIndex} className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name={`correct-${question.id}`}
-                    checked={question.correctAnswer === optIndex}
-                    onChange={() =>
-                      updateQuestion(question.id, "correctAnswer", optIndex)
-                    }
-                    className="w-4 h-4"
-                  />
-                  <Input
-                    value={option}
-                    onChange={(e) =>
-                      updateOption(question.id, optIndex, e.target.value)
-                    }
-                    placeholder={`Đáp án ${String.fromCharCode(65 + optIndex)}`}
-                  />
-                </div>
-              ))}
+              {question.type === "fill-blank" ? (
+                <Input
+                  value={question.options[0] || ""}
+                  onChange={(e) => updateOption(question.id, 0, e.target.value)}
+                  placeholder="Nhập đáp án cần điền"
+                />
+              ) : (
+                question.options.map((option, optIndex) => (
+                  <div key={optIndex} className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name={`correct-${question.id}`}
+                      checked={question.correctAnswer === optIndex}
+                      onChange={() =>
+                        updateQuestion(question.id, "correctAnswer", optIndex)
+                      }
+                      className="w-4 h-4"
+                    />
+                    <Input
+                      value={option}
+                      onChange={(e) =>
+                        updateOption(question.id, optIndex, e.target.value)
+                      }
+                      placeholder={`Đáp án ${String.fromCharCode(
+                        65 + optIndex
+                      )}`}
+                    />
+                  </div>
+                ))
+              )}
             </div>
           </Card>
         ))}
@@ -516,17 +547,25 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-3">
-        <Button
-          onClick={handleStartQuiz}
-          className="flex-1"
-          disabled={questions.length === 0 || isSavingQuiz}
-        >
-          {isSavingQuiz && <Loader2 className="size-4 mr-2 animate-spin" />}
-          {isSavingQuiz
-            ? "Đang lưu quiz..."
-            : `Bắt đầu làm Quiz (${questions.length} câu hỏi)`}
-        </Button>
+      <div className="flex gap-3 items-start">
+        <div className="flex-1 flex flex-col gap-2">
+          <Button
+            onClick={handleStartQuiz}
+            className="w-full"
+            disabled={questions.length === 0 || isSavingQuiz}
+          >
+            {isSavingQuiz && <Loader2 className="size-4 mr-2 animate-spin" />}
+            {isSavingQuiz
+              ? "Đang lưu quiz..."
+              : `Bắt đầu làm Quiz (${questions.length} câu hỏi)`}
+          </Button>
+          {saveSuccess && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-md text-sm text-green-700">
+              <CheckCircle className="size-4 text-green-600 flex-shrink-0" />
+              <span>{saveSuccess}</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

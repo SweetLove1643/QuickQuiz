@@ -115,7 +115,8 @@ export function QuickStart({ onDocumentProcessed }: QuickStartProps) {
               </div>
               <h3 className="text-slate-900 mb-2">Chọn tài liệu để upload</h3>
               <p className="text-slate-500 mb-6 text-center">
-                Hỗ trợ PDF, DOCX, TXT, PPT (Tối đa 10MB)
+                Hỗ trợ PDF, DOCX, TXT, PPT và ảnh JPG, PNG, BMP, TIFF (Tối đa
+                10MB)
               </p>
               <label htmlFor="file-upload">
                 <Button asChild>
@@ -126,7 +127,7 @@ export function QuickStart({ onDocumentProcessed }: QuickStartProps) {
                 id="file-upload"
                 type="file"
                 className="hidden"
-                accept=".pdf,.docx,.txt,.ppt,.pptx"
+                accept=".pdf,.docx,.txt,.ppt,.pptx,.jpg,.jpeg,.png,.bmp,.tiff"
                 onChange={handleFileUpload}
               />
             </>

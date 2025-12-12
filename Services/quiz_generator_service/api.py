@@ -82,6 +82,7 @@ class GenerateQuizRequest(BaseModel):
 
 class SaveQuizRequest(BaseModel):
     quiz_id: str | None = None
+    user_id: str  # Required: user who creates the quiz
     title: str | None = None
     document_id: str | None = None
     document_name: str | None = None
@@ -225,8 +226,14 @@ async def save_quiz_endpoint(request: SaveQuizRequest):
         db = get_db_session()
         generated_quiz = GeneratedQuiz(
             quiz_id=quiz_id,
+            user_id=request.user_id,
+            title=request.title,
+            document_id=request.document_id,
             questions_data=quiz_data,
-            quiz_metadata={"saved_at": datetime.utcnow().isoformat()},
+            quiz_metadata={
+                "saved_at": datetime.utcnow().isoformat(),
+                "document_name": request.document_name,
+            },
             source_sections=[],
             generation_config={},
             validation_summary={},
@@ -237,6 +244,7 @@ async def save_quiz_endpoint(request: SaveQuizRequest):
         return {
             "success": True,
             "quiz_id": quiz_id,
+            "user_id": request.user_id,
             "saved_at": datetime.utcnow().isoformat(),
         }
     except ValidationError as e:
@@ -272,6 +280,169 @@ async def get_validation_metrics():
         raise HTTPException(status_code=500, detail=f"Metrics error: {str(e)}")
 
 
+@app.get("/quiz/user/{user_id}")
+async def get_user_quizzes(user_id: str, limit: int = 50, offset: int = 0):
+    """Get all quizzes created by a specific user."""
+    try:
+        db = get_db_session()
+        quizzes = (
+            db.query(GeneratedQuiz)
+            .filter(GeneratedQuiz.user_id == user_id)
+            .order_by(GeneratedQuiz.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )
+
+        return {
+            "success": True,
+            "user_id": user_id,
+            "quizzes": [
+                {
+                    "quiz_id": q.quiz_id,
+                    "title": q.title or "Untitled Quiz",
+                    "document_id": q.document_id,
+                    "created_at": q.created_at.isoformat() if q.created_at else None,
+                    "questions_count": (
+                        len(q.questions_data.get("questions", []))
+                        if q.questions_data
+                        else 0
+                    ),
+                    "last_accessed": (
+                        q.last_accessed.isoformat() if q.last_accessed else None
+                    ),
+                }
+                for q in quizzes
+            ],
+            "total": len(quizzes),
+        }
+    except Exception as e:
+        logger.error(f"Failed to get user quizzes: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to retrieve quizzes: {str(e)}"
+        )
+    finally:
+        if "db" in locals():
+            db.close()
+
+
+@app.get("/quiz/user/{user_id}/recent")
+async def get_user_recent_quizzes(user_id: str, limit: int = 10):
+    """Get recent quizzes created by a user (for home page)."""
+    try:
+        db = get_db_session()
+        quizzes = (
+            db.query(GeneratedQuiz)
+            .filter(GeneratedQuiz.user_id == user_id)
+            .order_by(GeneratedQuiz.created_at.desc())
+            .limit(limit)
+            .all()
+        )
+
+        return {
+            "success": True,
+            "user_id": user_id,
+            "recent_quizzes": [
+                {
+                    "quiz_id": q.quiz_id,
+                    "title": q.title or "Untitled Quiz",
+                    "document_id": q.document_id,
+                    "created_at": q.created_at.isoformat() if q.created_at else None,
+                    "questions_count": (
+                        len(q.questions_data.get("questions", []))
+                        if q.questions_data
+                        else 0
+                    ),
+                }
+                for q in quizzes
+            ],
+        }
+    except Exception as e:
+        logger.error(f"Failed to get recent quizzes: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to retrieve recent quizzes: {str(e)}"
+        )
+    finally:
+        if "db" in locals():
+            db.close()
+
+
+@app.get("/quiz/{quiz_id}")
+async def get_quiz_details(quiz_id: str):
+    """Get full quiz details including all questions."""
+    try:
+        db = get_db_session()
+        quiz = db.query(GeneratedQuiz).filter(GeneratedQuiz.quiz_id == quiz_id).first()
+
+        if not quiz:
+            raise HTTPException(status_code=404, detail="Quiz not found")
+
+        # Update last accessed time
+        quiz.last_accessed = datetime.utcnow()
+        quiz.access_count = (quiz.access_count or 0) + 1
+        db.commit()
+
+        return {
+            "success": True,
+            "quiz": {
+                "quiz_id": quiz.quiz_id,
+                "title": quiz.title or "Untitled Quiz",
+                "document_id": quiz.document_id,
+                "user_id": quiz.user_id,
+                "created_at": quiz.created_at.isoformat() if quiz.created_at else None,
+                "questions": (
+                    quiz.questions_data.get("questions", [])
+                    if quiz.questions_data
+                    else []
+                ),
+                "metadata": quiz.quiz_metadata,
+                "questions_count": (
+                    len(quiz.questions_data.get("questions", []))
+                    if quiz.questions_data
+                    else 0
+                ),
+            },
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get quiz details: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to retrieve quiz: {str(e)}"
+        )
+    finally:
+        if "db" in locals():
+            db.close()
+
+
+@app.delete("/quiz/{quiz_id}")
+async def delete_quiz(quiz_id: str):
+    """Delete a quiz by ID."""
+    try:
+        db = get_db_session()
+        quiz = db.query(GeneratedQuiz).filter(GeneratedQuiz.quiz_id == quiz_id).first()
+
+        if not quiz:
+            raise HTTPException(status_code=404, detail="Quiz not found")
+
+        db.delete(quiz)
+        db.commit()
+
+        return {
+            "success": True,
+            "message": f"Quiz {quiz_id} deleted successfully",
+            "deleted_quiz_id": quiz_id,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to delete quiz: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete quiz: {str(e)}")
+    finally:
+        if "db" in locals():
+            db.close()
+
+
 @app.get("/")
 async def root():
     """Root endpoint with API information."""
@@ -282,6 +453,11 @@ async def root():
         "health": "/health",
         "endpoints": {
             "generate_quiz": "POST /quiz/generate",
+            "save_quiz": "POST /quiz/save",
+            "get_quiz_details": "GET /quiz/{quiz_id}",
+            "delete_quiz": "DELETE /quiz/{quiz_id}",
+            "get_user_quizzes": "GET /quiz/user/{user_id}",
+            "get_recent_quizzes": "GET /quiz/user/{user_id}/recent",
             "validation_metrics": "GET /validation/metrics",
         },
         "features": [
@@ -289,11 +465,14 @@ async def root():
             "Content validation & hallucination prevention",
             "Vietnamese language support",
             "Multiple question types (MCQ, True/False, Fill-blank)",
+            "User-specific quiz management",
         ],
     }
 
 
 if __name__ == "__main__":
     import uvicorn
+    import os
 
-    uvicorn.run(app, host="127.0.0.1", port=8003, reload=False, log_level="info")
+    port = int(os.getenv("PORT", "8002"))
+    uvicorn.run(app, host="127.0.0.1", port=port, reload=False, log_level="info")

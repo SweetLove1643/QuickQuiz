@@ -8,6 +8,7 @@ from django.views import View
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
+from django.conf import settings
 from rest_framework.response import Response
 from .service_clients import (
     QuizGeneratorClient,
@@ -15,11 +16,79 @@ from .service_clients import (
     OCRServiceClient,
     SummaryServiceClient,
     RAGChatbotClient,
+    IAMServiceClient,
 )
 import json
 import io
+import os
+import sqlite3
+from contextlib import closing
 
 logger = logging.getLogger(__name__)
+
+# Document storage (lightweight sqlite)
+DOCUMENT_DB_PATH = os.path.abspath(os.path.join(settings.BASE_DIR, "documents.db"))
+
+
+def ensure_document_table():
+    os.makedirs(os.path.dirname(DOCUMENT_DB_PATH), exist_ok=True)
+    with closing(sqlite3.connect(DOCUMENT_DB_PATH)) as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS documents (
+                id TEXT PRIMARY KEY,
+                file_name TEXT NOT NULL,
+                file_size INTEGER,
+                file_type TEXT,
+                extracted_text TEXT,
+                summary TEXT,
+                created_at TEXT
+            )
+            """
+        )
+        conn.commit()
+
+
+def insert_document(record: dict):
+    ensure_document_table()
+    with closing(sqlite3.connect(DOCUMENT_DB_PATH)) as conn:
+        conn.execute(
+            """
+            INSERT OR REPLACE INTO documents
+            (id, file_name, file_size, file_type, extracted_text, summary, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                record.get("document_id"),
+                record.get("file_name"),
+                record.get("file_size"),
+                record.get("file_type"),
+                record.get("extracted_text"),
+                record.get("summary"),
+                record.get("created_at"),
+            ),
+        )
+        conn.commit()
+
+
+def fetch_documents(limit: int = 50):
+    if not os.path.exists(DOCUMENT_DB_PATH):
+        return []
+    with closing(sqlite3.connect(DOCUMENT_DB_PATH)) as conn:
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT id, file_name, file_size, file_type, extracted_text, summary, created_at
+            FROM documents
+            ORDER BY datetime(created_at) DESC
+            LIMIT ?
+            """,
+            (limit,),
+        )
+        rows = cur.fetchall()
+        return [dict(row) for row in rows]
+
 
 # Initialize service clients
 quiz_generator = QuizGeneratorClient()
@@ -27,6 +96,7 @@ quiz_evaluator = QuizEvaluatorClient()
 ocr_service = OCRServiceClient()
 summary_service = SummaryServiceClient()
 rag_chatbot = RAGChatbotClient()
+iam_service = IAMServiceClient()
 
 
 @api_view(["GET"])
@@ -176,6 +246,88 @@ def evaluate_quiz(request):
 
     except Exception as e:
         logger.error(f"Quiz evaluation failed: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_user_quizzes(request, user_id):
+    """Get all quizzes created by a specific user."""
+    try:
+        limit = request.GET.get("limit", 50)
+        offset = request.GET.get("offset", 0)
+
+        result = quiz_generator.get_user_quizzes(user_id, limit, offset)
+        return Response(result, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Failed to get user quizzes: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_user_recent_quizzes(request, user_id):
+    """Get recent quizzes created by a user."""
+    try:
+        limit = request.GET.get("limit", 10)
+
+        result = quiz_generator.get_user_recent_quizzes(user_id, limit)
+        return Response(result, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Failed to get recent quizzes: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_quiz_details(request, quiz_id):
+    """Get full quiz details including all questions."""
+    try:
+        result = quiz_generator.get_quiz_details(quiz_id)
+        return Response(result, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Failed to get quiz details: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["DELETE"])
+@permission_classes([AllowAny])
+def delete_quiz(request, quiz_id):
+    """Delete a quiz by ID."""
+    try:
+        result = quiz_generator.delete_quiz(quiz_id)
+        return Response(result, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Failed to delete quiz: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_user_results(request, user_id):
+    """Get all quiz results for a specific user."""
+    try:
+        limit = request.GET.get("limit", 50)
+        offset = request.GET.get("offset", 0)
+
+        result = quiz_evaluator.get_user_results(user_id, limit, offset)
+        return Response(result, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Failed to get user results: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_user_recent_results(request, user_id):
+    """Get recent quiz results for a user."""
+    try:
+        limit = request.GET.get("limit", 10)
+
+        result = quiz_evaluator.get_user_recent_results(user_id, limit)
+        return Response(result, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Failed to get recent results: {str(e)}")
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -601,6 +753,8 @@ def save_document(request):
 
         logger.info(f"Saving document: {file_name} (ID: {document_id})")
 
+        insert_document(document_data)
+
         return JsonResponse(
             {
                 "success": True,
@@ -615,3 +769,211 @@ def save_document(request):
     except Exception as e:
         logger.error(f"Document save failed: {str(e)}")
         return JsonResponse({"error": str(e)}, status=500)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def list_documents(request):
+    """Return available documents from local documents.db."""
+
+    try:
+        ensure_document_table()
+        docs = fetch_documents(limit=100)
+        # Normalize field names for frontend
+        documents = [
+            {
+                "document_id": d.get("id"),
+                "file_name": d.get("file_name"),
+                "file_size": d.get("file_size"),
+                "file_type": d.get("file_type"),
+                "extracted_text": d.get("extracted_text") or "",
+                "summary": (d.get("summary") or d.get("extracted_text") or "")[:400],
+                "created_at": d.get("created_at"),
+            }
+            for d in docs
+        ]
+
+        return JsonResponse({"success": True, "documents": documents})
+
+    except Exception as e:
+        logger.error(f"Document list failed: {str(e)}")
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+# ============= Authentication Endpoints =============
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def register(request):
+    """Register a new student account."""
+    try:
+        data = request.data
+        logger.info(f"Registration request for username: {data.get('username')}")
+
+        # Validate required fields
+        required_fields = ["username", "email", "password", "password_confirm"]
+        for field in required_fields:
+            if not data.get(field):
+                return Response(
+                    {"success": False, "error": f"Missing required field: {field}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        # Check password match
+        if data["password"] != data["password_confirm"]:
+            return Response(
+                {"success": False, "error": "Passwords do not match"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Register via IAM service
+        user_data = {
+            "username": data["username"],
+            "email": data["email"],
+            "password": data["password"],
+            "password_confirm": data["password_confirm"],
+        }
+
+        logger.info(f"Calling IAM service to register user: {user_data['username']}")
+        result = iam_service.register_user(user_data)
+
+        logger.info(f"User registered successfully: {data['username']}")
+        return Response(
+            {"success": True, "message": "Registration successful", "data": result},
+            status=status.HTTP_201_CREATED,
+        )
+
+    except Exception as e:
+        error_message = str(e)
+        logger.error(f"Registration failed for {data.get('username')}: {error_message}")
+        return Response(
+            {"success": False, "error": error_message},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def login(request):
+    """Login with username and password."""
+    try:
+        data = request.data
+        username = data.get("username")
+        password = data.get("password")
+
+        logger.info(f"Login attempt for username: {username}")
+
+        if not username or not password:
+            return Response(
+                {"success": False, "error": "Username and password are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Login via IAM service
+        logger.info(f"Calling IAM service to login user: {username}")
+        result = iam_service.login(username, password)
+
+        logger.info(f"User logged in successfully: {username}")
+        return Response(
+            {"success": True, "message": "Login successful", "data": result},
+            status=status.HTTP_200_OK,
+        )
+
+    except Exception as e:
+        error_message = str(e)
+        logger.error(f"Login failed for {username}: {error_message}")
+        return Response(
+            {"success": False, "error": error_message},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+
+@api_view(["POST"])
+def logout(request):
+    """Logout and blacklist refresh token."""
+    try:
+        data = request.data
+        refresh_token = data.get("refresh")
+
+        if not refresh_token:
+            return Response(
+                {"success": False, "error": "Refresh token is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Logout via IAM service
+        iam_service.logout(refresh_token)
+
+        logger.info("User logged out")
+        return Response(
+            {"success": True, "message": "Logout successful"},
+            status=status.HTTP_200_OK,
+        )
+
+    except Exception as e:
+        logger.error(f"Logout failed: {str(e)}")
+        return Response(
+            {"success": False, "error": str(e)},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def refresh_token(request):
+    """Refresh access token using refresh token."""
+    try:
+        data = request.data
+        refresh = data.get("refresh")
+
+        if not refresh:
+            return Response(
+                {"success": False, "error": "Refresh token is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Refresh via IAM service
+        result = iam_service.refresh_token(refresh)
+
+        return Response(
+            {"success": True, "data": result},
+            status=status.HTTP_200_OK,
+        )
+
+    except Exception as e:
+        logger.error(f"Token refresh failed: {str(e)}")
+        return Response(
+            {"success": False, "error": str(e)},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+
+@api_view(["GET"])
+def get_current_user(request):
+    """Get current user information."""
+    try:
+        # Get token from Authorization header
+        auth_header = request.headers.get("Authorization", "")
+        if not auth_header.startswith("Bearer "):
+            return Response(
+                {"success": False, "error": "Authorization header missing or invalid"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        access_token = auth_header.replace("Bearer ", "").strip()
+
+        # Get user info from IAM service
+        user_info = iam_service.get_current_user(access_token)
+
+        return Response(
+            {"success": True, "user": user_info},
+            status=status.HTTP_200_OK,
+        )
+
+    except Exception as e:
+        logger.error(f"Get current user failed: {str(e)}")
+        return Response(
+            {"success": False, "error": str(e)},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )

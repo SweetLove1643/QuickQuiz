@@ -3,6 +3,18 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 
+type PageType =
+  | "home"
+  | "library"
+  | "quick-start"
+  | "upload-document"
+  | "create-quiz-standalone"
+  | "create-quiz"
+  | "take-quiz"
+  | "quiz-result"
+  | "view-document"
+  | "chatbot";
+
 const popularQuizzes = [
   {
     id: 1,
@@ -143,11 +155,14 @@ const popularQuizzes = [
 ];
 
 interface PopularQuizzesProps {
-  onNavigate?: (page: string) => void;
+  onNavigate?: (page: PageType, isFromQuickStart?: boolean) => void;
   onQuizSelected?: (quiz: any) => void;
 }
 
-export function PopularQuizzes({ onNavigate, onQuizSelected }: PopularQuizzesProps) {
+export function PopularQuizzes({
+  onNavigate,
+  onQuizSelected,
+}: PopularQuizzesProps) {
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case "Dễ":
@@ -166,7 +181,9 @@ export function PopularQuizzes({ onNavigate, onQuizSelected }: PopularQuizzesPro
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-slate-900 mb-1">Bài Quiz phổ biến</h2>
-          <p className="text-slate-600">Các bài quiz được nhiều người làm nhất</p>
+          <p className="text-slate-600">
+            Các bài quiz được nhiều người làm nhất
+          </p>
         </div>
         <Button variant="ghost">Xem tất cả</Button>
       </div>
@@ -189,15 +206,15 @@ export function PopularQuizzes({ onNavigate, onQuizSelected }: PopularQuizzesPro
               <Badge variant="outline" className="mb-2">
                 {quiz.category}
               </Badge>
-              <h3 className="text-slate-900 mb-1 line-clamp-2">
-                {quiz.title}
-              </h3>
+              <h3 className="text-slate-900 mb-1 line-clamp-2">{quiz.title}</h3>
               <p className="text-slate-500">{quiz.questions.length} câu hỏi</p>
             </div>
 
             {/* Author */}
             <div className="flex items-center gap-2 mb-3">
-              <div className={`w-6 h-6 rounded-full ${quiz.avatarColor} flex items-center justify-center`}>
+              <div
+                className={`w-6 h-6 rounded-full ${quiz.avatarColor} flex items-center justify-center`}
+              >
                 <span className="text-white text-xs">
                   {quiz.author.charAt(0)}
                 </span>
@@ -229,9 +246,9 @@ export function PopularQuizzes({ onNavigate, onQuizSelected }: PopularQuizzesPro
               </div>
             </div>
 
-            <Button 
-              className="w-full" 
-              size="sm" 
+            <Button
+              className="w-full"
+              size="sm"
               onClick={() => {
                 if (onQuizSelected && onNavigate) {
                   onQuizSelected(quiz);

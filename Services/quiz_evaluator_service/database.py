@@ -21,11 +21,8 @@ from datetime import datetime
 import os
 
 # Database setup
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./quiz_evaluator.db")
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {},
-)
+DATABASE_URL = "sqlite:///./quiz_evaluator_service.db"
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
 Base = declarative_base()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

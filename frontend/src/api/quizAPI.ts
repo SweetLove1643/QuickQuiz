@@ -3,13 +3,13 @@
 
 const API_CONFIG = {
   // API Gateway endpoint
-  BASE_URL: "http://localhost:8001/api",
+  BASE_URL: "http://localhost:8007/api",
 
   // Individual services (fallback)
   SERVICES: {
-    QUIZ_GENERATOR: "http://localhost:8003",
-    QUIZ_EVALUATOR: "http://localhost:8005",
-    GATEWAY: "http://localhost:8001",
+    QUIZ_GENERATOR: "http://localhost:8002",
+    QUIZ_EVALUATOR: "http://localhost:8003",
+    GATEWAY: "http://localhost:8007",
   },
 
   // Request timeout
@@ -29,7 +29,7 @@ export interface QuizSection {
 
 export interface QuizConfig {
   n_questions: number;
-  types: ("multiple_choice" | "true_false" | "fill_blank")[];
+  types: ("mcq" | "tf" | "fill_blank")[];
 }
 
 // OCR Service interfaces
@@ -271,6 +271,7 @@ class QuizAPI {
 
   // Save generated quiz to database
   async saveQuiz(quiz: {
+    user_id: string; // Required: user who creates the quiz
     title: string;
     document_id?: string;
     document_name?: string;
@@ -285,11 +286,161 @@ class QuizAPI {
   }): Promise<{
     success: boolean;
     quiz_id: string;
+    user_id: string;
     saved_at: string;
   }> {
     return this.makeRequest("/quiz/save/", {
       method: "POST",
       body: JSON.stringify(quiz),
+    });
+  }
+
+  // Get quizzes created by a specific user
+  async getUserQuizzes(
+    userId: string,
+    limit: number = 50,
+    offset: number = 0
+  ): Promise<{
+    success: boolean;
+    user_id: string;
+    quizzes: Array<{
+      quiz_id: string;
+      title: string;
+      document_id: string | null;
+      created_at: string | null;
+      questions_count: number;
+      last_accessed: string | null;
+    }>;
+    total: number;
+  }> {
+    return this.makeRequest(
+      `/quiz/user/${userId}/?limit=${limit}&offset=${offset}`,
+      {
+        method: "GET",
+      }
+    );
+  }
+
+  // Get recent quizzes created by a user (for home page)
+  async getUserRecentQuizzes(
+    userId: string,
+    limit: number = 10
+  ): Promise<{
+    success: boolean;
+    user_id: string;
+    recent_quizzes: Array<{
+      quiz_id: string;
+      title: string;
+      document_id: string | null;
+      created_at: string | null;
+      questions_count: number;
+    }>;
+  }> {
+    return this.makeRequest(`/quiz/user/${userId}/recent/?limit=${limit}`, {
+      method: "GET",
+    });
+  }
+
+  // Get full quiz details including all questions
+  async getQuizDetails(quizId: string): Promise<{
+    success: boolean;
+    quiz: {
+      quiz_id: string;
+      title: string;
+      document_id: string | null;
+      user_id: string | null;
+      created_at: string | null;
+      questions: Array<{
+        id: string;
+        type: string;
+        stem: string;
+        options?: string[];
+        answer: string;
+        difficulty?: string;
+        source_sections?: any;
+      }>;
+      metadata?: any;
+      questions_count: number;
+    };
+  }> {
+    return this.makeRequest(`/quiz/${quizId}/`, {
+      method: "GET",
+    });
+  }
+
+  // Delete a quiz by ID
+  async deleteQuiz(quizId: string): Promise<{
+    success: boolean;
+    message: string;
+    deleted_quiz_id: string;
+  }> {
+    return this.makeRequest(`/quiz/${quizId}/delete/`, {
+      method: "DELETE",
+    });
+  }
+
+  // Get quiz results for a specific user
+  async getUserResults(
+    userId: string,
+    limit: number = 50,
+    offset: number = 0
+  ): Promise<{
+    success: boolean;
+    user_id: string;
+    results: Array<{
+      submission_id: string;
+      quiz_id: string;
+      score_percentage: number;
+      grade: string;
+      total_questions: number;
+      correct_count: number;
+      completion_time: number;
+      submitted_at: string | null;
+    }>;
+    total: number;
+  }> {
+    return this.makeRequest(
+      `/results/user/${userId}/?limit=${limit}&offset=${offset}`,
+      {
+        method: "GET",
+      }
+    );
+  }
+
+  // Get recent quiz results for a user (for home page)
+  async getUserRecentResults(
+    userId: string,
+    limit: number = 10
+  ): Promise<{
+    success: boolean;
+    user_id: string;
+    recent_results: Array<{
+      submission_id: string;
+      quiz_id: string;
+      score_percentage: number;
+      submitted_at: string | null;
+    }>;
+  }> {
+    return this.makeRequest(`/results/user/${userId}/recent/?limit=${limit}`, {
+      method: "GET",
+    });
+  }
+
+  // Get list of documents from database
+  async getDocuments(): Promise<{
+    success: boolean;
+    documents: Array<{
+      document_id: string;
+      file_name: string;
+      file_type: string;
+      file_size: number;
+      extracted_text: string;
+      summary: string;
+      created_at: string;
+    }>;
+  }> {
+    return this.makeRequest("/documents/list/", {
+      method: "GET",
     });
   }
 }
@@ -310,10 +461,10 @@ export const convertToBackendFormat = (
     difficulty: string;
   }
 ): GenerateQuizRequest => {
-  const types: ("multiple_choice" | "true_false" | "fill_blank")[] = [];
+  const types: ("mcq" | "tf" | "fill_blank")[] = [];
 
-  if (settings.questionTypes.multipleChoice) types.push("multiple_choice");
-  if (settings.questionTypes.trueFalse) types.push("true_false");
+  if (settings.questionTypes.multipleChoice) types.push("mcq");
+  if (settings.questionTypes.trueFalse) types.push("tf");
   if (settings.questionTypes.fillBlank) types.push("fill_blank");
 
   return {
@@ -325,7 +476,7 @@ export const convertToBackendFormat = (
     ],
     config: {
       n_questions: parseInt(settings.questionCount) || 5,
-      types: types.length > 0 ? types : ["multiple_choice"],
+      types: types.length > 0 ? types : ["mcq"],
     },
   };
 };
@@ -334,13 +485,21 @@ export const convertFromBackendFormat = (backendQuestions: QuizQuestion[]) => {
   return backendQuestions.map((q, index) => ({
     id: q.id || `q-${index}`,
     question: q.stem,
-    options: q.options || ["True", "False"],
+    options:
+      q.type === "fill_blank"
+        ? [q.answer || ""]
+        : q.type === "tf"
+        ? ["Đúng", "Sai"]
+        : q.options || [],
     correctAnswer:
       q.type === "tf"
-        ? q.answer.toLowerCase() === "true" || q.answer.toLowerCase() === "đúng"
+        ? typeof q.answer === "string" &&
+          ["true", "đúng"].includes(q.answer.toLowerCase())
           ? 0
           : 1
-        : q.options?.indexOf(q.answer) || 0,
+        : q.type === "fill_blank"
+        ? 0
+        : Math.max((q.options || []).indexOf(q.answer), 0),
     type:
       q.type === "mcq"
         ? ("multiple-choice" as const)

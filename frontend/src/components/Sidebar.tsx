@@ -1,4 +1,18 @@
-import { Search, Plus, Bell, User, Menu, Home, Clock, Library, X, Upload, FileEdit, Sparkles } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Bell,
+  User,
+  Menu,
+  Home,
+  Clock,
+  Library,
+  X,
+  Upload,
+  FileEdit,
+  Sparkles,
+  MessageCircle,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { useState } from "react";
 
@@ -9,7 +23,12 @@ interface SidebarProps {
   onNavigate: (page: any) => void;
 }
 
-export function Sidebar({ isOpen, onToggle, currentPage, onNavigate }: SidebarProps) {
+export function Sidebar({
+  isOpen,
+  onToggle,
+  currentPage,
+  onNavigate,
+}: SidebarProps) {
   return (
     <>
       {/* Overlay for mobile */}
@@ -109,6 +128,17 @@ export function Sidebar({ isOpen, onToggle, currentPage, onNavigate }: SidebarPr
             >
               <Library className="size-5" />
               <span>Thư viện</span>
+            </button>
+            <button
+              onClick={() => onNavigate("chatbot")}
+              className={`flex items-center gap-3 px-4 py-3 w-full rounded-lg transition-colors ${
+                currentPage === "chatbot"
+                  ? "text-white bg-blue-600"
+                  : "text-slate-700 hover:bg-slate-100"
+              }`}
+            >
+              <MessageCircle className="size-5" />
+              <span>Chatbot</span>
             </button>
           </nav>
 

@@ -22,11 +22,8 @@ from datetime import datetime
 import os
 
 # Database setup
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./quiz_generator.db")
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {},
-)
+DATABASE_URL = "sqlite:///./quiz_generator_service.db"
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
 Base = declarative_base()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -85,14 +82,17 @@ class GeneratedQuiz(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     quiz_id = Column(String(100), unique=True, index=True)
+    user_id = Column(String(100), index=True)  # User who created the quiz
 
     # Quiz content
     questions_data = Column(JSON)  # Full quiz JSON
     quiz_metadata = Column(JSON)  # Generation metadata
+    title = Column(String(500), nullable=True)  # Quiz title
 
     # Source information
     source_sections = Column(JSON)
     generation_config = Column(JSON)
+    document_id = Column(String(100), nullable=True, index=True)  # Source document
 
     # Validation info
     validation_summary = Column(JSON)
