@@ -2203,3 +2203,240 @@
 [INFO] 2025-12-12 00:06:14,601 django.server 14248 17536 "GET /api/quiz/quiz-87f020fe/ HTTP/1.1" 200 1785
 [DEBUG] 2025-12-12 00:07:02,922 api.service_clients 14248 17536 [quiz_generator] GET http://localhost:8002/quiz/quiz-87f020fe
 [INFO] 2025-12-12 00:07:04,984 django.server 14248 17536 "GET /api/quiz/quiz-87f020fe/ HTTP/1.1" 200 1785
+[INFO] 2025-12-12 10:34:22,001 django.utils.autoreload 19292 19296 Watching for file changes with StatReloader
+[INFO] 2025-12-12 10:34:30,290 django.server 19292 19212 "OPTIONS /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 0
+[INFO] 2025-12-12 10:34:30,290 django.server 19292 18600 "OPTIONS /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 0
+[DEBUG] 2025-12-12 10:34:30,313 api.service_clients 19292 18600 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 10:34:30,315 api.service_clients 19292 19212 [quiz_evaluator] GET http://localhost:8003/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[INFO] 2025-12-12 10:34:32,381 django.server 19292 19212 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 85
+[INFO] 2025-12-12 10:34:32,381 django.server 19292 18600 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 253
+[INFO] 2025-12-12 10:36:01,957 django.server 19292 19308 "OPTIONS /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 0
+[INFO] 2025-12-12 10:36:01,959 django.server 19292 19304 "OPTIONS /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 0
+[DEBUG] 2025-12-12 10:36:01,961 api.service_clients 19292 19304 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 10:36:01,963 api.service_clients 19292 19308 [quiz_evaluator] GET http://localhost:8003/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[INFO] 2025-12-12 10:36:04,009 django.server 19292 19308 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 85
+[INFO] 2025-12-12 10:36:04,009 django.server 19292 19304 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 253
+[INFO] 2025-12-12 10:44:24,628 django.server 19292 15164 "OPTIONS /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 0
+[INFO] 2025-12-12 10:44:24,628 django.server 19292 2972 "OPTIONS /api/documents/list/ HTTP/1.1" 200 0
+[DEBUG] 2025-12-12 10:44:24,628 api.service_clients 19292 2972 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 10:44:24,645 django.server 19292 15164 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 10:44:26,662 django.server 19292 2972 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[INFO] 2025-12-12 10:44:49,716 django.server 19292 6700 "OPTIONS /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 0
+[DEBUG] 2025-12-12 10:44:49,720 api.service_clients 19292 6700 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 10:44:49,721 django.server 19292 19052 "OPTIONS /api/documents/list/ HTTP/1.1" 200 0
+[INFO] 2025-12-12 10:44:49,728 django.server 19292 19052 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 10:44:51,770 django.server 19292 6700 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[INFO] 2025-12-12 10:45:43,278 django.server 19292 6700 "OPTIONS /api/quiz/quiz-87f020fe/delete/ HTTP/1.1" 200 0
+[DEBUG] 2025-12-12 10:45:43,278 api.service_clients 19292 6700 [quiz_generator] DELETE http://localhost:8002/quiz/quiz-87f020fe
+[INFO] 2025-12-12 10:45:45,372 django.server 19292 6700 "DELETE /api/quiz/quiz-87f020fe/delete/ HTTP/1.1" 200 102
+[DEBUG] 2025-12-12 10:52:37,036 api.service_clients 19292 10316 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 10:52:37,043 django.server 19292 19416 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[DEBUG] 2025-12-12 10:52:37,234 api.service_clients 19292 7840 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 10:52:37,234 django.server 19292 19420 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 10:52:39,108 django.server 19292 10316 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 88
+[INFO] 2025-12-12 10:52:39,286 django.server 19292 7840 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 88
+[DEBUG] 2025-12-12 10:53:08,419 api.service_clients 19292 10316 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 10:53:08,431 django.server 19292 19416 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[DEBUG] 2025-12-12 10:53:08,913 api.service_clients 19292 7840 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 10:53:08,918 django.server 19292 19420 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 10:53:10,468 django.server 19292 10316 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 88
+[INFO] 2025-12-12 10:53:10,966 django.server 19292 7840 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 88
+[INFO] 2025-12-12 10:53:17,106 django.server 19292 10316 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 10:53:26,955 django.server 19292 10316 "OPTIONS /api/quiz/generate/ HTTP/1.1" 200 0
+[INFO] 2025-12-12 10:53:26,959 api.views 19292 10316 Generating quiz: 1 sections, 5 questions
+[INFO] 2025-12-12 10:53:26,959 api.service_clients 19292 10316 [quiz_generator] Generating quiz: 1 sections, 5 questions
+[DEBUG] 2025-12-12 10:53:26,960 api.service_clients 19292 10316 [quiz_generator] POST http://localhost:8002/quiz/generate
+[WARNING] 2025-12-12 10:53:37,195 api.service_clients 19292 10316 [quiz_generator] Slow request: 10.23s
+[INFO] 2025-12-12 10:53:37,195 django.server 19292 10316 "POST /api/quiz/generate/ HTTP/1.1" 200 2011
+[INFO] 2025-12-12 10:53:42,655 django.server 19292 10316 "OPTIONS /api/quiz/save/ HTTP/1.1" 200 0
+[INFO] 2025-12-12 10:53:42,660 api.views 19292 10316 Saving quiz with 5 questions and title Quiz - test-document.txt
+[DEBUG] 2025-12-12 10:53:42,661 api.service_clients 19292 10316 [quiz_generator] POST http://localhost:8002/quiz/save
+[INFO] 2025-12-12 10:53:44,704 django.server 19292 10316 "POST /api/quiz/save/ HTTP/1.1" 200 131
+[DEBUG] 2025-12-12 10:53:54,786 api.service_clients 19292 7840 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 10:53:54,786 api.service_clients 19292 19420 [quiz_evaluator] GET http://localhost:8003/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[INFO] 2025-12-12 10:53:56,832 django.server 19292 19420 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 85
+[INFO] 2025-12-12 10:53:56,848 django.server 19292 7840 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 253
+[DEBUG] 2025-12-12 10:53:58,806 api.service_clients 19292 7840 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 10:53:58,808 django.server 19292 19420 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 10:53:58,808 django.server 19292 7840 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[INFO] 2025-12-12 10:54:02,241 django.server 19292 7840 "OPTIONS /api/quiz/quiz-64e005ef/ HTTP/1.1" 200 0
+[DEBUG] 2025-12-12 10:54:02,244 api.service_clients 19292 7840 [quiz_generator] GET http://localhost:8002/quiz/quiz-64e005ef
+[INFO] 2025-12-12 10:54:02,270 django.server 19292 7840 "GET /api/quiz/quiz-64e005ef/ HTTP/1.1" 200 1766
+[DEBUG] 2025-12-12 10:54:09,675 api.service_clients 19292 10316 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 10:54:09,684 django.server 19292 19416 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 10:54:11,731 django.server 19292 10316 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[DEBUG] 2025-12-12 10:55:53,062 api.service_clients 19292 7840 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[DEBUG] 2025-12-12 10:55:53,066 api.service_clients 19292 10316 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 10:55:53,076 django.server 19292 19420 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 10:55:53,077 django.server 19292 19416 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 10:55:55,094 django.server 19292 10316 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[INFO] 2025-12-12 10:55:55,130 django.server 19292 7840 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[DEBUG] 2025-12-12 10:56:07,622 api.service_clients 19292 10316 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 10:56:07,633 django.server 19292 19416 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[DEBUG] 2025-12-12 10:56:07,643 api.service_clients 19292 7840 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 10:56:07,656 django.server 19292 19420 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[DEBUG] 2025-12-12 10:56:08,977 api.service_clients 19292 19416 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 10:56:09,148 api.service_clients 19292 19420 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 10:56:09,288 api.service_clients 19292 5372 [quiz_evaluator] GET http://localhost:8003/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 10:56:09,451 api.service_clients 19292 19180 [quiz_evaluator] GET http://localhost:8003/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[INFO] 2025-12-12 10:56:09,669 django.server 19292 10316 - Broken pipe from ('127.0.0.1', 63357)
+[INFO] 2025-12-12 10:56:09,685 django.server 19292 7840 - Broken pipe from ('127.0.0.1', 54989)
+[INFO] 2025-12-12 10:56:11,027 django.server 19292 19416 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 253
+[INFO] 2025-12-12 10:56:11,204 django.server 19292 19420 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 253
+[INFO] 2025-12-12 10:56:11,304 django.server 19292 5372 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 85
+[INFO] 2025-12-12 10:56:11,503 django.server 19292 19180 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 85
+[DEBUG] 2025-12-12 10:56:16,959 api.service_clients 19292 19180 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 10:56:16,965 django.server 19292 19420 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 10:56:19,015 django.server 19292 19180 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[DEBUG] 2025-12-12 10:56:20,436 api.service_clients 19292 19180 [quiz_generator] GET http://localhost:8002/quiz/quiz-64e005ef
+[INFO] 2025-12-12 10:56:20,452 django.server 19292 19180 "GET /api/quiz/quiz-64e005ef/ HTTP/1.1" 200 1766
+[DEBUG] 2025-12-12 10:56:56,752 api.service_clients 19292 19180 [quiz_generator] GET http://localhost:8002/quiz/quiz-64e005ef
+[INFO] 2025-12-12 10:56:58,828 django.server 19292 19180 "GET /api/quiz/quiz-64e005ef/ HTTP/1.1" 200 1766
+[DEBUG] 2025-12-12 10:59:52,800 api.service_clients 19292 5372 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 10:59:52,801 django.server 19292 19416 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 10:59:54,855 django.server 19292 5372 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[DEBUG] 2025-12-12 11:00:22,040 api.service_clients 19292 5372 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 11:00:22,046 django.server 19292 19416 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[DEBUG] 2025-12-12 11:00:22,925 api.service_clients 19292 19180 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 11:00:22,932 django.server 19292 19420 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 11:00:24,112 django.server 19292 5372 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[INFO] 2025-12-12 11:00:24,979 django.server 19292 19180 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[DEBUG] 2025-12-12 11:00:50,518 api.service_clients 19292 5372 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 11:00:50,524 django.server 19292 19416 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[DEBUG] 2025-12-12 11:00:50,931 api.service_clients 19292 19180 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 11:00:50,942 django.server 19292 19420 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[DEBUG] 2025-12-12 11:00:51,562 api.service_clients 19292 19416 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 11:00:51,870 api.service_clients 19292 19644 [quiz_evaluator] GET http://localhost:8003/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 11:00:52,083 api.service_clients 19292 19420 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 11:00:52,392 api.service_clients 19292 7184 [quiz_evaluator] GET http://localhost:8003/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[INFO] 2025-12-12 11:00:52,570 django.server 19292 5372 - Broken pipe from ('127.0.0.1', 61963)
+[INFO] 2025-12-12 11:00:52,994 django.server 19292 19180 - Broken pipe from ('127.0.0.1', 58802)
+[INFO] 2025-12-12 11:00:53,608 django.server 19292 19416 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 253
+[INFO] 2025-12-12 11:00:53,911 django.server 19292 19644 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 85
+[INFO] 2025-12-12 11:00:54,132 django.server 19292 19420 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 253
+[INFO] 2025-12-12 11:00:54,466 django.server 19292 7184 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 85
+[DEBUG] 2025-12-12 11:01:20,383 api.service_clients 19292 7184 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 11:01:20,390 django.server 19292 19420 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 11:01:22,449 django.server 19292 7184 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[DEBUG] 2025-12-12 11:01:24,329 api.service_clients 19292 7184 [quiz_generator] GET http://localhost:8002/quiz/quiz-64e005ef
+[INFO] 2025-12-12 11:01:24,352 django.server 19292 7184 "GET /api/quiz/quiz-64e005ef/ HTTP/1.1" 200 1766
+[DEBUG] 2025-12-12 11:01:59,338 api.service_clients 19292 19644 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 11:01:59,345 django.server 19292 19416 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 11:02:01,428 django.server 19292 19644 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[INFO] 2025-12-12 11:02:04,086 django.server 19292 19644 "OPTIONS /api/quiz/quiz-64e005ef/ HTTP/1.1" 200 0
+[DEBUG] 2025-12-12 11:02:04,090 api.service_clients 19292 19644 [quiz_generator] GET http://localhost:8002/quiz/quiz-64e005ef
+[INFO] 2025-12-12 11:02:04,111 django.server 19292 19644 "GET /api/quiz/quiz-64e005ef/ HTTP/1.1" 200 1766
+[INFO] 2025-12-12 11:07:13,985 django.utils.autoreload 19292 19296 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-12-12 11:07:15,528 django.utils.autoreload 13400 19716 Watching for file changes with StatReloader
+[INFO] 2025-12-12 11:07:22,365 django.utils.autoreload 13400 19716 E:\QuickQuiz\services\gateway_service\api\urls.py changed, reloading.
+[INFO] 2025-12-12 11:07:23,618 django.utils.autoreload 14020 14176 Watching for file changes with StatReloader
+[DEBUG] 2025-12-12 11:08:06,836 api.service_clients 14020 17044 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 11:08:06,844 django.server 14020 2600 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[DEBUG] 2025-12-12 11:08:07,226 api.service_clients 14020 20164 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 11:08:07,236 django.server 14020 10944 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 11:08:07,764 django.server 14020 2600 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 11:08:07,919 django.server 14020 10944 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 11:08:08,921 django.server 14020 17044 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[DEBUG] 2025-12-12 11:08:08,924 api.service_clients 14020 2600 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 11:08:08,934 django.server 14020 2600 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[INFO] 2025-12-12 11:08:09,287 django.server 14020 20164 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[DEBUG] 2025-12-12 11:08:09,291 api.service_clients 14020 10944 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 11:08:09,299 django.server 14020 10944 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[DEBUG] 2025-12-12 11:09:18,204 api.service_clients 14020 2600 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 11:09:18,213 django.server 14020 17044 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[DEBUG] 2025-12-12 11:09:18,928 api.service_clients 14020 10944 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 11:09:18,936 django.server 14020 20164 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 11:09:20,243 django.server 14020 2600 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[INFO] 2025-12-12 11:09:20,416 django.utils.autoreload 14020 14176 E:\QuickQuiz\services\gateway_service\api\views.py changed, reloading.
+[INFO] 2025-12-12 11:09:21,775 django.utils.autoreload 12820 8788 Watching for file changes with StatReloader
+[DEBUG] 2025-12-12 11:09:22,413 api.service_clients 12820 8068 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 11:09:24,486 django.server 12820 8068 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[INFO] 2025-12-12 11:09:30,646 django.server 12820 7804 "OPTIONS /api/quiz/quiz-64e005ef/pdf/ HTTP/1.1" 200 0
+[WARNING] 2025-12-12 11:09:30,661 django.request 12820 7804 Not Found: /api/quiz/quiz-64e005ef/pdf/
+[WARNING] 2025-12-12 11:09:30,662 django.server 12820 7804 "GET /api/quiz/quiz-64e005ef/pdf/ HTTP/1.1" 404 34
+[INFO] 2025-12-12 11:09:42,168 django.server 12820 8068 "OPTIONS /api/quiz/quiz-64e005ef/pdf/ HTTP/1.1" 200 0
+[WARNING] 2025-12-12 11:09:42,180 django.request 12820 8068 Not Found: /api/quiz/quiz-64e005ef/pdf/
+[WARNING] 2025-12-12 11:09:42,181 django.server 12820 8068 "GET /api/quiz/quiz-64e005ef/pdf/ HTTP/1.1" 404 34
+[INFO] 2025-12-12 11:10:35,898 django.utils.autoreload 8120 19496 Watching for file changes with StatReloader
+[DEBUG] 2025-12-12 11:10:39,416 api.service_clients 8120 6028 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 11:10:39,419 api.service_clients 8120 9952 [quiz_evaluator] GET http://localhost:8003/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 11:10:40,696 api.service_clients 8120 3124 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 11:10:40,699 api.service_clients 8120 2468 [quiz_evaluator] GET http://localhost:8003/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[INFO] 2025-12-12 11:10:41,490 django.server 8120 6028 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 253
+[INFO] 2025-12-12 11:10:41,493 django.server 8120 9952 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 85
+[INFO] 2025-12-12 11:10:42,748 django.server 8120 3124 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 253
+[INFO] 2025-12-12 11:10:42,754 django.server 8120 2468 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 85
+[DEBUG] 2025-12-12 11:14:35,519 api.service_clients 8120 2468 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 11:14:35,526 django.server 8120 3124 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 11:14:37,574 django.server 8120 2468 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[ERROR] 2025-12-12 11:14:39,835 django.request 8120 2468 Internal Server Error: /api/quiz/quiz-64e005ef/pdf/
+[ERROR] 2025-12-12 11:14:39,835 django.server 8120 2468 "GET /api/quiz/quiz-64e005ef/pdf/ HTTP/1.1" 500 34
+[ERROR] 2025-12-12 11:19:59,952 django.request 8120 192 Internal Server Error: /api/quiz/quiz-64e005ef/pdf/
+[ERROR] 2025-12-12 11:19:59,953 django.server 8120 192 "GET /api/quiz/quiz-64e005ef/pdf/ HTTP/1.1" 500 34
+[ERROR] 2025-12-12 11:45:56,532 django.request 8120 19432 Internal Server Error: /api/quiz/quiz-64e005ef/pdf/
+[ERROR] 2025-12-12 11:45:56,533 django.server 8120 19432 "GET /api/quiz/quiz-64e005ef/pdf/ HTTP/1.1" 500 34
+[INFO] 2025-12-12 11:47:02,072 django.utils.autoreload 19036 16300 Watching for file changes with StatReloader
+[DEBUG] 2025-12-12 11:47:05,521 api.service_clients 19036 5944 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 11:47:05,524 api.service_clients 19036 8176 [quiz_evaluator] GET http://localhost:8003/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 11:47:06,806 api.service_clients 19036 1384 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 11:47:06,809 api.service_clients 19036 13580 [quiz_evaluator] GET http://localhost:8003/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[INFO] 2025-12-12 11:47:07,620 django.server 19036 5944 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 253
+[INFO] 2025-12-12 11:47:07,621 django.server 19036 8176 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 85
+[INFO] 2025-12-12 11:47:08,855 django.server 19036 1384 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 253
+[INFO] 2025-12-12 11:47:08,855 django.server 19036 13580 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 85
+[DEBUG] 2025-12-12 11:48:48,472 api.service_clients 19036 13580 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 11:48:48,480 django.server 19036 1384 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 11:48:50,519 django.server 19036 13580 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[INFO] 2025-12-12 11:48:53,994 django.server 19036 13580 "GET /api/quiz/quiz-64e005ef/pdf/ HTTP/1.1" 200 2845
+[INFO] 2025-12-12 11:54:35,347 django.server 19036 7772 "GET /api/quiz/quiz-64e005ef/pdf/ HTTP/1.1" 200 2845
+[DEBUG] 2025-12-12 11:54:46,034 api.service_clients 19036 18792 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 11:54:46,336 api.service_clients 19036 19376 [quiz_evaluator] GET http://localhost:8003/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[INFO] 2025-12-12 11:54:48,092 django.server 19036 18792 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 253
+[INFO] 2025-12-12 11:54:48,404 django.server 19036 19376 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 85
+[INFO] 2025-12-12 11:55:34,076 django.utils.autoreload 7964 20056 Watching for file changes with StatReloader
+[DEBUG] 2025-12-12 11:55:37,972 api.service_clients 7964 19644 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 11:55:37,974 api.service_clients 7964 14956 [quiz_evaluator] GET http://localhost:8003/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 11:55:38,385 api.service_clients 7964 18124 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 11:55:38,387 api.service_clients 7964 16948 [quiz_evaluator] GET http://localhost:8003/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[INFO] 2025-12-12 11:55:40,053 django.server 7964 19644 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 253
+[INFO] 2025-12-12 11:55:40,058 django.server 7964 14956 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 85
+[INFO] 2025-12-12 11:55:40,435 django.server 7964 16948 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 85
+[INFO] 2025-12-12 11:55:40,441 django.server 7964 18124 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 253
+[DEBUG] 2025-12-12 11:55:50,911 api.service_clients 7964 18124 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[DEBUG] 2025-12-12 11:55:50,913 api.service_clients 7964 16948 [quiz_evaluator] GET http://localhost:8003/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent
+[INFO] 2025-12-12 11:55:52,941 django.server 7964 16948 "GET /api/results/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 85
+[INFO] 2025-12-12 11:55:52,956 django.server 7964 18124 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/recent/?limit=5 HTTP/1.1" 200 253
+[DEBUG] 2025-12-12 11:55:53,583 api.service_clients 7964 18124 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 11:55:53,591 django.server 7964 16948 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 11:55:53,595 django.server 7964 18124 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[INFO] 2025-12-12 11:55:56,674 django.server 7964 18124 "GET /api/quiz/quiz-64e005ef/pdf/ HTTP/1.1" 200 46405
+[DEBUG] 2025-12-12 11:57:19,551 api.service_clients 7964 14956 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 11:57:19,558 django.server 7964 19644 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 11:57:21,616 django.server 7964 14956 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[DEBUG] 2025-12-12 11:57:24,618 api.service_clients 7964 14956 [quiz_generator] GET http://localhost:8002/quiz/quiz-64e005ef
+[INFO] 2025-12-12 11:57:24,644 django.server 7964 14956 "GET /api/quiz/quiz-64e005ef/ HTTP/1.1" 200 1766
+[INFO] 2025-12-12 11:57:24,672 django.server 7964 14956 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[DEBUG] 2025-12-12 11:57:31,603 api.service_clients 7964 16948 [quiz_generator] GET http://localhost:8002/quiz/quiz-64e005ef
+[INFO] 2025-12-12 11:57:33,758 django.server 7964 16948 "GET /api/quiz/quiz-64e005ef/ HTTP/1.1" 200 1766
+[INFO] 2025-12-12 11:57:33,787 django.server 7964 16948 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[DEBUG] 2025-12-12 12:01:45,506 api.service_clients 7964 16948 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 12:01:45,824 django.server 7964 18636 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 12:01:47,576 django.server 7964 16948 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[DEBUG] 2025-12-12 12:01:49,756 api.service_clients 7964 16948 [quiz_generator] GET http://localhost:8002/quiz/quiz-64e005ef
+[INFO] 2025-12-12 12:01:49,778 django.server 7964 16948 "GET /api/quiz/quiz-64e005ef/ HTTP/1.1" 200 1766
+[INFO] 2025-12-12 12:01:49,797 django.server 7964 16948 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[DEBUG] 2025-12-12 12:02:47,079 api.service_clients 7964 9828 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 12:02:47,086 django.server 7964 18952 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 12:02:49,139 django.server 7964 9828 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[DEBUG] 2025-12-12 12:03:02,650 api.service_clients 7964 9828 [quiz_generator] GET http://localhost:8002/quiz/quiz-64e005ef
+[INFO] 2025-12-12 12:03:04,701 django.server 7964 9828 "GET /api/quiz/quiz-64e005ef/ HTTP/1.1" 200 1766
+[INFO] 2025-12-12 12:03:04,723 django.server 7964 9828 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[DEBUG] 2025-12-12 12:08:45,622 api.service_clients 7964 17224 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 12:08:45,630 django.server 7964 7360 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 12:08:47,690 django.server 7964 17224 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301
+[DEBUG] 2025-12-12 12:09:14,547 api.service_clients 7964 17224 [quiz_generator] GET http://localhost:8002/quiz/quiz-64e005ef
+[INFO] 2025-12-12 12:09:16,632 django.server 7964 17224 "GET /api/quiz/quiz-64e005ef/ HTTP/1.1" 200 1766
+[INFO] 2025-12-12 12:09:16,650 django.server 7964 17224 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[DEBUG] 2025-12-12 12:09:59,190 api.service_clients 7964 17224 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-12 12:09:59,198 django.server 7964 7360 "GET /api/documents/list/ HTTP/1.1" 200 17801
+[INFO] 2025-12-12 12:10:01,208 django.server 7964 17224 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 301

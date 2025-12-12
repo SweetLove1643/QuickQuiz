@@ -21,6 +21,7 @@ urlpatterns = [
     path("quiz/save/", views.save_quiz, name="save_quiz"),
     path("quiz/<str:quiz_id>/", views.get_quiz_details, name="get_quiz_details"),
     path("quiz/<str:quiz_id>/delete/", views.delete_quiz, name="delete_quiz"),
+    path("quiz/<str:quiz_id>/pdf/", views.download_quiz_pdf, name="download_quiz_pdf"),
     path("quiz/user/<str:user_id>/", views.get_user_quizzes, name="get_user_quizzes"),
     path(
         "quiz/user/<str:user_id>/recent/",

@@ -304,6 +304,47 @@ def delete_quiz(request, quiz_id):
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
+def download_quiz_pdf(request, quiz_id):
+    """Download quiz as PDF with full Unicode support."""
+    try:
+        import requests
+        from django.http import FileResponse
+
+        # Call quiz generator PDF endpoint
+        response = requests.get(
+            f"http://127.0.0.1:8002/quiz/{quiz_id}/pdf", stream=True
+        )
+
+        if response.status_code == 200:
+            # Get filename from content-disposition header
+            filename = f"quiz-{quiz_id}.pdf"
+            if "content-disposition" in response.headers:
+                import re
+
+                match = re.search(
+                    r'filename="?([^"]+)"?', response.headers["content-disposition"]
+                )
+                if match:
+                    filename = match.group(1)
+
+            # Return file response
+            return FileResponse(
+                response.raw,
+                content_type="application/pdf",
+                as_attachment=True,
+                filename=filename,
+            )
+        else:
+            return Response(
+                {"error": "Failed to generate PDF"}, status=response.status_code
+            )
+    except Exception as e:
+        logger.error(f"Failed to download quiz PDF: {str(e)}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
 def get_user_results(request, user_id):
     """Get all quiz results for a specific user."""
     try:
