@@ -179,7 +179,7 @@ export const Dashboard = () => {
             </div>
             <div className="max-w-4xl mx-auto">
               <Chatbot
-                documentId={currentDocument?.documentId}
+                documentId={currentDocument?.documentId || "default"}
                 documentName={currentDocument?.fileName}
               />
             </div>

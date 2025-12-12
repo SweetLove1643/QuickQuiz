@@ -94,7 +94,7 @@ echo       - Summary Service (Port %SUMMARY_PORT%)
 start "Summary Service - Port %SUMMARY_PORT%" /%WINDOW_STYLE% cmd /c "cd services\summary_service && python -m uvicorn api:app --host %SERVICE_HOST% --port %SUMMARY_PORT%"
 
 echo       - RAG Chatbot (Port %RAG_CHATBOT_PORT%)
-start "RAG Chatbot - Port %RAG_CHATBOT_PORT%" /%WINDOW_STYLE% cmd /c "cd services\rag_chatbot_service && python api.py --port %RAG_CHATBOT_PORT%"
+start "RAG Chatbot - Port %RAG_CHATBOT_PORT%" /%WINDOW_STYLE% cmd /c "cd services\rag_chatbot_service && python api.py --host %SERVICE_HOST% --port %RAG_CHATBOT_PORT%"
 
 echo       Waiting %SERVICES_INIT_DELAY% seconds for microservices to initialize...
 timeout /t %SERVICES_INIT_DELAY% /nobreak >nul

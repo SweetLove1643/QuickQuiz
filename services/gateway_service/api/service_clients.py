@@ -3,6 +3,10 @@ Enhanced Service Clients for QuickQuiz Gateway.
 
 Improved HTTP clients with better error handling, retry logic, and monitoring.
 """
+# -*- coding: utf-8 -*-
+import sys
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 import requests
 import logging

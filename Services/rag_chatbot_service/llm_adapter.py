@@ -8,7 +8,7 @@ import time
 from schemas import ChatConfig
 
 # Load environment variables from parent directory
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
 
 logger = logging.getLogger(__name__)
 

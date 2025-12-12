@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Card } from "./ui/card";
@@ -30,24 +31,41 @@ interface ChatbotProps {
 }
 
 const chatbotAPI = {
-  BASE_URL: "http://localhost:8002/api",
+  BASE_URL: "http://localhost:8007/api",
 
   async chat(
     query: string,
     conversationId?: string,
-    documentId?: string
+    documentId?: string,
+    accessToken?: string
   ): Promise<{
+  success: boolean;
+  data: {
     answer: string;
     context: {
-      retrieved_documents: string[];
+      retrieved_count: number;
+      context_used: boolean;
+      sources: Array<any>;
+      context_text?: string;
     };
+    conversation_id?: string;
+    timestamp?: string;
     processing_time: number;
-  }> {
-    const response = await fetch(`${this.BASE_URL}/chat`, {
+    retrieved_documents?: Array<any>;
+  };
+  error?: string;
+}> {
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+    };
+
+    if (accessToken) {
+      headers["Authorization"] = `Bearer ${accessToken}`;
+    }
+
+    const response = await fetch(`${this.BASE_URL}/rag/chat/`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify({
         query,
         conversation_id: conversationId,
@@ -64,20 +82,32 @@ const chatbotAPI = {
     });
 
     if (!response.ok) {
-      throw new Error("Lỗi khi gửi tin nhắn đến chatbot");
+      const errorData = await response.json();
+      throw new Error(
+        errorData.error || "Lỗi khi gửi tin nhắn đến chatbot"
+      );
     }
 
     return response.json();
   },
 
-  async getConversationHistory(conversationId: string): Promise<Message[]> {
+  async getConversationHistory(
+    conversationId: string,
+    accessToken?: string
+  ): Promise<Message[]> {
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+    };
+
+    if (accessToken) {
+      headers["Authorization"] = `Bearer ${accessToken}`;
+    }
+
     const response = await fetch(
-      `${this.BASE_URL}/conversations/${conversationId}`,
+      `${this.BASE_URL}/rag/conversations/${conversationId}/`,
       {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
       }
     );
 
@@ -91,6 +121,8 @@ const chatbotAPI = {
 };
 
 export function Chatbot({ documentId, documentName }: ChatbotProps) {
+  const { accessToken } = useAuth();
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
@@ -142,15 +174,26 @@ ${
     setIsLoading(true);
 
     try {
-      const response = await chatbotAPI.chat(input, conversationId, documentId);
+      const response = await chatbotAPI.chat(
+        input,
+        conversationId,
+        documentId,
+        accessToken || undefined
+      );
+
+      if (!response.success || !response.data) {
+        throw new Error(response.error || "Lỗi không xác định");
+      }
 
       const assistantMessage: Message = {
         id: `msg-${Date.now() + 1}`,
         type: "assistant",
-        content: response.answer,
+        content: response.data.answer,
         timestamp: new Date(),
-        sources: response.context.retrieved_documents.map((doc) => ({
-          content: doc,
+        sources: (response.data.context?.sources || []).map((source: any) => ({
+          content: typeof source === 'string' ? source : source.content || JSON.stringify(source),
+          topic: source.topic,
+          similarity_score: source.similarity_score,
         })),
       };
 
@@ -299,12 +342,12 @@ ${
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Đặt câu hỏi của bạn..."
-          disabled={isLoading || !documentId}
+          disabled={isLoading}
           className="flex-1"
         />
         <Button
           type="submit"
-          disabled={isLoading || !input.trim() || !documentId}
+          disabled={isLoading || !input.trim()}
           className="px-4"
         >
           {isLoading ? (
@@ -318,7 +361,7 @@ ${
       {!documentId && (
         <div className="px-4 py-2 bg-yellow-50 border-t border-yellow-200 text-xs text-yellow-700 flex items-center gap-2">
           <Zap className="size-4" />
-          Vui lòng chọn tài liệu để sử dụng chatbot
+          💡 Tip: Nếu bạn chọn tài liệu, chatbot sẽ trích xuất thông tin từ tài liệu để trả lời chính xác hơn!
         </div>
       )}
     </div>

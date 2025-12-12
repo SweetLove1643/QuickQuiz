@@ -133,19 +133,22 @@ async def _process_chat_request(
 
         # Log chat message to database
         try:
+            # Get retrieved documents safely
+            retrieved_docs = []
+            if hasattr(response.context, 'sources') and response.context.sources:
+                retrieved_docs = [
+                    {
+                        "content": str(source)[:200] + "..." if len(str(source)) > 200 else str(source),
+                        "source": "document_retrieval",
+                    }
+                    for source in response.context.sources[:3]
+                ]
+            
             await log_chat_message(
                 conversation_id=effective_conversation_id or "standalone",
                 user_query=request.query,
                 assistant_response=response.answer,
-                retrieved_documents=[
-                    {
-                        "content": doc[:200] + "..." if len(doc) > 200 else doc,
-                        "source": "document_retrieval",
-                    }
-                    for doc in response.context.retrieved_documents[:3]
-                ],
-                context_sources=quiz_context,
-                processing_time=response.processing_time,
+                retrieved_documents=retrieved_docs,
             )
         except Exception as e:
             logger.warning(f"Could not log chat message: {e}")

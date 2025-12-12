@@ -659,7 +659,12 @@ def chat_message(request):
         chat_config = data.get("chat_config", {})
 
         if not query:
-            return JsonResponse({"error": "Query is required"}, status=400)
+            return JsonResponse({
+                "success": False,
+                "data": None,
+                "error": "Query is required",
+                "status_code": 400
+            }, status=400)
 
         # Call RAG service
         result = rag_chatbot.chat(
@@ -669,13 +674,28 @@ def chat_message(request):
             chat_config=chat_config,
         )
 
-        return JsonResponse(result)
+        return JsonResponse({
+            "success": True,
+            "data": result,
+            "error": None,
+            "status_code": 200
+        })
 
     except json.JSONDecodeError:
-        return JsonResponse({"error": "Invalid JSON data"}, status=400)
+        return JsonResponse({
+                "success": False,
+                "data": None,
+                "error": "Invalid JSON data",
+                "status_code": 400
+            }, status=400)
     except Exception as e:
         logger.error(f"Chat message failed: {str(e)}")
-        return JsonResponse({"error": str(e)}, status=500)
+        return JsonResponse({
+                "success": False,
+                "data": None,
+                "error": str(e),
+                "status_code": 500
+            }, status=500)
 
 
 @csrf_exempt
