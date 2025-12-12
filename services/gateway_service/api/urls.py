@@ -59,6 +59,21 @@ urlpatterns = [
     # Document management endpoints
     path("documents/save/", views.save_document, name="save_document"),
     path("documents/list/", views.list_documents, name="list_documents"),
+    path(
+        "documents/<str:document_id>/update/",
+        views.update_document,
+        name="update_document",
+    ),
+    path(
+        "documents/<str:document_id>/delete/",
+        views.delete_document_view,
+        name="delete_document",
+    ),
+    path(
+        "documents/<str:document_id>/pdf/",
+        views.download_document_pdf,
+        name="download_document_pdf",
+    ),
     # RAG Chatbot endpoints
     path("rag/", views.ChatView.as_view(), name="rag_chat"),
     path("rag/chat/", views.chat_message, name="rag_chat_message"),
