@@ -63,14 +63,7 @@ if not defined VIRTUAL_ENV (
     call .venv\Scripts\activate.bat
 )
 
-@REM echo Installing/updating dependencies...
-@REM pip install -q -r requirements.txt >nul 2>&1 || echo No requirements.txt found
-@REM for /d %%d in (services\*) do (
-@REM     if exist "%%d\requirements.txt" (
-@REM         echo Installing %%d dependencies...
-@REM         pip install -q -r "%%d\requirements.txt" >nul 2>&1
-@REM     )
-@REM )
+echo [%time%] All dependencies installed.
 
 REM ====================================================================
 REM STEP 1: Start IAM Service (Authentication - Required First)
@@ -97,7 +90,7 @@ echo       - OCR Service (Port %OCR_PORT%)
 start "OCR Service - Port %OCR_PORT%" /%WINDOW_STYLE% cmd /c "cd services\ocr_service && python -m uvicorn api:app --host %SERVICE_HOST% --port %OCR_PORT%"
 
 echo       - Summary Service (Port %SUMMARY_PORT%)
-start "Summary Service - Port %SUMMARY_PORT%" cmd /c "cd services\summary_service && python -m uvicorn api:app --host %SERVICE_HOST% --port %SUMMARY_PORT% && pause"
+start "Summary Service - Port %SUMMARY_PORT%" /%WINDOW_STYLE% cmd /c "cd services\summary_service && python -m uvicorn api:app --host %SERVICE_HOST% --port %SUMMARY_PORT% && pause"
 
 echo       - RAG Chatbot (Port %RAG_CHATBOT_PORT%)
 start "RAG Chatbot - Port %RAG_CHATBOT_PORT%" /%WINDOW_STYLE% cmd /c "cd services\rag_chatbot_service && python api.py --host %SERVICE_HOST% --port %RAG_CHATBOT_PORT%"

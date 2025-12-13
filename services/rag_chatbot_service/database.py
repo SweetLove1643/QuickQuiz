@@ -83,9 +83,12 @@ class QuizDataAccess:
     """Access quiz data from other microservices for RAG context"""
 
     def __init__(self):
-        self.quiz_generator_db = "services/quiz_generator_service/quiz_generator.db"
-        self.quiz_evaluator_db = "services/quiz_evaluator_service/quiz_evaluator.db"
-
+        # paths relative to project root
+        repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        self.quiz_generator_db = os.path.join(repo_root, "services", "quiz_generator_service", "quiz_generator_service.db")
+        self.quiz_evaluator_db = os.path.join(repo_root, "services", "quiz_evaluator_service", "quiz_evaluator.db")
+        self.gateway_documents_db = os.path.join(repo_root, "services", "gateway_service", "documents.db")
+        
     def get_quiz_templates(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Get recent quiz templates for context"""
         try:
@@ -109,6 +112,30 @@ class QuizDataAccess:
             return [dict(row) for row in results]
         except Exception as e:
             print(f"Error accessing quiz templates: {e}")
+            return []
+    
+    def get_gateway_documents(self, limit: int = 50) -> List[Dict[str, Any]]:
+        """Read documents saved by Gateway (documents.db)."""
+        try:
+            if not os.path.exists(self.gateway_documents_db):
+                return []
+            conn = sqlite3.connect(self.gateway_documents_db)
+            conn.row_factory = sqlite3.Row
+            cur = conn.cursor()
+            cur.execute(
+                """
+                SELECT id as document_id, file_name, extracted_text, summary, created_at
+                FROM documents
+                ORDER BY datetime(created_at) DESC
+                LIMIT ?
+                """,
+                (limit,),
+            )
+            rows = cur.fetchall()
+            conn.close()
+            return [dict(row) for row in rows]
+        except Exception as e:
+            print(f"Error accessing gateway documents: {e}")
             return []
 
     def get_generated_quizzes(self, limit: int = 10) -> List[Dict[str, Any]]:

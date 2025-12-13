@@ -262,12 +262,19 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
       const successMsg = `Đã lưu bài quiz "${quizTitle}" thành công!`;
       setSaveSuccess(successMsg);
       const quizData = {
-      quizId: result.quiz_id,
-      title: quizTitle,
-      questions: questions,
-      documentId: document?.documentId,
-      documentName: document?.fileName,
-      savedAt: new Date().toISOString(),
+        quizId: result.quiz_id,
+        title: quizTitle,
+        questions: questions.map((q) => ({
+          question: q.question,  // Use 'question' field
+          stem: q.question,      // Also keep stem for compatibility
+          type: q.type === "true-false" ? "tf" : q.type === "fill-blank" ? "fill_blank" : "mcq",
+          options: q.options,
+          correctAnswer: q.correctAnswer,  // Index of correct answer
+          answer: q.options[q.correctAnswer],  // Text of answer
+        })),
+        documentId: document?.documentId,
+        documentName: document?.fileName,
+        savedAt: new Date().toISOString(),
       };
       setIsSavingQuiz(false);
       // Auto-hide after 3 seconds and reset component

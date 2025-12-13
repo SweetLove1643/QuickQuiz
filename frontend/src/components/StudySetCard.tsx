@@ -80,16 +80,43 @@ export function StudySetCard({ studySet, onNavigate, onQuizSelected, onDocumentS
           <Button 
             variant="ghost" 
             className="w-full justify-center gap-2 py-4 rounded-none hover:bg-slate-50"
-            onClick={() => {
+            onClick={async () => {
               if (studySet.type === "quiz" && onQuizSelected && onNavigate) {
-                // Prepare quiz data with proper structure
-                const quizData = {
-                  title: studySet.title,
-                  questions: studySet.questions || [],
-                  documentName: studySet.documentName || studySet.title,
-                };
-                onQuizSelected(quizData);
-                onNavigate("take-quiz");
+                try {
+                  // Import quizAPI if not already imported
+                  import("../api/quizAPI").then(({ quizAPI }) => {
+                    quizAPI.getQuizDetails(studySet.id).then((quizDetails) => {
+                      // Normalize questions
+                      const normalizedQuestions = (quizDetails.quiz.questions || []).map((q: any) => {
+                        const options = q.options || [];
+                        const answerText = q.answer ?? q.correct_answer ?? null;
+                        const idx = answerText && options.length ? options.indexOf(String(answerText)) : -1;
+                        return {
+                          ...q,
+                          question: q.stem || q.question,
+                          stem: q.stem || q.question,
+                          correctAnswer: idx >= 0 ? idx : 0,
+                          answer: answerText,
+                          options,
+                        };
+                      });
+            
+                      const quizData = {
+                        quizId: quizDetails.quiz.quiz_id,
+                        title: quizDetails.quiz.title,
+                        questions: normalizedQuestions,
+                        documentName: quizDetails.quiz.document_id,
+                        documentId: quizDetails.quiz.document_id,
+                      };
+                      onQuizSelected(quizData);
+                      onNavigate("take-quiz");
+                    });
+                  }).catch((error) => {
+                    console.error("Failed to load quiz details:", error);
+                  });
+                } catch (error) {
+                  console.error("Failed to load quiz details:", error);
+                }
               }
             }}
           >

@@ -97,10 +97,10 @@ class BaseServiceClient:
         """Make HTTP request to the service with enhanced error handling."""
         url = f"{self.base_url}{endpoint}"
         start_time = time.time()
-
+    
         try:
             logger.debug(f"[{self.service_name}] {method} {url}")
-
+    
             # Check if files are being sent (multipart)
             if 'files' in kwargs:
                 # For file uploads, don't set json parameter and let requests handle multipart
@@ -122,22 +122,22 @@ class BaseServiceClient:
                     timeout=self.timeout,
                     **kwargs,
                 )
-
+    
             response_time = time.time() - start_time
-
+    
             # Log slow requests
             if response_time > 5.0:
                 logger.warning(
                     f"[{self.service_name}] Slow request: {response_time:.2f}s"
                 )
-
+    
             response.raise_for_status()
-
+    
             try:
                 response_data = response.json()
             except ValueError:
                 response_data = {"raw_content": response.text}
-
+    
             return ServiceResponse(
                 success=True,
                 data=response_data,
@@ -146,11 +146,11 @@ class BaseServiceClient:
                 response_time=response_time,
                 service_name=self.service_name,
             )
-
+    
         except requests.exceptions.ConnectionError as e:
             error_msg = f"Connection failed to {self.service_name}"
             logger.error(f"[{self.service_name}] {error_msg}: {e}")
-
+    
             return ServiceResponse(
                 success=False,
                 data=None,
@@ -159,19 +159,19 @@ class BaseServiceClient:
                 response_time=time.time() - start_time,
                 service_name=self.service_name,
             )
-
+    
         except requests.exceptions.HTTPError as e:
             response_time = time.time() - start_time
             status_code = e.response.status_code if e.response else 500
-
+    
             try:
                 error_data = e.response.json() if e.response else {}
                 error_msg = error_data.get("error", str(e))
             except ValueError:
                 error_msg = e.response.text if e.response else str(e)
-
+    
             logger.error(f"[{self.service_name}] HTTP {status_code}: {error_msg}")
-
+    
             return ServiceResponse(
                 success=False,
                 data=None,
@@ -180,11 +180,11 @@ class BaseServiceClient:
                 response_time=response_time,
                 service_name=self.service_name,
             )
-
+    
         except requests.exceptions.Timeout as e:
             error_msg = f"Request timeout after {self.timeout}s"
             logger.error(f"[{self.service_name}] {error_msg}")
-
+    
             return ServiceResponse(
                 success=False,
                 data=None,
@@ -193,11 +193,11 @@ class BaseServiceClient:
                 response_time=self.timeout,
                 service_name=self.service_name,
             )
-
+    
         except Exception as e:
             error_msg = f"Unexpected error: {str(e)}"
             logger.error(f"[{self.service_name}] {error_msg}")
-
+    
             return ServiceResponse(
                 success=False,
                 data=None,

@@ -1,7 +1,7 @@
 import { Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Progress } from "./ui/progress";
 
 interface TakeQuizProps {
@@ -16,7 +16,7 @@ export function TakeQuiz({ quiz, onQuizCompleted }: TakeQuizProps) {
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Handle null quiz
+  // Handle null quiz early
   if (!quiz || !quiz.questions || quiz.questions.length === 0) {
     return (
       <div className="max-w-4xl mx-auto">
@@ -30,16 +30,40 @@ export function TakeQuiz({ quiz, onQuizCompleted }: TakeQuizProps) {
     );
   }
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeElapsed((prev) => prev + 1);
-    }, 1000);
+   // Normalize questions to a single shape used by the UI:
+  const normalizedQuestions = useMemo(() => {
+    return (quiz.questions || []).map((q: any) => {
+      // Extract text from various possible fields
+      const stem = q.stem || q.question || q.text || "";
+      const options = q.options || [];
+      const answerText = q.answer ?? q.correct_answer ?? null;
+  
+      // Determine correct answer index
+      let correctIndex: number;
+  
+      if (q.correctAnswer !== undefined && typeof q.correctAnswer === "number") {
+        correctIndex = q.correctAnswer;
+      } else if (answerText && Array.isArray(options) && options.length > 0) {
+        const idx = options.indexOf(String(answerText));
+        correctIndex = idx >= 0 ? idx : 0;
+      } else {
+        correctIndex = options.length > 0 ? 0 : -1;
+      }
+  
+      return {
+        ...q,
+        question: stem,
+        stem,
+        type: q.type || q.question_type || "mcq",
+        options,
+        correctAnswer: correctIndex,
+        answer: answerText,
+      };
+    });
+  }, [quiz.questions]);
 
-    return () => clearInterval(timer);
-  }, []);
-
-  const currentQuestion = quiz.questions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
+  const currentQuestion = normalizedQuestions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / normalizedQuestions.length) * 100;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -80,7 +104,7 @@ export function TakeQuiz({ quiz, onQuizCompleted }: TakeQuizProps) {
 
     // Calculate results
     let correctCount = 0;
-    const detailedAnswers = quiz.questions.map((q: any, idx: number) => {
+    const detailedAnswers = normalizedQuestions.map((q: any, idx: number) => {
       let userAnswer;
       let isCorrect = false;
 

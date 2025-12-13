@@ -809,6 +809,20 @@ def save_document(request):
 
         insert_document(document_data)
 
+        # Notify RAG service to rebuild / include this document (best-effort)
+        try:
+            # Use the rag_chatbot client to call admin rebuild index
+            try:
+                rag_chatbot._make_request("POST", "/admin/rebuild-index")
+                logger.info("Requested RAG service to rebuild index after document save")
+            except Exception as e:
+                # Last-resort: make a direct requests call
+                import requests
+                requests.post(f"{rag_chatbot.base_url}/admin/rebuild-index", timeout=5)
+                logger.info("Requested RAG rebuild-index via direct request")
+        except Exception as e:
+            logger.warning(f"Failed to request RAG rebuild-index: {e}")
+
         return JsonResponse(
             {
                 "success": True,

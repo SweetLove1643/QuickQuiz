@@ -554,10 +554,28 @@ export function Library({
                         console.log("Editing quiz:", quiz.quiz_id);
                         try {
                           // Load quiz details before navigating
-                          const quizData = await quizAPI.getQuizDetails(
-                            quiz.quiz_id
-                          );
-                          onQuizSelected?.(quizData.quiz);
+                          const quizDetails = await quizAPI.getQuizDetails(quiz.id);
+                          const normalizedQuestions = (quizDetails.quiz.questions || []).map((q: any) => {
+                          const options = q.options || [];
+                          const answerText = q.answer ?? q.correct_answer ?? null;
+                          const idx = answerText && options.length ? options.indexOf(String(answerText)) : -1;
+                          return {
+                            ...q,
+                            question: q.stem || q.question,
+                            stem: q.stem || q.question,
+                            correctAnswer: idx >= 0 ? idx : 0,
+                            answer: answerText,
+                            options,
+                            type: q.type || "mcq",
+                          };
+                        });
+
+                        const quizData = {
+                          quizId: quizDetails.quiz.quiz_id,
+                          title: quizDetails.quiz.title,
+                          questions: normalizedQuestions,
+                        };
+                          onQuizSelected?.(quizData);
                           onNavigate?.("create-quiz-standalone");
                         } catch (error) {
                           console.error("Failed to load quiz:", error);
@@ -575,20 +593,37 @@ export function Library({
                         console.log("Taking quiz:", quiz.quiz_id);
                         try {
                           // Load quiz details before navigating
-                          const quizData = await quizAPI.getQuizDetails(
-                            quiz.quiz_id
-                          );
+                          const quizDetails = await quizAPI.getQuizDetails(quiz.id);
+                          const normalizedQuestions = (quizDetails.quiz.questions || []).map((q: any) => {
+                          const options = q.options || [];
+                          const answerText = q.answer ?? q.correct_answer ?? null;
+                          const idx = answerText && options.length ? options.indexOf(String(answerText)) : -1;
+                          return {
+                            ...q,
+                            question: q.stem || q.question,
+                            stem: q.stem || q.question,
+                            correctAnswer: idx >= 0 ? idx : 0,
+                            answer: answerText,
+                            options,
+                            type: q.type || "mcq",
+                          };
+                        });
+
+                        const quizData = {
+                          quizId: quizDetails.quiz.quiz_id,
+                          title: quizDetails.quiz.title,
+                          questions: normalizedQuestions,
+                        };
 
                           // Convert backend format to frontend format
                           // Backend: answer is text, Frontend: correctAnswer is index
                           const convertedQuiz = {
-                            ...quizData.quiz,
-                            questions: quizData.quiz.questions.map(
+                            ...quizData,
+                            questions: quizData.questions.map(
                               (q: any) => ({
                                 ...q,
                                 question: q.stem || q.question,
-                                correctAnswer:
-                                  q.options?.indexOf(q.answer) ?? 0,
+                                correctAnswer: q.options?.indexOf(q.answer) ?? 0,
                               })
                             ),
                           };
@@ -646,12 +681,30 @@ export function Library({
                           onSelect={async (e) => {
                             e.preventDefault();
                             try {
-                              // Load quiz details for download
-                              const quizData = await quizAPI.getQuizDetails(
-                                quiz.quiz_id
-                              );
+                                const quizDetails = await quizAPI.getQuizDetails(quiz.id);
+                                    const normalizedQuestions = (quizDetails.quiz.questions || []).map((q: any) => {
+                                      const options = q.options || [];
+                                      const answerText = q.answer ?? q.correct_answer ?? null;
+                                      const idx = answerText && options.length ? options.indexOf(String(answerText)) : -1;
+                                      return {
+                                        ...q,
+                                        question: q.stem || q.question,
+                                        stem: q.stem || q.question,
+                                        correctAnswer: idx >= 0 ? idx : 0,
+                                        answer: answerText,
+                                        options,
+                                        type: q.type || "mcq",
+                                      };
+                                    });
+
+                                    const quizData = {
+                                      quizId: quizDetails.quiz.quiz_id,
+                                      title: quizDetails.quiz.title,
+                                      questions: normalizedQuestions,
+                                    };
+                              
                               const dataStr = JSON.stringify(
-                                quizData.quiz,
+                                quizData,
                                 null,
                                 2
                               );
