@@ -101,15 +101,27 @@ class BaseServiceClient:
         try:
             logger.debug(f"[{self.service_name}] {method} {url}")
 
-            response = self.session.request(
-                method=method,
-                url=url,
-                json=data,
-                params=params,
-                headers={"Content-Type": "application/json"},
-                timeout=self.timeout,
-                **kwargs,
-            )
+            # Check if files are being sent (multipart)
+            if 'files' in kwargs:
+                # For file uploads, don't set json parameter and let requests handle multipart
+                response = self.session.request(
+                    method=method,
+                    url=url,
+                    params=params,
+                    timeout=self.timeout,
+                    **kwargs,  # files parameter will be here
+                )
+            else:
+                # For JSON requests
+                response = self.session.request(
+                    method=method,
+                    url=url,
+                    json=data,
+                    params=params,
+                    headers={"Content-Type": "application/json"},
+                    timeout=self.timeout,
+                    **kwargs,
+                )
 
             response_time = time.time() - start_time
 
@@ -194,7 +206,7 @@ class BaseServiceClient:
                 response_time=time.time() - start_time,
                 service_name=self.service_name,
             )
-
+        
     def health_check(self) -> Dict[str, Any]:
         """Check service health with detailed status."""
         health_endpoint = self.config.get("health_endpoint", "/health")

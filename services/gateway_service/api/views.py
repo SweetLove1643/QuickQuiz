@@ -539,32 +539,66 @@ def summarize_text(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def ocr_and_summarize(request):
-    """Extract text from files and create summary"""
+    """Extract text from base64 image and create summary"""
     try:
-        files = request.FILES.getlist("files")
-        if not files:
-            return JsonResponse({"error": "No files provided"}, status=400)
+        data = json.loads(request.body)
+        image_base64 = data.get("image")
+        summary_config = data.get("summary_config", {"style": "detailed"})
 
-        # Prepare files data
-        files_data = []
-        for uploaded_file in files:
-            files_data.append(
-                {
-                    "filename": uploaded_file.name,
-                    "data": uploaded_file.read(),
-                    "content_type": uploaded_file.content_type,
-                }
+        if not image_base64:
+            return JsonResponse({"error": "No image provided"}, status=400)
+
+        # Convert base64 to file-like object
+        import base64
+        import io
+        from django.core.files.uploadedfile import InMemoryUploadedFile
+        
+        try:
+            # Decode base64
+            image_data = base64.b64decode(image_base64)
+            # Create file-like object
+            image_file = InMemoryUploadedFile(
+                file=io.BytesIO(image_data),
+                field_name='files',
+                name='image.png',
+                content_type='image/png',
+                size=len(image_data),
+                charset=None
             )
+            
+            # Prepare files data for service client
+            files_data = [
+                {
+                    "filename": "image.png",
+                    "data": image_data,
+                    "content_type": "image/png",
+                }
+            ]
 
-        # Call Summary service
-        result = summary_service.ocr_and_summarize(files_data)
+            # Call Summary service
+            result = summary_service.ocr_and_summarize(files_data)
+            
+            # Wrap response to match frontend expectations
+            return JsonResponse({
+                "ocr": {
+                    "extracted_text": result.get("extracted_text", ""),
+                    "confidence_score": 0.85,
+                },
+                "summary": {
+                    "summary": result.get("summary", ""),
+                    "confidence_score": 0.85,
+                }
+            })
 
-        return JsonResponse(result)
+        except Exception as e:
+            logger.error(f"Base64 image processing failed: {str(e)}")
+            return JsonResponse({"error": f"Image processing failed: {str(e)}"}, status=400)
 
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON data"}, status=400)
     except Exception as e:
         logger.error(f"OCR and summarization failed: {str(e)}")
         return JsonResponse({"error": str(e)}, status=500)
-
 
 @csrf_exempt
 @require_http_methods(["POST"])

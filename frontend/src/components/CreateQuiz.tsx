@@ -261,11 +261,20 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
       // Show success message
       const successMsg = `Đã lưu bài quiz "${quizTitle}" thành công!`;
       setSaveSuccess(successMsg);
+      const quizData = {
+      quizId: result.quiz_id,
+      title: quizTitle,
+      questions: questions,
+      documentId: document?.documentId,
+      documentName: document?.fileName,
+      savedAt: new Date().toISOString(),
+      };
       setIsSavingQuiz(false);
       // Auto-hide after 3 seconds and reset component
       setTimeout(() => {
         resetComponent();
-      }, 3000);
+        onQuizCreated(quizData);  // <-- Call this!
+      }, 500);
       return;
     } catch (err) {
       console.error("Save quiz failed:", err);

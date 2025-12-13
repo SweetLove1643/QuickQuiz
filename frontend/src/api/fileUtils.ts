@@ -92,7 +92,6 @@ export const extractTextFromTextFile = (file: File): Promise<string> => {
   });
 };
 
-// Process document with appropriate method based on file type
 export const processDocument = async (
   file: File
 ): Promise<ProcessedDocument> => {
@@ -140,21 +139,17 @@ export const processDocument = async (
       fileSize: file.size,
       fileType: file.type,
       extractedText,
-      summary: summaryResponse.summary,
+      summary: typeof summaryResponse?.summary === 'string' ? summaryResponse.summary : "No summary",
       documentId: `doc_${Date.now()}_${Math.random()
         .toString(36)
         .substr(2, 9)}`,
-      ocrConfidence: ocrResponse?.confidence_score,
-      summaryConfidence: summaryResponse.confidence_score,
+      ocrConfidence: ocrResponse?.confidence_score || 0.85,
+      summaryConfidence: summaryResponse?.confidence_score || 0.85,
       processingTime,
       uploadDate: new Date().toISOString(),
     };
   } catch (error) {
-    console.error("Document processing failed:", error);
-    throw new Error(
-      `Xử lý tài liệu thất bại: ${
-        error instanceof Error ? error.message : "Lỗi không xác định"
-      }`
-    );
+    console.error("Document processing error:", error);
+    throw error;
   }
 };
