@@ -808,20 +808,39 @@ def save_document(request):
         logger.info(f"Saving document: {file_name} (ID: {document_id})")
 
         insert_document(document_data)
+        logger.info(f"✅ Document saved to gateway DB: {document_id}")
 
         # Notify RAG service to rebuild / include this document (best-effort)
         try:
-            # Use the rag_chatbot client to call admin rebuild index
+            logger.info(f"🔄 Requesting RAG rebuild-index for document {document_id}...")
+            
+            # Tăng timeout từ 30s (default) lên 50s
+            original_timeout = rag_chatbot.timeout
+            rag_chatbot.timeout = 50  # 50 seconds to handle long document processing
+            
             try:
-                rag_chatbot._make_request("POST", "/admin/rebuild-index")
-                logger.info("Requested RAG service to rebuild index after document save")
-            except Exception as e:
-                # Last-resort: make a direct requests call
-                import requests
-                requests.post(f"{rag_chatbot.base_url}/admin/rebuild-index", timeout=5)
-                logger.info("Requested RAG rebuild-index via direct request")
+                response = rag_chatbot._make_request("POST", "/admin/rebuild-index")
+                
+                if response.success:
+                    logger.info(f"✅ RAG rebuild-index successful: {response.data}")
+                else:
+                    logger.warning(f"⚠️ RAG rebuild-index returned error: {response.error}")
+                    
+            finally:
+                rag_chatbot.timeout = original_timeout  # Restore original timeout
+                
         except Exception as e:
-            logger.warning(f"Failed to request RAG rebuild-index: {e}")
+            logger.warning(f"⚠️ Failed to request RAG rebuild-index: {e}")
+            # Attempt direct request as fallback
+            try:
+                import requests
+                direct_response = requests.post(
+                    f"{rag_chatbot.base_url}/admin/rebuild-index", 
+                    timeout=10  # Increased timeout
+                )
+                logger.info(f"✅ Direct rebuild-index request status: {direct_response.status_code}")
+            except Exception as e2:
+                logger.error(f"❌ Both rebuild-index attempts failed: {e}, {e2}")
 
         return JsonResponse(
             {

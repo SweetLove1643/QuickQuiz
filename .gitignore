@@ -1,51 +1,51 @@
-venv/
-archive/
-dataset/
-data/
-DeepSeek-OCR/
-.env
-quickquiz/Models/
-datata_small/
-dataset/
-Services/__pycache__/
-Services/VRD_OCR/
-image_test/
-PaddleOCR/
 
-# Byte-compiled / optimized / DLL files
-migrations/
+.venv/
+venv/
+
+.env
+.env.local
+
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .Python
 *.so
-.env
-.env.local
-db.sqlite3
-data/
-staticfiles/
-
-# Ignore virtual environment directories
-.venv/
-
-# Ignore Python cache files
-__pycache__/
-*.pyc
-
-# Ignore environment variable files
-.env
-
-# Ignore log files
+services/VRD_OCR/
 *.log
 */logs/
 
+*.db
+*.sqlite
+*.sqlite3
+db.sqlite3
 
-# Ignore documentation build files
-*.ini
+data/
+dataset/
+dataset_small/
+datata_small/
+archive/
+image_test/
 
-# Ignore build files frontend
+models/
+quickquiz/Models/
+DeepSeek-OCR/
+PaddleOCR/
+.cache/
+.huggingface/
+*.pt
+*.bin
+*.onnx
+
+.ipynb_checkpoints/
+
 node_modules/
-
 frontend/node_modules/
 frontend/build/
+
+Thumbs.db
+.DS_Store
+
+staticfiles/
+migrations/
+

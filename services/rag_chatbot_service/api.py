@@ -17,6 +17,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
 
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+
+executor = ThreadPoolExecutor(max_workers=2)
+
 # Add project root to path
 project_root = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, project_root)
@@ -80,6 +85,14 @@ async def startup_event():
         # Test quiz data access
         templates = quiz_data_access.get_quiz_templates(1)
         logger.info(f"✅ Quiz data access working - found {len(templates)} templates")
+
+        # Test gateway documents access
+        gateway_docs = quiz_data_access.get_gateway_documents(1)
+        logger.info(f"✅ Gateway documents accessible: {len(gateway_docs)} found")
+        
+        # Log paths for debugging
+        logger.info(f"Quiz DB path: {quiz_data_access.quiz_generator_db}")
+        logger.info(f"Gateway DB path: {quiz_data_access.gateway_documents_db}")
 
     except Exception as e:
         logger.error(f"❌ Startup initialization failed: {e}")
@@ -598,17 +611,20 @@ async def get_system_stats(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Management endpoints
 @app.post("/admin/rebuild-index")
 async def rebuild_search_index(
     retriever: DocumentRetriever = Depends(get_retriever_instance),
 ):
-    """Rebuild FAISS search index từ source data."""
+    """Rebuild FAISS search index từ source data (async)."""
     try:
         logger.info("Rebuilding search index...")
-        retriever.rebuild_index()
-
+        
+        # Run rebuild in thread pool to avoid blocking
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(executor, retriever.rebuild_index)
+        
         stats = retriever.get_stats()
+        logger.info(f"✅ Rebuild complete. Stats: {stats}")
 
         return {
             "message": "Search index rebuilt successfully",
@@ -617,7 +633,7 @@ async def rebuild_search_index(
         }
 
     except Exception as e:
-        logger.error(f"Rebuild index error: {e}")
+        logger.error(f"Rebuild index error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 

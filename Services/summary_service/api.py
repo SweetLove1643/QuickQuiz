@@ -8,13 +8,11 @@ from dotenv import load_dotenv
 from schemas import (
     SummaryResponse,
     OCRSummaryResponse,
-    RecommendationResponse,
     HealthResponse,
     SummaryRequestModel,
 )
 from summary_processor import SummaryProcessor
 from ocr_processor import OCRProcessor
-from recommendation_engine import RecommendationEngine
 from database import init_db, log_summary_request
 
 # Load environment variables from root directory
@@ -52,7 +50,6 @@ if not api_key:
 
 summary_processor = SummaryProcessor(api_key)
 ocr_processor = OCRProcessor(api_key)
-recommendation_engine = RecommendationEngine(api_key)
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -72,6 +69,7 @@ async def summarize_text(request: SummaryRequestModel):
 
     try:
         summary = await summary_processor.summarize_text(request.text)
+        # summary = request.text
 
         # Log to database
         await log_summary_request(
@@ -112,6 +110,7 @@ async def ocr_and_summarize(files: List[UploadFile] = File(...)):
 
         # Create summary
         summary = await summary_processor.summarize_text(extracted_text)
+        # summary = extracted_text
 
         # Log to database
         await log_summary_request(
@@ -134,38 +133,6 @@ async def ocr_and_summarize(files: List[UploadFile] = File(...)):
         logger.error(f"Error in OCR and summarize: {str(e)}")
         raise HTTPException(
             status_code=500, detail="Error processing files for summarization"
-        )
-
-
-@app.post("/recommend_study", response_model=RecommendationResponse)
-async def recommend_study(
-    content: str,
-    difficulty_level: Optional[str] = "intermediate",
-    study_time: Optional[int] = 60,
-):
-    """Generate study recommendations based on content"""
-    if not content.strip():
-        raise HTTPException(status_code=400, detail="Content is required")
-
-    if not api_key:
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY not configured")
-
-    try:
-        recommendations = await recommendation_engine.generate_recommendations(
-            content, difficulty_level, study_time
-        )
-
-        return RecommendationResponse(
-            recommendations=recommendations,
-            content_length=len(content),
-            difficulty_level=difficulty_level,
-            estimated_study_time=study_time,
-        )
-
-    except Exception as e:
-        logger.error(f"Error generating recommendations: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail="Error generating study recommendations"
         )
 
 

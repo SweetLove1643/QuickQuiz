@@ -16,6 +16,15 @@ import sqlite3
 import json
 from typing import List, Dict, Any, Optional
 
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+
+logger = logging.getLogger(__name__)
+
 # Database setup for RAG service
 DATABASE_URL = "sqlite:///./rag_chatbot.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
@@ -93,15 +102,18 @@ class QuizDataAccess:
         """Get recent quiz templates for context"""
         try:
             if not os.path.exists(self.quiz_generator_db):
+                logger.info(f"Quiz templates DB not found: {self.quiz_generator_db}")
                 return []
 
             conn = sqlite3.connect(self.quiz_generator_db)
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
 
+            # FIX: Correct schema - quiz_templates has: id, name, description, content_sections
             query = """
-            SELECT subject, topic, difficulty, questions, created_at
+            SELECT name, description, content_sections, created_at
             FROM quiz_templates 
+            WHERE is_active = 1
             ORDER BY created_at DESC 
             LIMIT ?
             """
@@ -109,19 +121,41 @@ class QuizDataAccess:
             results = cursor.fetchall()
             conn.close()
 
-            return [dict(row) for row in results]
+            templates = []
+            for row in results:
+                try:
+                    content_sections = (
+                        json.loads(row["content_sections"])
+                        if isinstance(row["content_sections"], str)
+                        else row["content_sections"] or {}
+                    )
+                    templates.append({
+                        "name": row["name"],
+                        "description": row["description"],
+                        "content_sections": content_sections,
+                        "created_at": row["created_at"],
+                    })
+                except Exception as e:
+                    logger.warning(f"Error parsing template: {e}")
+                    continue
+
+            logger.info(f"Retrieved {len(templates)} quiz templates")
+            return templates
         except Exception as e:
-            print(f"Error accessing quiz templates: {e}")
+            logger.error(f"Error accessing quiz templates: {e}")
             return []
     
     def get_gateway_documents(self, limit: int = 50) -> List[Dict[str, Any]]:
         """Read documents saved by Gateway (documents.db)."""
         try:
             if not os.path.exists(self.gateway_documents_db):
+                logger.warning(f"Gateway documents DB not found: {self.gateway_documents_db}")
                 return []
+            
             conn = sqlite3.connect(self.gateway_documents_db)
             conn.row_factory = sqlite3.Row
             cur = conn.cursor()
+            
             cur.execute(
                 """
                 SELECT id as document_id, file_name, extracted_text, summary, created_at
@@ -133,23 +167,29 @@ class QuizDataAccess:
             )
             rows = cur.fetchall()
             conn.close()
-            return [dict(row) for row in rows]
+            
+            result = [dict(row) for row in rows]
+            logger.info(f"Retrieved {len(result)} gateway documents")
+            return result
+            
         except Exception as e:
-            print(f"Error accessing gateway documents: {e}")
+            logger.error(f"Error accessing gateway documents: {e}")
             return []
 
     def get_generated_quizzes(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Get recent generated quizzes for context"""
         try:
             if not os.path.exists(self.quiz_generator_db):
+                logger.info(f"Generated quizzes DB not found: {self.quiz_generator_db}")
                 return []
 
             conn = sqlite3.connect(self.quiz_generator_db)
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
 
+            # FIX: Correct schema - generated_quizzes has: quiz_id, user_id, questions_data, title, document_id
             query = """
-            SELECT quiz_id, subject, topic, questions, created_at
+            SELECT quiz_id, user_id, questions_data, title, document_id, created_at
             FROM generated_quizzes 
             ORDER BY created_at DESC 
             LIMIT ?
@@ -158,10 +198,32 @@ class QuizDataAccess:
             results = cursor.fetchall()
             conn.close()
 
-            return [dict(row) for row in results]
+            quizzes = []
+            for row in results:
+                try:
+                    questions_data = (
+                        json.loads(row["questions_data"])
+                        if isinstance(row["questions_data"], str)
+                        else row["questions_data"] or []
+                    )
+                    quizzes.append({
+                        "quiz_id": row["quiz_id"],
+                        "user_id": row["user_id"],
+                        "title": row["title"],
+                        "questions_data": questions_data,
+                        "document_id": row["document_id"],
+                        "created_at": row["created_at"],
+                    })
+                except Exception as e:
+                    logger.warning(f"Error parsing quiz: {e}")
+                    continue
+
+            logger.info(f"Retrieved {len(quizzes)} generated quizzes")
+            return quizzes
         except Exception as e:
-            print(f"Error accessing generated quizzes: {e}")
+            logger.error(f"Error accessing generated quizzes: {e}")
             return []
+    
 
     def get_evaluation_results(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Get recent quiz evaluation results for context"""
