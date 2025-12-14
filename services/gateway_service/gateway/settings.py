@@ -290,7 +290,7 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": "unique-snowflake",
-        "TIMEOUT": 300,
+        "TIMEOUT": 800,  # 15 minutes
         "OPTIONS": {"MAX_ENTRIES": 1000},
     }
 }

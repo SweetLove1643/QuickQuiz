@@ -146,14 +146,20 @@ async def ocr_and_summarize(
             )
         
         data = response.json()
-        extracted_text = data["text"]
+        extracted_text = data.get("text", "")
+
+        if isinstance(extracted_text, list):
+            extracted_text = "\n".join(extracted_text)
+
+        if not isinstance(extracted_text, str):
+            raise ValueError("OCR returned invalid text format")
 
         if not extracted_text.strip():
             raise HTTPException(
                 status_code=400,
                 detail="No text could be extracted from uploaded files",
             )
-
+        
         summary = await summary_processor.summarize_text(
             extracted_text
         )
@@ -173,12 +179,12 @@ async def ocr_and_summarize(
             filenames=[f.filename for f in files],
             word_count=len(extracted_text.split()),
         )
-
+    
     except Exception as e:
-        logger.error(f"Error in OCR and summarize: {e}")
+        logger.exception("Error in OCR and summarize")
         raise HTTPException(
             status_code=500,
-            detail="Error processing files for summarization",
+            detail=str(e),
         )
 
 

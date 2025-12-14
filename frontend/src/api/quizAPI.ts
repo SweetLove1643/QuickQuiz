@@ -13,7 +13,7 @@ const API_CONFIG = {
   },
 
   // Request timeout
-  TIMEOUT: 30000,
+  TIMEOUT: 10 * 60 * 1000,
 
   // Headers
   DEFAULT_HEADERS: {

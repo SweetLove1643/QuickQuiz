@@ -114,9 +114,8 @@ class OCRProcessor:
                 generated_ids = self.model.generate(
                     **inputs, 
                     max_new_tokens=max_tokens, 
-                    temperature=0.1, 
                     do_sample=False,
-                    use_cache=True,
+                    use_cache=False,
                 )
 
             # Decode response
@@ -137,3 +136,5 @@ class OCRProcessor:
         except Exception as e:
             logger.error(f"Error in text extraction: {e}")
             raise e
+
+

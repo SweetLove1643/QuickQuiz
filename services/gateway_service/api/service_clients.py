@@ -92,6 +92,7 @@ class BaseServiceClient:
         endpoint: str,
         data: Optional[Dict] = None,
         params: Optional[Dict] = None,
+        timeout: Optional[int] = None,  
         **kwargs,
     ) -> ServiceResponse:
         """Make HTTP request to the service with enhanced error handling."""
@@ -100,6 +101,8 @@ class BaseServiceClient:
     
         try:
             logger.debug(f"[{self.service_name}] {method} {url}")
+            effective_timeout = timeout or self.timeout
+
     
             # Check if files are being sent (multipart)
             if 'files' in kwargs:
@@ -108,7 +111,7 @@ class BaseServiceClient:
                     method=method,
                     url=url,
                     params=params,
-                    timeout=self.timeout,
+                    timeout=effective_timeout,
                     **kwargs,  # files parameter will be here
                 )
             else:
@@ -119,7 +122,7 @@ class BaseServiceClient:
                     json=data,
                     params=params,
                     headers={"Content-Type": "application/json"},
-                    timeout=self.timeout,
+                    timeout=effective_timeout,
                     **kwargs,
                 )
     
@@ -377,7 +380,7 @@ class OCRServiceClient(BaseServiceClient):
             f"[{self.service_name}] Extracting text from single image: {filename}"
         )
 
-        response = self._make_request("POST", "/extract_text", files=files)
+        response = self._make_request("POST", "/extract_text", files=files, timeout=600)
 
         if not response.success:
             raise ServiceClientError(
@@ -400,7 +403,7 @@ class OCRServiceClient(BaseServiceClient):
             f"[{self.service_name}] Extracting text from {len(files_data)} images"
         )
 
-        response = self._make_request("POST", "/extract_text_multi", files=files)
+        response = self._make_request("POST", "/extract_text_multi", files=files, timeout=600)
 
         if not response.success:
             raise ServiceClientError(
@@ -425,7 +428,7 @@ class OCRServiceClient(BaseServiceClient):
             f"[{self.service_name}] Legacy extraction from {len(files_data)} images"
         )
 
-        response = self._make_request("POST", "/extract_information", files=files)
+        response = self._make_request("POST", "/extract_information", files=files, timeout=600)
 
         if not response.success:
             raise ServiceClientError(
@@ -447,7 +450,7 @@ class SummaryServiceClient(BaseServiceClient):
 
         logger.info(f"[{self.service_name}] Summarizing text: {len(text)} characters")
 
-        response = self._make_request("POST", "/summarize_text", data=data)
+        response = self._make_request("POST", "/summarize_text", data=data, timeout=600)
 
         if not response.success:
             raise ServiceClientError(
@@ -470,7 +473,7 @@ class SummaryServiceClient(BaseServiceClient):
             f"[{self.service_name}] OCR and summarize from {len(files_data)} files"
         )
 
-        response = self._make_request("POST", "/ocr_and_summarize", files=files)
+        response = self._make_request("POST", "/ocr_and_summarize", files=files, timeout=600)
 
         if not response.success:
             raise ServiceClientError(
@@ -493,7 +496,7 @@ class SummaryServiceClient(BaseServiceClient):
             f"[{self.service_name}] Generating recommendations for {difficulty_level} level"
         )
 
-        response = self._make_request("POST", "/recommend_study", data=data)
+        response = self._make_request("POST", "/recommend_study", data=data, timeout=600)
 
         if not response.success:
             raise ServiceClientError(
@@ -514,7 +517,7 @@ class SummaryServiceClient(BaseServiceClient):
 
         logger.info(f"[{self.service_name}] Legacy OCR from {len(files_data)} files")
 
-        response = self._make_request("POST", "/image_ocr", files=files)
+        response = self._make_request("POST", "/image_ocr", files=files, timeout=600)
 
         if not response.success:
             raise ServiceClientError(

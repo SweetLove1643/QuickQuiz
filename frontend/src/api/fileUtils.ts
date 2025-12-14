@@ -45,7 +45,12 @@ export const isImageFile = (file: File): boolean => {
 
 // Check if file is supported document format
 export const isDocumentFile = (file: File): boolean => {
-  const supportedTypes = ["application/pdf", "text/plain", "text/markdown"];
+  const supportedTypes = [
+      "application/pdf",
+      "text/plain",
+      "text/markdown",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ];
   return supportedTypes.includes(file.type.toLowerCase());
 };
 
