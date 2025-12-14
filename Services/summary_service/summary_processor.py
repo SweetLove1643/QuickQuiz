@@ -1,63 +1,85 @@
-import google.genai as genai
+import torch
 import logging
 from typing import Optional
+from transformers import AutoTokenizer, T5ForConditionalGeneration
+from peft import PeftModel
 
 logger = logging.getLogger(__name__)
 
 
 class SummaryProcessor:
-    def __init__(self, api_key: Optional[str]):
-        self.api_key = api_key
-        if api_key:
-            self.client = genai.Client(api_key=api_key)
-        else:
-            self.client = None
-            logger.warning("SummaryProcessor initialized without API key")
+    def __init__(
+        self,
+        checkpoint_path: str,
+        base_model_name: str = "VietAI/vit5-base",
+        device: Optional[str] = None,
+        max_input_length: int = 1024,
+        max_new_tokens: int = 256,
+    ):
+        """
+        Summary processor using ViT5 + LoRA checkpoint
+        """
+        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+        self.max_input_length = max_input_length
+        self.max_new_tokens = max_new_tokens
+
+        logger.info("Loading tokenizer...")
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            checkpoint_path if checkpoint_path else base_model_name
+        )
+
+        logger.info("Loading base model...")
+        base_model = T5ForConditionalGeneration.from_pretrained(base_model_name)
+
+        logger.info("Loading LoRA adapter...")
+        self.model = PeftModel.from_pretrained(base_model, checkpoint_path)
+
+        self.model = self.model.merge_and_unload()
+
+        self.model.to(self.device)
+        self.model.eval()
+
+        logger.info(
+            f"SummaryProcessor initialized with device={self.device}"
+        )
 
     async def summarize_text(self, text: str) -> str:
-        """Summarize the provided text using Gemini API"""
-        if not self.client:
-            raise ValueError("GEMINI_API_KEY not configured")
+        """
+        Summarize text using ViT5 + LoRA
+        """
+        if not text or not text.strip():
+            return ""
 
         try:
-            summary_prompt = f"""
-Bạn là Gemini, một mô hình chuyên tóm tắt tài liệu học thuật và kỹ thuật ở nhiều lĩnh vực khác nhau.
+            # Nếu lúc train bạn có prefix "summary:"
+            input_text = "summary: " + text.strip()
 
-========================================
-NHIỆM VỤ CỦA BẠN
-========================================
-Hãy tạo một bản tóm tắt kiến thức duy nhất từ nội dung sau đây.
-
-Yêu cầu của bản tóm tắt:
-1. **TÓM TẮT CHÍNH XÁC**: Chỉ dựa trên nội dung đã cung cấp, không thêm thông tin bên ngoài
-2. **CẤU TRÚC RÕ RÀNG**: Chia thành các mục chính với tiêu đề phù hợp
-3. **NGÔN NGỮ DỄ HIỂU**: Sử dụng thuật ngữ phù hợp với cấp độ của nội dung
-4. **ĐẦY ĐỦ THÔNG TIN**: Giữ lại các khái niệm, công thức, ví dụ quan trọng
-5. **ĐỊNH DẠNG MARKDOWN**: Sử dụng headers, bullets, emphasis khi cần thiết
-
-========================================
-NỘI DUNG CẦN TÓM TẮT
-========================================
-{text}
-
-========================================
-YÊU CẦU ĐỊNH DẠNG
-========================================
-- Bắt đầu với tiêu đề chính của chủ đề
-- Chia thành các phần với ## hoặc ###
-- Sử dụng bullet points cho danh sách
-- In đậm từ khóa quan trọng
-- Giữ lại công thức, số liệu chính xác
-
-Hãy tạo bản tóm tắt ngay bây giờ:
-"""
-
-            response = self.client.models.generate_content(
-                model="gemini-2.5-flash", contents=summary_prompt
+            inputs = self.tokenizer(
+                input_text,
+                return_tensors="pt",
+                max_length=self.max_input_length,
+                truncation=True,
             )
 
-            return response.text.strip()
+            input_ids = inputs["input_ids"].to(self.device)
+            attention_mask = inputs["attention_mask"].to(self.device)
+
+            with torch.no_grad():
+                outputs = self.model.generate(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    max_new_tokens=self.max_new_tokens,
+                    num_beams=4,
+                    length_penalty=1.0,
+                    early_stopping=True,
+                )
+
+            summary = self.tokenizer.decode(
+                outputs[0], skip_special_tokens=True
+            )
+
+            return summary.strip()
 
         except Exception as e:
             logger.error(f"Error in text summarization: {e}")
-            raise e
+            raise
