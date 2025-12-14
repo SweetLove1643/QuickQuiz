@@ -2,8 +2,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 import logging
-import os
-from dotenv import load_dotenv
+import httpx
 
 from schemas import (
     SummaryResponse,
@@ -12,11 +11,8 @@ from schemas import (
     SummaryRequestModel,
 )
 from summary_processor import SummaryProcessor
-from ocr_processor import OCRProcessor
 from database import init_db, log_summary_request
 
-# Load environment variables
-load_dotenv(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -53,7 +49,6 @@ init_db()
 # Init processors (LOAD ONCE)
 # ==============================
 CHECKPOINT_PATH = "./ViT5_checkpoint_epochs4"
-api_key = os.getenv("GEMINI_API_KEY")
 
 try:
     summary_processor = SummaryProcessor(
@@ -64,7 +59,6 @@ except Exception as e:
     logger.exception("Failed to initialize SummaryProcessor")
     raise e
 
-ocr_processor = OCRProcessor(api_key=api_key) 
 
 # ==============================
 # Health check
@@ -129,9 +123,30 @@ async def ocr_and_summarize(
         )
 
     try:
-        extracted_text = await ocr_processor.extract_text_from_files(
-            files
-        )
+        multipart_files = []
+        for f in files:
+            content = await f.read()
+
+            multipart_files.append(
+                (
+                    "files",  
+                    (f.filename, content, f.content_type),
+                )
+            )
+        OCR_SERVICE_URL = "http://127.0.0.1:8004/extract_information"
+        
+        async with httpx.AsyncClient(timeout=300) as client:
+            response = await client.post(
+                OCR_SERVICE_URL,
+                files=multipart_files,
+            )
+        if response.status_code != 200:
+            raise RuntimeError(
+                f"OCR service error {response.status_code}: {response.text}"
+            )
+        
+        data = response.json()
+        extracted_text = data["text"]
 
         if not extracted_text.strip():
             raise HTTPException(
