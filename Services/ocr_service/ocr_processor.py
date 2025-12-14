@@ -38,10 +38,46 @@ class OCRProcessor:
         except Exception as e:
             logger.error(f"❌ Error loading model: {e}")
             raise e
+    
+    def estimate_output_tokens(self, image: Image.Image) -> int:
+        width, height = image.size
+        print(f'DEBUG: Kích thước hình ảnh đầu vào là: {width}x{height}')
+        num_pixels = width * height
+        if num_pixels <= 512 * 512:
+            print(f'DEBUG: Max token là: 256')
+            return 256
+        elif num_pixels <= 720 * 720:
+            print(f'DEBUG: Max token là: 512')
+            return 512
+        elif num_pixels <= 1024 * 1024:
+            print(f'DEBUG: Max token là: 1024')
+            return 1024
+        elif num_pixels <= 1536 * 1536:
+            print(f'DEBUG: Max token là: 1536')
+            return 1536
+        else:
+            print(f'DEBUG: Max token là: 2048')
+            return 2048
+    
 
     async def extract_text(self, images: List[Image.Image]) -> str:
         """Extract text from a list of PIL Images"""
         try:
+            PROMPT = """
+                Bạn là một hệ thống trích xuất thông tin học thuật có độ chính xác cao.  
+                Hãy đọc kỹ nội dung trong ảnh đầu vào, bao gồm mọi dạng dữ liệu: văn bản, công thức, hình ảnh, bảng biểu, chú thích, tiêu đề, số hiệu hình/table, và mối liên kết giữa chúng.
+
+                YÊU CẦU:
+                1. Trích xuất lại nguyên vẹn toàn bộ nội dung có trong ảnh.
+                2. Không diễn giải, không suy đoán, không thêm thông tin ngoài ảnh.
+                3. Giữ đúng cấu trúc logic theo thứ tự xuất hiện: tiêu đề → đoạn văn → hình → chú thích → bảng → ghi chú.
+                4. Nếu có hình/figure/table, chỉ mô tả lại bằng những gì hiển thị kèm chú thích (nếu có).
+                5. Giữ nguyên cách viết: ký tự, dấu, công thức, số liệu.
+                6. Đảm bảo đầu ra là một đoạn văn hoàn chỉnh, rõ ràng và trung thực với nội dung trong ảnh.
+
+                BẮT ĐẦU TRÍCH XUẤT DỮ LIỆU:
+                """
+            
             # Create messages for the model
             messages = [
                 {
@@ -49,16 +85,7 @@ class OCRProcessor:
                     "content": [
                         {
                             "type": "text",
-                            "text": """Hãy trích xuất toàn bộ nội dung văn bản có trong tất cả các ảnh được cung cấp.
-
-YÊU CẦU:
-- Trích xuất chính xác từng ký tự, từ ngữ
-- Giữ nguyên format, xuống dòng như trong ảnh gốc
-- Không thêm, bớt, sửa đổi nội dung
-- Nếu có nhiều ảnh, gộp nội dung theo thứ tự
-- Nếu không đọc được, ghi "Không thể đọc được nội dung"
-
-Chỉ trả về nội dung văn bản đã trích xuất, không cần giải thích thêm.""",
+                            "text": PROMPT,
                         }
                     ]
                     + [{"type": "image", "image": img} for img in images],
@@ -80,10 +107,16 @@ Chỉ trả về nội dung văn bản đã trích xuất, không cần giải t
             )
             inputs = inputs.to(self.device)
 
+            max_tokens = max(self.estimate_output_tokens(img) for img in images)
+
             # Generate response
             with torch.no_grad():
                 generated_ids = self.model.generate(
-                    **inputs, max_new_tokens=2048, temperature=0.1, do_sample=False
+                    **inputs, 
+                    max_new_tokens=max_tokens, 
+                    temperature=0.1, 
+                    do_sample=False,
+                    use_cache=True,
                 )
 
             # Decode response
@@ -99,6 +132,7 @@ Chỉ trả về nội dung văn bản đã trích xuất, không cần giải t
             )[0]
 
             return output_text.strip()
+            # return "Trong bài viết này mình xin giới thiệu đến các bạn những lệnh cơ bản nhất (Cần nhớ và cách ghi nhớ nó) khi sử dụng, làm việc với Git. Đồng thời mô phỏng một quy trình làm việc với Git theo từng giai đoạn. Ở giai đoạn nào thì sử dụng những lệnh nào. Nhằm giúp các bạn mới nắm được bức tranh tổng quan nhất khi làm việc với Git, để sử dụng dòng lệnh cho phù hơp trong quá trình học tập, thực hành cũng như phục vụ công việc sau này.".strip()
 
         except Exception as e:
             logger.error(f"Error in text extraction: {e}")
