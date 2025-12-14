@@ -118,10 +118,20 @@ export const processDocument = async (
 
       ocrResponse = combined.ocr;
       summaryResponse = combined.summary;
-      extractedText = ocrResponse.extracted_text;
+      extractedText = ocrResponse.extracted_text || "";
+      
+      // ✅ FIX 1: Validate extracted text is not empty
+      if (!extractedText || extractedText.trim().length === 0) {
+        throw new Error("OCR failed: Không thể trích xuất text từ ảnh. Vui lòng chọn ảnh khác.");
+      }
     } else if (file.type === "text/plain") {
       // Direct text extraction for text files
       extractedText = await extractTextFromTextFile(file);
+
+      // ✅ FIX 2: Validate text file is not empty
+      if (!extractedText || extractedText.trim().length === 0) {
+        throw new Error("Tệp text trống. Vui lòng chọn tệp khác.");
+      }
 
       // Summarize the text content
       summaryResponse = await quizAPI.summarizeText({
@@ -134,12 +144,18 @@ export const processDocument = async (
 
     const processingTime = Date.now() - startTime;
 
+    // ✅ FIX 3: Validate summary response has actual data
+    const finalSummary = summaryResponse?.summary || extractedText;
+    if (!finalSummary || finalSummary.trim().length === 0) {
+      throw new Error("Không thể tạo summary cho tài liệu. Vui lòng thử lại.");
+    }
+
     return {
       fileName: file.name,
       fileSize: file.size,
       fileType: file.type,
-      extractedText,
-      summary: typeof summaryResponse?.summary === 'string' ? summaryResponse.summary : "No summary",
+      extractedText: extractedText.trim(),
+      summary: finalSummary.trim(),
       documentId: `doc_${Date.now()}_${Math.random()
         .toString(36)
         .substr(2, 9)}`,

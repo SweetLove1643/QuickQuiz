@@ -617,23 +617,29 @@ async def rebuild_search_index(
 ):
     """Rebuild FAISS search index từ source data (async)."""
     try:
-        logger.info("Rebuilding search index...")
+        logger.info("🔄 Rebuilding search index...")
         
         # Run rebuild in thread pool to avoid blocking
         loop = asyncio.get_event_loop()
         result = await loop.run_in_executor(executor, retriever.rebuild_index)
         
+        # Verify rebuild results
         stats = retriever.get_stats()
         logger.info(f"✅ Rebuild complete. Stats: {stats}")
+        
+        # Double-check: try a test search
+        test_results = retriever.search_documents("test", RetrievalConfig(top_k=1))
+        logger.info(f"🧪 Test search after rebuild: {len(test_results)} documents found")
 
         return {
             "message": "Search index rebuilt successfully",
             "timestamp": datetime.now().isoformat(),
             "stats": stats,
+            "test_search_results": len(test_results),
         }
 
     except Exception as e:
-        logger.error(f"Rebuild index error: {e}", exc_info=True)
+        logger.error(f"❌ Rebuild index error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 

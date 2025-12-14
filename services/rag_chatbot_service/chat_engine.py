@@ -61,22 +61,48 @@ class RAGChatEngine:
 
         try:
             # Debug log
-            logger.info(f"=== CHAT ENGINE DEBUG ===")
+            logger.info(f"=== CHAT REQUEST ===")
             logger.info(f"Query: '{request.query}'")
             logger.info(f"Conversation ID: {conversation_id}")
-            logger.info(f"Retrieval config: {request.retrieval_config}")
-
+            
             # 1. Retrieve relevant documents
-            retrieved_docs = self.retriever.retrieve_documents(
-                query=request.query, config=request.retrieval_config
-            )
-
-            logger.info(f"Retrieved {len(retrieved_docs)} documents")
-            logger.debug(f"Query used: '{request.query}'")
-            logger.debug(f"Retrieval config: {request.retrieval_config}")
+            logger.info(f"🔍 Attempting to retrieve documents...")
+            
+            # ✅ FIX: Check if retriever has the method
+            if not hasattr(self.retriever, 'retrieve_documents'):
+                logger.error("❌ Retriever does not have retrieve_documents method!")
+                logger.info(f"📦 Retriever type: {type(self.retriever)}")
+                logger.info(f"📦 Retriever methods: {dir(self.retriever)}")
+                retrieved_docs = []
+            else:
+                try:
+                    retrieved_docs = self.retriever.retrieve_documents(
+                        query=request.query, config=request.retrieval_config
+                    )
+                except Exception as retrieve_err:
+                    logger.error(f"❌ Error retrieving documents: {retrieve_err}", exc_info=True)
+                    retrieved_docs = []
+            
+            logger.info(f"📊 Retrieved {len(retrieved_docs)} documents")
+            
+            # DEBUG: Check if chunks exist at all
+            total_chunks = self.retriever.get_document_count()
+            logger.info(f"📈 Total documents available in system: {total_chunks}")
+            
+            if len(retrieved_docs) == 0:
+                logger.warning(f"⚠️ No documents retrieved for query: '{request.query}'")
+                logger.info(f"Retrieval config: {request.retrieval_config}")
+                # Try a broader search
+                logger.info("🔄 Trying fallback: search all documents...")
+                fallback_config = RetrievalConfig(top_k=10)
+                fallback_docs = self.retriever.retrieve_documents(
+                    query="document", config=fallback_config
+                )
+                logger.info(f"Fallback search returned: {len(fallback_docs)} documents")
+            
             for i, doc in enumerate(retrieved_docs):
                 logger.info(
-                    f"  Doc {i+1}: {doc.topic} (score: {doc.similarity_score:.3f})"
+                    f"  Doc {i+1}: {doc.topic} (score: {doc.similarity_score:.3f}, content_len: {len(doc.content)})"
                 )
 
             # 2. Build context từ retrieved documents

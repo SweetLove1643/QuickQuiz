@@ -69,86 +69,117 @@ class SQLiteDocumentRetriever:
     ) -> List[RetrievedDocument]:
         """
         Alias for search_documents to maintain compatibility.
+        This method is called by chat_engine.
         """
+        logger.info(f"🔍 retrieve_documents called with query: '{query}'")
         return self.search_documents(query, config)
 
-    def _search_stored_chunks(self, query: str, limit: int) -> List[RetrievedDocument]:
-        """Search stored document chunks in database."""
+    def _search_stored_chunks(self, query: str, top_k: int = 5) -> List[RetrievedDocument]:
+        """
+        Search stored document chunks from RAG DB.
+        ✅ FIXED: Correct RetrievedDocument schema mapping
+        """
+        results = []
+        
         try:
             db = SessionLocal()
-
-            # Split query into words for better matching
+            
+            # Chuẩn bị query keywords
             query_words = query.lower().split()
-
-            if len(query_words) == 1:
-                # Single word search
-                query_pattern = f"%{query_words[0]}%"
-                chunks = (
-                    db.query(DocumentChunkModel)
-                    .filter(DocumentChunkModel.content.ilike(query_pattern))
-                    .limit(limit)
-                    .all()
-                )
-            else:
-                # Multi-word search - find documents containing any of the words
-                filters = []
-                for word in query_words:
-                    filters.append(DocumentChunkModel.content.ilike(f"%{word}%"))
-
-                chunks = (
-                    db.query(DocumentChunkModel)
-                    .filter(or_(*filters))
-                    .limit(limit)
-                    .all()
-                )
-
-            results = []
-            for chunk in chunks:
-                results.append(
-                    RetrievedDocument(
-                        document_id=chunk.document_id,
-                        chunk_id=chunk.chunk_id,
-                        content=chunk.content,
-                        topic=chunk.topic,
-                        category=chunk.category,
-                        similarity_score=0.5,  # Simple fixed score for now
-                        tags=chunk.tags or [],
+            
+            logger.info(f"🔍 Search chunks - Total in DB: {db.query(DocumentChunkModel).count()}")
+            logger.info(f"🔍 Query words: {query_words}")
+            
+            # Tìm chunks khớp
+            logger.info(f"🔍 Executing search query...")
+            matching_chunks = []
+            
+            for word in query_words:
+                chunks = db.query(DocumentChunkModel).filter(
+                    or_(
+                        DocumentChunkModel.content.ilike(f"%{word}%"),
+                        DocumentChunkModel.topic.ilike(f"%{word}%"),
                     )
-                )
-
-            return results
-
-        except Exception as e:
-            logger.error(f"Error searching stored chunks: {e}")
-            return []
-        finally:
+                ).all()
+                matching_chunks.extend(chunks)
+            
+            # Remove duplicates
+            seen = set()
+            unique_chunks = []
+            for chunk in matching_chunks:
+                if chunk.chunk_id not in seen:
+                    seen.add(chunk.chunk_id)
+                    unique_chunks.append(chunk)
+            
+            logger.info(f"✅ Found {len(unique_chunks)} matching chunks")
+            
+            # Convert to RetrievedDocument - USE CORRECT SCHEMA
+            valid_count = 0
+            for chunk in unique_chunks[:top_k]:
+                content = (chunk.content or "").strip()
+                if content:
+                    valid_count += 1
+                    try:
+                        # ✅ FIXED: Map to correct RetrievedDocument fields
+                        results.append(RetrievedDocument(
+                            document_id=chunk.document_id or f"doc_{chunk.id}",
+                            chunk_id=chunk.chunk_id,  # Required field
+                            content=content,
+                            topic=chunk.topic or "Unknown",  # Required field
+                            category=chunk.category or "document",  # Required field
+                            similarity_score=0.8,  # Required field (renamed from relevance_score)
+                            tags=chunk.tags or []
+                        ))
+                        logger.debug(f"    ✓ Added chunk: {chunk.chunk_id}")
+                    except Exception as chunk_err:
+                        logger.error(f"    ❌ Error adding chunk {chunk.chunk_id}: {chunk_err}")
+                        continue
+            
+            logger.info(f"✅ Valid chunks (non-empty): {valid_count}/{len(unique_chunks)}")
+            for i, doc in enumerate(results[:3]):
+                logger.info(f"  Chunk {i+1}: doc={doc.document_id}, topic={doc.topic}, content_len={len(doc.content)}")
+            
             db.close()
+            
+            logger.info(f"✅ Returning {len(results)} retrieved documents")
+            return results
+            
+        except Exception as e:
+            logger.error(f"❌ Error searching chunks: {e}", exc_info=True)
+            return []
 
     def _search_quiz_content(self, query: str, limit: int) -> List[RetrievedDocument]:
-        """Search quiz content for relevant context."""
+        """
+        Search quiz content for relevant context.
+        ✅ FIXED: Correct RetrievedDocument schema mapping
+        """
         results = []
-
+    
         try:
             # Search quiz templates
             quiz_content = self.quiz_data.search_quiz_content(query, limit)
-
-            for item in quiz_content:
-                results.append(
-                    RetrievedDocument(
-                        document_id=f"quiz_{item.get('type', 'unknown')}",
-                        chunk_id=f"quiz_{len(results)}",
-                        content=item.get("content", ""),
-                        topic=item.get("subject", "Quiz Content"),
-                        category=item.get("type", "quiz"),
-                        similarity_score=0.4,  # Lower score for quiz content
-                        tags=[],
-                    )
-                )
-
+    
+            for idx, item in enumerate(quiz_content):
+                try:
+                    # ✅ FIXED: Map to correct RetrievedDocument fields
+                    results.append(RetrievedDocument(
+                        document_id=f"quiz_{item.get('type', 'template')}_{idx}",
+                        chunk_id=f"quiz_chunk_{len(results)}",  # Required field
+                        content=(item.get("content") or "")[:500],
+                        topic=item.get("subject", "Quiz Content"),  # Required field
+                        category=item.get("type", "quiz"),  # Required field
+                        similarity_score=0.4,  # Lower score for quiz content (renamed from relevance_score)
+                        tags=["quiz", "template"]
+                    ))
+                except Exception as item_err:
+                    logger.warning(f"Error adding quiz item: {item_err}")
+                    continue
+    
+            logger.info(f"✅ Found {len(results)} quiz content items")
             return results[:limit]
-
+    
         except Exception as e:
-            logger.error(f"Error searching quiz content: {e}")
+            logger.error(f"Error searching quiz content: {e}", exc_info=True)
             return []
 
     def _rank_documents(
@@ -208,108 +239,156 @@ class SQLiteDocumentRetriever:
     
     def rebuild_index(self) -> None:
         """
-        Rebuild document index from all sources with batch processing.
-        Includes timeout protection and batch commits.
+        Rebuild document index from gateway documents.
         """
         import time
         start_time = time.time()
-        max_duration = 40  # 40s max (gateway timeout 45s)
-        batch_size = 50  # Commit every 50 chunks
+        max_duration = 60  # ← INCREASED from 40 to 60 seconds
+        batch_size = 50
         
+        db = None
         try:
             logger.info("🔄 Starting rebuild index...")
             db = SessionLocal()
             
             chunk_count_before = db.query(DocumentChunkModel).count()
-            logger.info(f"Existing chunks: {chunk_count_before}")
+            logger.info(f"📊 Existing chunks in rag_chatbot.db: {chunk_count_before}")
             
-            # 1. Ingest gateway documents
-            gateway_docs = self.quiz_data.get_gateway_documents(limit=50)
-            logger.info(f"Found {len(gateway_docs)} gateway documents to ingest")
+            # 1. Read gateway documents
+            logger.info("📥 Attempting to retrieve gateway documents...")
+            gateway_docs = self.quiz_data.get_gateway_documents(limit=100)
+            logger.info(f"📥 Retrieved {len(gateway_docs)} gateway documents")
             
             if not gateway_docs:
-                logger.info("No gateway documents to ingest")
-                db.close()
+                logger.warning("⚠️ No gateway documents to ingest - this might be normal if no files uploaded yet")
+                logger.info("✅ Rebuild complete (no documents to process)")
                 return
             
+            logger.info(f"🚀 Processing {len(gateway_docs)} documents...")
             chunks_created = 0
-            batch_buffer = []  # Buffer for batch inserts
+            chunks_skipped = 0
+            batch_buffer = []
             
             for doc_idx, doc in enumerate(gateway_docs):
                 # Check timeout
                 elapsed = time.time() - start_time
                 if elapsed > max_duration:
-                    logger.warning(f"⏱️ Rebuild timeout approaching ({elapsed:.1f}s), stopping")
+                    logger.warning(f"⏱️ Rebuild timeout ({elapsed:.1f}s), stopping at document {doc_idx+1}/{len(gateway_docs)}")
                     break
                 
                 try:
                     doc_id = doc.get("document_id", f"doc_{doc_idx}")
-                    text = (doc.get("extracted_text") or doc.get("summary") or "").strip()
+                    extracted_text = (doc.get("extracted_text") or "").strip()
+                    summary_text = (doc.get("summary") or "").strip()
+                    file_name = doc.get("file_name", "Document")
                     
-                    if not text or len(text) < 10:
-                        logger.debug(f"Skipping document {doc_id}: text too short")
+                    logger.info(f"📄 [{doc_idx+1}/{len(gateway_docs)}] {doc_id}")
+                    logger.info(f"    File: {file_name}")
+                    logger.info(f"    extracted_text: {len(extracted_text)} chars, summary: {len(summary_text)} chars")
+                    
+                    # Use the one with more content
+                    text = extracted_text if len(extracted_text) >= len(summary_text) else summary_text
+                    text_source = "extracted_text" if len(extracted_text) >= len(summary_text) else "summary"
+                    
+                    # Strict minimum length check
+                    MIN_CONTENT_LENGTH = 20
+                    if not text or len(text) < MIN_CONTENT_LENGTH:
+                        logger.warning(f"    ⏭️ Skip: Content too short ({len(text)} < {MIN_CONTENT_LENGTH})")
+                        chunks_skipped += 1
                         continue
                     
-                    logger.info(f"Ingesting document {doc_idx+1}/{len(gateway_docs)}: {doc_id}")
+                    logger.info(f"    ✓ Using {text_source} as content")
                     
-                    # Split text into chunks with size limit
+                    # Split text into chunks
                     text_chunks = self._split_text_into_chunks(text, chunk_size=500, overlap=50)
-                    logger.debug(f"  Created {len(text_chunks)} chunks from document")
+                    logger.info(f"    ✂️ Split into {len(text_chunks)} chunks")
                     
+                    # Insert chunks
+                    doc_chunks_created = 0
                     for chunk_idx, chunk_text in enumerate(text_chunks):
-                        chunk_id = f"doc_{doc_id}_{chunk_idx}"
+                        chunk_id = f"chunk_{doc_id}_{chunk_idx}"
                         
-                        # Avoid duplicate chunks
+                        # Check duplicate
                         existing = db.query(DocumentChunkModel).filter(
                             DocumentChunkModel.chunk_id == chunk_id
                         ).first()
                         
                         if existing:
+                            logger.debug(f"      Chunk {chunk_idx}: duplicate")
+                            chunks_skipped += 1
                             continue
                         
-                        # Create chunk object (don't add yet - buffer it)
+                        # Verify chunk content
+                        chunk_text_clean = chunk_text.strip()
+                        if not chunk_text_clean:
+                            logger.debug(f"      Chunk {chunk_idx}: empty")
+                            chunks_skipped += 1
+                            continue
+                        
                         chunk = DocumentChunkModel(
                             chunk_id=chunk_id,
                             document_id=doc_id,
-                            content=chunk_text[:5000],  # Limit chunk size
+                            content=chunk_text_clean[:5000],
                             chunk_index=chunk_idx,
-                            topic=doc.get("file_name", "Document"),
+                            topic=file_name,
                             category="document",
                             tags=["gateway", "uploaded"],
                         )
                         batch_buffer.append(chunk)
+                        doc_chunks_created += 1
                         
-                        # Batch commit every N chunks
+                        # Batch commit
                         if len(batch_buffer) >= batch_size:
-                            db.add_all(batch_buffer)
-                            db.commit()
-                            chunks_created += len(batch_buffer)
-                            logger.debug(f"  Batch commit: {chunks_created} chunks total")
-                            batch_buffer = []
-                            
-                except Exception as e:
-                    logger.error(f"❌ Error processing document {doc_id}: {e}")
-                    # Continue with next document
+                            try:
+                                db.add_all(batch_buffer)
+                                db.commit()
+                                chunks_created += len(batch_buffer)
+                                logger.info(f"    ✅ Batch committed: {chunks_created} total chunks")
+                                batch_buffer = []
+                            except Exception as batch_err:
+                                logger.error(f"    ❌ Batch commit error: {batch_err}")
+                                db.rollback()
+                                batch_buffer = []
+                    
+                    logger.info(f"    ✅ Document done: {doc_chunks_created} chunks created")
+                        
+                except Exception as doc_err:
+                    logger.error(f"❌ Error processing document: {doc_err}", exc_info=True)
+                    chunks_skipped += 1
                     continue
             
-            # Final commit for remaining chunks
+            # Final commit
             if batch_buffer:
-                db.add_all(batch_buffer)
-                db.commit()
-                chunks_created += len(batch_buffer)
-                logger.info(f"Final batch commit: {chunks_created} chunks total")
+                try:
+                    db.add_all(batch_buffer)
+                    db.commit()
+                    chunks_created += len(batch_buffer)
+                    logger.info(f"✅ Final batch: {chunks_created} total new chunks")
+                except Exception as final_err:
+                    logger.error(f"❌ Final commit error: {final_err}")
+                    db.rollback()
             
-            db.close()
+            # Verify
+            chunk_count_after = db.query(DocumentChunkModel).count()
             elapsed = time.time() - start_time
-            logger.info(f"✅ Index rebuild complete in {elapsed:.1f}s. Created {chunks_created} chunks")
+            
+            logger.info(f"✅ Rebuild complete in {elapsed:.1f}s")
+            logger.info(f"  📊 Chunk count: {chunk_count_before} → {chunk_count_after} ({chunks_created} new)")
+            logger.info(f"  ⏭️ Skipped: {chunks_skipped} items")
             
         except Exception as e:
-            logger.error(f"❌ Rebuild index failed: {e}", exc_info=True)
+            logger.error(f"❌ Rebuild failed: {e}", exc_info=True)
             try:
-                db.close()
+                if db:
+                    db.rollback()
             except:
                 pass
-            raise
+        finally:
+            if db:
+                try:
+                    db.close()
+                except:
+                    pass
 
 
     def _split_text_into_chunks(
@@ -350,3 +429,66 @@ class SQLiteDocumentRetriever:
             chunks.append(current_chunk.strip())
         
         return chunks
+
+    def _search_gateway_documents(self, query: str, top_k: int = 5) -> List[RetrievedDocument]:
+        """
+        🆕 Fallback: Search documents từ gateway DB khi RAG DB không có
+        """
+        results = []
+        
+        try:
+            logger.info(f"🔍 Fallback search in gateway DB...")
+            
+            # Lấy documents từ gateway DB
+            gateway_docs = self.quiz_data.get_gateway_documents(limit=100)
+            
+            if not gateway_docs:
+                logger.warning("⚠️ No documents in gateway DB")
+                return []
+            
+            query_lower = query.lower()
+            query_words = query_lower.split()
+            
+            # Score documents dựa trên keyword match
+            scored_docs = []
+            for doc in gateway_docs:
+                content = (doc.get("extracted_text") or doc.get("summary") or "").lower()
+                
+                # Count matches
+                match_score = 0
+                for word in query_words:
+                    match_score += content.count(word)
+                
+                if match_score > 0:
+                    scored_docs.append((match_score, doc, content))
+            
+            # Sort by score
+            scored_docs.sort(key=lambda x: x[0], reverse=True)
+            
+            logger.info(f"  Found {len(scored_docs)} matching documents")
+            
+            # Convert top results
+            for score, doc, content in scored_docs[:top_k]:
+                # Split vào chunks
+                chunks = self._split_text_into_chunks(content, chunk_size=500, overlap=50)
+                
+                for chunk_idx, chunk_content in enumerate(chunks[:2]):  # Chỉ lấy 2 chunks per doc
+                    chunk_content_clean = chunk_content.strip()
+                    if chunk_content_clean:
+                        results.append(RetrievedDocument(
+                            document_id=doc.get("document_id"),
+                            content=chunk_content_clean,
+                            metadata={
+                                "chunk_id": f"gateway_{doc.get('document_id')}_{chunk_idx}",
+                                "topic": doc.get("file_name"),
+                                "source": "gateway_documents_db"
+                            },
+                            relevance_score=min(0.9, 0.5 + (score * 0.1))
+                        ))
+            
+            logger.info(f"✅ Fallback search returned {len(results)} results")
+            return results
+            
+        except Exception as e:
+            logger.error(f"❌ Fallback search error: {e}", exc_info=True)
+            return []

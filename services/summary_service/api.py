@@ -68,8 +68,8 @@ async def summarize_text(request: SummaryRequestModel):
         raise HTTPException(status_code=500, detail="GEMINI_API_KEY not configured")
 
     try:
-        summary = await summary_processor.summarize_text(request.text)
-        # summary = request.text
+        # summary = await summary_processor.summarize_text(request.text)
+        summary = request.text
 
         # Log to database
         await log_summary_request(
@@ -109,8 +109,8 @@ async def ocr_and_summarize(files: List[UploadFile] = File(...)):
             )
 
         # Create summary
-        summary = await summary_processor.summarize_text(extracted_text)
-        # summary = extracted_text
+        # summary = await summary_processor.summarize_text(extracted_text)
+        summary = extracted_text
 
         # Log to database
         await log_summary_request(

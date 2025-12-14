@@ -12,6 +12,7 @@ __pycache__/
 .Python
 *.so
 services/VRD_OCR/
+Services/VRD_OCR/
 *.log
 */logs/
 

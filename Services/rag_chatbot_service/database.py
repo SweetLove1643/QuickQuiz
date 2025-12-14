@@ -87,16 +87,31 @@ def get_db():
         db.close()
 
 
-# Cross-service data access functions
 class QuizDataAccess:
     """Access quiz data from other microservices for RAG context"""
 
     def __init__(self):
-        # paths relative to project root
+        # ✅ FIX 1: Compute paths carefully
         repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-        self.quiz_generator_db = os.path.join(repo_root, "services", "quiz_generator_service", "quiz_generator_service.db")
-        self.quiz_evaluator_db = os.path.join(repo_root, "services", "quiz_evaluator_service", "quiz_evaluator.db")
-        self.gateway_documents_db = os.path.join(repo_root, "services", "gateway_service", "documents.db")
+        
+        self.quiz_generator_db = os.path.join(
+            repo_root, "services", "quiz_generator_service", "quiz_generator_service.db"
+        )
+        self.quiz_evaluator_db = os.path.join(
+            repo_root, "services", "quiz_evaluator_service", "quiz_evaluator.db"
+        )
+        self.gateway_documents_db = os.path.join(
+            repo_root, "services", "gateway_service", "documents.db"
+        )
+        
+        # ✅ FIX 2: Log paths on init
+        logger.info(f"🔧 QuizDataAccess initialized with paths:")
+        logger.info(f"  quiz_generator_db: {self.quiz_generator_db}")
+        logger.info(f"  gateway_documents_db: {self.gateway_documents_db}")
+        
+        # ✅ FIX 3: Verify paths exist
+        logger.info(f"  quiz_generator exists: {os.path.exists(self.quiz_generator_db)}")
+        logger.info(f"  gateway_documents exists: {os.path.exists(self.gateway_documents_db)}")
         
     def get_quiz_templates(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Get recent quiz templates for context"""
@@ -145,36 +160,114 @@ class QuizDataAccess:
             logger.error(f"Error accessing quiz templates: {e}")
             return []
     
+
     def get_gateway_documents(self, limit: int = 50) -> List[Dict[str, Any]]:
         """Read documents saved by Gateway (documents.db)."""
+        logger.info(f"🔍 get_gateway_documents() called, limit={limit}")
+        
         try:
+            # ✅ CRITICAL FIX: Check path again (not just at __init__)
             if not os.path.exists(self.gateway_documents_db):
-                logger.warning(f"Gateway documents DB not found: {self.gateway_documents_db}")
-                return []
+                logger.error(f"❌ Gateway documents DB not found at: {self.gateway_documents_db}")
+                logger.info(f"  Expected path: {self.gateway_documents_db}")
+                logger.info(f"  Current working directory: {os.getcwd()}")
+                # Try to find it
+                alt_path = os.path.join(os.getcwd(), "..", "gateway_service", "documents.db")
+                if os.path.exists(alt_path):
+                    logger.warning(f"⚠️ Found at alternative path: {alt_path}")
+                    self.gateway_documents_db = alt_path
+                else:
+                    return []
             
-            conn = sqlite3.connect(self.gateway_documents_db)
+            logger.info(f"✅ Gateway DB file exists: {self.gateway_documents_db}")
+            
+            # ✅ CRITICAL FIX: Use timeout để avoid lock
+            conn = sqlite3.connect(self.gateway_documents_db, timeout=5.0)
             conn.row_factory = sqlite3.Row
             cur = conn.cursor()
             
+            # List all tables
+            try:
+                cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                tables = cur.fetchall()
+                logger.info(f"📋 Tables in gateway DB: {[t[0] for t in tables]}")
+            except Exception as table_err:
+                logger.error(f"❌ Error listing tables: {table_err}")
+            
+            # Check 'documents' table exists
             cur.execute(
-                """
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='documents'"
+            )
+            table_exists = cur.fetchone()
+            if not table_exists:
+                logger.error("❌ 'documents' table does not exist in gateway DB")
+                conn.close()
+                return []
+            
+            logger.info("✅ 'documents' table exists")
+            
+            # Get table schema
+            try:
+                cur.execute("PRAGMA table_info(documents)")
+                columns = cur.fetchall()
+                column_names = [col[1] for col in columns]
+                logger.info(f"📋 documents table columns: {column_names}")
+            except Exception as schema_err:
+                logger.error(f"❌ Error getting table schema: {schema_err}")
+            
+            # Count total documents
+            try:
+                cur.execute("SELECT COUNT(*) FROM documents")
+                count = cur.fetchone()[0]
+                logger.info(f"📊 Total documents in gateway DB: {count}")
+            except Exception as count_err:
+                logger.error(f"❌ Error counting documents: {count_err}")
+            
+            # ✅ CRITICAL FIX: Query with ORDER BY DESC (newest first)
+            try:
+                query = """
                 SELECT id as document_id, file_name, extracted_text, summary, created_at
                 FROM documents
                 ORDER BY datetime(created_at) DESC
                 LIMIT ?
-                """,
-                (limit,),
-            )
-            rows = cur.fetchall()
-            conn.close()
+                """
+                logger.info(f"🔍 Executing query...")
+                cur.execute(query, (limit,))
+                rows = cur.fetchall()
+                logger.info(f"✅ Query executed successfully, retrieved: {len(rows)} rows")
+            except Exception as query_err:
+                logger.error(f"❌ Query error: {query_err}", exc_info=True)
+                conn.close()
+                return []
+            finally:
+                conn.close()
             
-            result = [dict(row) for row in rows]
-            logger.info(f"Retrieved {len(result)} gateway documents")
+            # Convert rows to dicts
+            result = []
+            for row in rows:
+                try:
+                    doc_dict = dict(row)
+                    result.append(doc_dict)
+                except Exception as dict_err:
+                    logger.error(f"❌ Error converting row to dict: {dict_err}")
+                    continue
+            
+            logger.info(f"✅ Retrieved {len(result)} gateway documents")
+            
+            # Log document details
+            for i, doc in enumerate(result[:5]):
+                extracted_len = len(doc.get("extracted_text") or "") if doc.get("extracted_text") else 0
+                summary_len = len(doc.get("summary") or "") if doc.get("summary") else 0
+                logger.info(f"  Doc {i+1}: ID={doc.get('document_id')}, "
+                        f"file={doc.get('file_name')}, "
+                        f"extracted={extracted_len}ch, summary={summary_len}ch")
+            
             return result
             
         except Exception as e:
-            logger.error(f"Error accessing gateway documents: {e}")
+            logger.error(f"❌ Error accessing gateway documents: {e}", exc_info=True)
             return []
+
 
     def get_generated_quizzes(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Get recent generated quizzes for context"""

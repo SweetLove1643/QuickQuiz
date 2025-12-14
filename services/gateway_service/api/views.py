@@ -18,6 +18,7 @@ from .service_clients import (
     RAGChatbotClient,
     IAMServiceClient,
 )
+from .rag_sync_helper import insert_document_to_rag_db
 import json
 import io
 import os
@@ -771,7 +772,7 @@ def get_conversation_history(request, conversation_id):
 @csrf_exempt
 @require_http_methods(["POST"])
 def save_document(request):
-    """Save processed document to database"""
+    """Save processed document to database with comprehensive validation"""
     try:
         data = json.loads(request.body)
 
@@ -779,17 +780,64 @@ def save_document(request):
         file_name = data.get("fileName")
         file_size = data.get("fileSize")
         file_type = data.get("fileType")
-        extracted_text = data.get("extractedText")
-        summary = data.get("summary")
+        extracted_text = (data.get("extractedText") or "").strip()
+        summary = (data.get("summary") or "").strip()
         document_id = data.get("documentId")
 
-        if not all([file_name, extracted_text, summary, document_id]):
+        logger.info(f"📥 Save document request:")
+        logger.info(f"  Document ID: {document_id}")
+        logger.info(f"  File name: {file_name}")
+        logger.info(f"  Extracted text length: {len(extracted_text)}")
+        logger.info(f"  Summary length: {len(summary)}")
+
+        # ✅ VALIDATION 1: Required fields
+        if not file_name:
+            logger.error("❌ Validation failed: missing file_name")
+            return JsonResponse(
+                {"error": "Missing required field: fileName"},
+                status=400,
+            )
+
+        if not document_id:
+            logger.error("❌ Validation failed: missing document_id")
+            return JsonResponse(
+                {"error": "Missing required field: documentId"},
+                status=400,
+            )
+
+        # ✅ VALIDATION 2: Content exists and is meaningful
+        if not extracted_text and not summary:
+            logger.error("❌ Validation failed: both extracted_text and summary are empty")
             return JsonResponse(
                 {
-                    "error": "Missing required fields: fileName, extractedText, summary, documentId"
+                    "error": "Both extracted_text and summary are empty. Document has no meaningful content."
                 },
                 status=400,
             )
+
+        # ✅ Stricter validation - minimum length check
+        MIN_TEXT_LENGTH = 20
+        extracted_text_valid = extracted_text and len(extracted_text) >= MIN_TEXT_LENGTH
+        summary_valid = summary and len(summary) >= MIN_TEXT_LENGTH
+
+        if not extracted_text_valid and not summary_valid:
+            logger.error(f"❌ Validation failed: content too short")
+            logger.error(f"   extracted_text: {len(extracted_text)} chars (min: {MIN_TEXT_LENGTH})")
+            logger.error(f"   summary: {len(summary)} chars (min: {MIN_TEXT_LENGTH})")
+            return JsonResponse(
+                {
+                    "error": f"Content too short. Minimum {MIN_TEXT_LENGTH} characters required."
+                },
+                status=400,
+            )
+
+        # ✅ Use the one with more meaningful content
+        if extracted_text_valid and not summary_valid:
+            summary = extracted_text[:2000]
+            logger.info("ℹ️ Using extracted_text as summary")
+        elif summary_valid and not extracted_text_valid:
+            extracted_text = summary[:5000]
+            logger.info("ℹ️ Using summary as extracted_text")
 
         # Create document record
         document_data = {
@@ -797,50 +845,55 @@ def save_document(request):
             "file_name": file_name,
             "file_size": file_size or 0,
             "file_type": file_type or "unknown",
-            "extracted_text": extracted_text[:5000],  # Limit text length
-            "summary": summary,
+            "extracted_text": extracted_text[:5000],
+            "summary": summary[:2000],
             "created_at": timezone.now().isoformat(),
-            "processing_time": data.get("processingTime", 0),
-            "ocr_confidence": data.get("ocrConfidence"),
-            "summary_confidence": data.get("summaryConfidence"),
         }
 
-        logger.info(f"Saving document: {file_name} (ID: {document_id})")
+        logger.info(f"💾 Inserting document to gateway DB: {document_id}")
 
-        insert_document(document_data)
-        logger.info(f"✅ Document saved to gateway DB: {document_id}")
-
-        # Notify RAG service to rebuild / include this document (best-effort)
+        # ✅ Insert vào gateway DB
         try:
-            logger.info(f"🔄 Requesting RAG rebuild-index for document {document_id}...")
+            insert_document(document_data)
+            logger.info(f"✅ Document saved to gateway DB successfully: {document_id}")
+        except Exception as insert_err:
+            logger.error(f"❌ Failed to insert into gateway DB: {insert_err}", exc_info=True)
+            return JsonResponse(
+                {"error": f"Database insertion failed: {str(insert_err)}"},
+                status=500,
+            )
+
+        # 🆕 GIẢI PHÁP 1: Insert trực tiếp vào rag_chatbot.db
+        logger.info(f"� Syncing document to RAG service DB...")
+        try:
+            rag_sync_success = insert_document_to_rag_db(document_data)
+            if rag_sync_success:
+                logger.info(f"✅ Document synced to RAG service DB")
+            else:
+                logger.warning(f"⚠️ Document sync to RAG service failed, will try rebuild-index")
+        except Exception as sync_err:
+            logger.warning(f"⚠️ RAG sync failed: {sync_err}, will try rebuild-index")
+
+        # 🆕 GIẢI PHÁP 2: Vẫn gọi rebuild-index để đảm bảo
+        try:
+            logger.info(f"🔄 Requesting RAG rebuild-index...")
             
-            # Tăng timeout từ 30s (default) lên 50s
             original_timeout = rag_chatbot.timeout
-            rag_chatbot.timeout = 50  # 50 seconds to handle long document processing
+            rag_chatbot.timeout = 120
             
             try:
                 response = rag_chatbot._make_request("POST", "/admin/rebuild-index")
                 
                 if response.success:
-                    logger.info(f"✅ RAG rebuild-index successful: {response.data}")
+                    logger.info(f"✅ RAG rebuild-index successful")
                 else:
                     logger.warning(f"⚠️ RAG rebuild-index returned error: {response.error}")
                     
             finally:
-                rag_chatbot.timeout = original_timeout  # Restore original timeout
+                rag_chatbot.timeout = original_timeout
                 
-        except Exception as e:
-            logger.warning(f"⚠️ Failed to request RAG rebuild-index: {e}")
-            # Attempt direct request as fallback
-            try:
-                import requests
-                direct_response = requests.post(
-                    f"{rag_chatbot.base_url}/admin/rebuild-index", 
-                    timeout=10  # Increased timeout
-                )
-                logger.info(f"✅ Direct rebuild-index request status: {direct_response.status_code}")
-            except Exception as e2:
-                logger.error(f"❌ Both rebuild-index attempts failed: {e}, {e2}")
+        except Exception as rag_err:
+            logger.warning(f"⚠️ Failed to trigger RAG rebuild: {rag_err}")
 
         return JsonResponse(
             {
@@ -851,12 +904,12 @@ def save_document(request):
             }
         )
 
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        logger.error(f"❌ Invalid JSON in request: {e}")
         return JsonResponse({"error": "Invalid JSON data"}, status=400)
     except Exception as e:
-        logger.error(f"Document save failed: {str(e)}")
+        logger.error(f"❌ Document save failed: {e}", exc_info=True)
         return JsonResponse({"error": str(e)}, status=500)
-
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
