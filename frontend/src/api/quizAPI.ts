@@ -187,45 +187,6 @@ class QuizAPI {
     });
   }
 
-    // 🆕 NEW: Generic makeRequest method (public)
-  async makeRequest<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
-  
-    // Create abort controller for timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
-  
-    const requestOptions: RequestInit = {
-      signal: controller.signal,
-      headers: {
-        ...API_CONFIG.DEFAULT_HEADERS,
-        ...options.headers,
-      },
-      ...options,
-    };
-  
-    try {
-      const response = await fetch(url, requestOptions);
-      clearTimeout(timeoutId);
-  
-      if (!response.ok) {
-        throw new Error(`API Error ${response.status}: ${response.statusText}`);
-      }
-  
-      return await response.json();
-    } catch (error) {
-      clearTimeout(timeoutId);
-      if (error instanceof Error && error.name === "AbortError") {
-        throw new Error("Request timeout");
-      }
-      console.error(`Request failed for ${endpoint}:`, error);
-      throw error;
-    }
-  }
-
   // Evaluate quiz submission
   async evaluateQuiz(request: EvaluationRequest): Promise<any> {
     return this.makeRequest("/quiz/evaluate/", {
@@ -283,6 +244,18 @@ class QuizAPI {
     }
 
     return response.json();
+  }
+
+  // Thêm hàm public xử lý DOCX
+  async processDocxDocument(data: {
+    file_base64: string;
+    filename: string;
+    file_type: string;
+  }): Promise<unknown> {
+    return this.makeRequest("/documents/process/", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
   }
 
   // Get validation metrics

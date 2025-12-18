@@ -1,7 +1,7 @@
 // Utility functions for file handling and API integration
 // Supports image upload, OCR processing, and document management
 
-import { quizAPI } from "./quizAPI";
+import { quizAPI, SummaryResponse } from "./quizAPI";
 
 export interface ProcessedDocument {
   fileName: string;
@@ -14,6 +14,12 @@ export interface ProcessedDocument {
   summaryConfidence?: number;
   processingTime: number;
   uploadDate: string;
+}
+
+interface DocxProcessResponse {
+  extracted_text?: string;
+  summary?: string;
+  status?: string;
 }
 
 // Convert file to base64 string
@@ -55,13 +61,13 @@ export const extractTextFromDocx = async (file: File): Promise<string> => {
     // Convert file to binary
     const arrayBuffer = await file.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
-    
-    // Try to parse DOCX (simplified - extract from document.xml)
-    // DOCX is a ZIP file containing XML
-    // For now, we'll convert to base64 and let backend handle it
-    const base64 = btoa(String.fromCharCode.apply(null, uint8Array as any));
-    
-    logger.info(`DOCX file converted to base64: ${base64.length} chars`);
+
+    // Convert to base64
+    const base64 = btoa(
+      String.fromCharCode.apply(null, Array.from(uint8Array))
+    );
+
+    console.log(`DOCX file converted to base64: ${base64.length} chars`); // FIX: Use console.log instead of logger
     return base64;
   } catch (error) {
     throw new Error(`Failed to process DOCX file: ${error}`);
@@ -71,7 +77,8 @@ export const extractTextFromDocx = async (file: File): Promise<string> => {
 // Extract text from DOCX files
 export const isDocxFile = (file: File): boolean => {
   return (
-    file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+    file.type ===
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
     file.name.toLowerCase().endsWith(".docx")
   );
 };
@@ -91,11 +98,12 @@ export const validateFile = (
 ): { valid: boolean; error?: string } => {
   const maxSize = 10 * 1024 * 1024; // 10MB
 
-  if (!isImageFile(file) && !isDocumentFile(file)) {
+  // FIX: Add DOCX support to validation
+  if (!isImageFile(file) && !isDocumentFile(file) && !isDocxFile(file)) {
     return {
       valid: false,
       error:
-        "Định dạng file không được hỗ trợ. Vui lòng chọn file ảnh (JPG, PNG) hoặc tài liệu (PDF, TXT)",
+        "Định dạng file không được hỗ trợ. Vui lòng chọn file ảnh (JPG, PNG), tài liệu (PDF, TXT) hoặc DOCX",
     };
   }
 
@@ -132,15 +140,17 @@ export const processDocument = async (
 
   let extractedText = "";
   let ocrResponse = null;
-  let summaryResponse = null;
+  let summaryResponse:
+    | SummaryResponse
+    | { summary: string; confidence_score?: number }
+    | null = null;
 
   try {
     // Handle different file types
     if (isImageFile(file)) {
       // ========== IMAGE FILES ==========
       console.log("Processing image file...");
-      const base64 = await fileToBase64(file);
-      const combined = await quizAPI.ocrAndSummarize(base64, {
+      const combined = await quizAPI.ocrAndSummarize(file, {
         style: "detailed",
         max_length: 500,
       });
@@ -148,14 +158,15 @@ export const processDocument = async (
       ocrResponse = combined.ocr;
       summaryResponse = combined.summary;
       extractedText = ocrResponse.extracted_text || "";
-      
-      if (!extractedText || extractedText.trim().length === 0) {
-        throw new Error("OCR failed: Không thể trích xuất text từ ảnh. Vui lòng chọn ảnh khác.");
-      }
 
+      if (!extractedText || extractedText.trim().length === 0) {
+        throw new Error(
+          "OCR failed: Không thể trích xuất text từ ảnh. Vui lòng chọn ảnh khác."
+        );
+      }
     } else if (file.type === "text/plain") {
       // ========== TEXT FILES ==========
-      console.log("📝 Processing text file...");
+      console.log("Processing text file...");
       extractedText = await extractTextFromTextFile(file);
 
       if (!extractedText || extractedText.trim().length === 0) {
@@ -166,11 +177,10 @@ export const processDocument = async (
         text: extractedText,
         config: { style: "detailed", max_length: 500 },
       });
-
-        } else if (isDocxFile(file)) {
+    } else if (isDocxFile(file)) {
       // ========== DOCX FILES (NEW) ==========
-      console.log("📄 Processing DOCX file...");
-      
+      console.log("Processing DOCX file...");
+
       // Convert DOCX to base64 and send to gateway
       const fileBase64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
@@ -183,26 +193,25 @@ export const processDocument = async (
         reader.readAsDataURL(file);
       });
 
-      // FIXED: Call correct gateway endpoint
-      const docxResponse = await quizAPI.makeRequest("/documents/process/", {
-        method: "POST",
-        body: JSON.stringify({
-          file_base64: fileBase64,
-          filename: file.name,
-          file_type: "docx",
-        }),
-      });
+      // FIX: Use public method instead of private makeRequest
+      // Option 1: Add public method to quizAPI
+      const docxResponse = (await quizAPI.processDocxDocument({
+        file_base64: fileBase64,
+        filename: file.name,
+        file_type: "docx",
+      })) as DocxProcessResponse; // FIX: Add type assertion
 
       // Extract from response
       extractedText = docxResponse.extracted_text || docxResponse.summary || "";
-      summaryResponse = { 
-        summary: docxResponse.summary || extractedText 
+      summaryResponse = {
+        summary: docxResponse.summary || extractedText,
       };
 
       if (!extractedText || extractedText.trim().length === 0) {
-        throw new Error("Không thể trích xuất text từ file DOCX. Vui lòng chọn file khác.");
+        throw new Error(
+          "Không thể trích xuất text từ file DOCX. Vui lòng chọn file khác."
+        );
       }
-
     } else {
       throw new Error(`Định dạng file ${file.type} chưa được hỗ trợ`);
     }
@@ -220,15 +229,12 @@ export const processDocument = async (
       fileSize: file.size,
       fileType: file.type,
       extractedText,
-      summary:
-        typeof summaryResponse.summary === "string"
-          ? summaryResponse.summary
-          : summaryResponse.summary.summary,
+      summary: finalSummary, // dùng finalSummary thay summaryText
       documentId: `doc_${Date.now()}_${Math.random()
         .toString(36)
         .substr(2, 9)}`,
       ocrConfidence: ocrResponse?.confidence_score,
-      summaryConfidence: summaryResponse.confidence_score,
+      summaryConfidence: summaryResponse?.confidence_score,
       processingTime,
       uploadDate: new Date().toISOString(),
     };
