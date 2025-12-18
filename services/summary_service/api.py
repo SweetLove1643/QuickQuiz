@@ -108,8 +108,9 @@ async def ocr_and_summarize(files: List[UploadFile] = File(...)):
             content = await f.read()
             content_type = (f.content_type or "").lower()
             filename = f.filename or ""
+            filename_lower = filename.lower()
 
-            if content_type == "application/pdf" or filename.lower().endswith(".pdf"):
+            if content_type == "application/pdf" or filename_lower.endswith(".pdf"):
                 if fitz is None:
                     raise HTTPException(
                         status_code=500,
@@ -123,6 +124,30 @@ async def ocr_and_summarize(files: List[UploadFile] = File(...)):
                         status_code=400,
                         detail=f"Cannot extract text from PDF: {filename or 'uploaded.pdf'}",
                     )
+            elif content_type == "text/plain" or filename_lower.endswith(".txt"):
+                text = content.decode("utf-8", errors="ignore")
+                if text.strip():
+                    pdf_text_parts.append(text)
+                else:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Cannot extract text from TXT: {filename or 'uploaded.txt'}",
+                    )
+            elif (
+                content_type
+                == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                or filename_lower.endswith(".docx")
+            ):
+                image_files.append(
+                    (
+                        "files",
+                        (
+                            filename or "document.docx",
+                            content,
+                            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        ),
+                    )
+                )
             else:
                 image_files.append(
                     (
