@@ -5,6 +5,8 @@ import { Badge } from "./ui/badge";
 import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
 import { useState } from "react";
+import { quizAPI } from "../api/quizAPI";
+import { quizAPI } from "../api/quizAPI";
 
 interface ViewDocumentProps {
   document: any;
@@ -54,15 +56,28 @@ Tài liệu này cung cấp một cái nhìn tổng quan về chủ đề. Ngư�
     URL.revokeObjectURL(url);
   };
 
-  const handleSave = () => {
-    const updatedDocument = {
-      ...document,
-      title: editedTitle,
-      summary: editedSummary,
-      content: editedContent,
-    };
-    onSave?.(updatedDocument);
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      const updatedDocument = {
+        title: editedTitle,
+        summary: editedSummary,
+        content: editedContent,
+      };
+      
+      const result = await quizAPI.updateDocument(document.document_id || document.id, updatedDocument);
+      
+      if (result.success) {
+        onSave?.({
+          ...document,
+          ...updatedDocument,
+          updated_at: result.updated_at
+        });
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error("Save failed:", error);
+      alert("Luu that bai. Vui long thu lai.");
+    }
   };
 
   const handleCancel = () => {

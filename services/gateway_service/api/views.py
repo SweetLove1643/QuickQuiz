@@ -871,6 +871,64 @@ def save_document(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 
+@api_view(["PUT"])
+@permission_classes([AllowAny])
+def update_document(request, doc_id):
+    """Update an existing document"""
+    try:
+        data = json.loads(request.body)
+        
+        title = data.get("title")
+        summary = data.get("summary")
+        content = data.get("content")
+        
+        if not any([title, summary, content]):
+            logger.warning(f"Update document failed: no fields provided for {doc_id}")
+            return JsonResponse(
+                {"error": "At least one field (title, summary, or content) must be provided"},
+                status=400
+            )
+        
+        ensure_document_table()
+        
+        with closing(sqlite3.connect(DOCUMENT_DB_PATH)) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                UPDATE documents
+                SET title = COALESCE(?, title),
+                    summary = COALESCE(?, summary),
+                    content = COALESCE(?, content),
+                    updated_at = ?
+                WHERE document_id = ?
+                """,
+                (title, summary, content, timezone.now().isoformat(), doc_id)
+            )
+            conn.commit()
+            
+            if cursor.rowcount == 0:
+                logger.error(f"Update document failed: document not found {doc_id}")
+                return JsonResponse(
+                    {"error": "Document not found"},
+                    status=404
+                )
+        
+        logger.info(f"Document updated: {doc_id}")
+        return JsonResponse({
+            "success": True,
+            "message": "Document updated successfully",
+            "document_id": doc_id,
+            "updated_at": timezone.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Update document failed: {e}", exc_info=True)
+        return JsonResponse(
+            {"error": f"Update failed: {str(e)}"},
+            status=500
+        )
+
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def list_documents(request):
