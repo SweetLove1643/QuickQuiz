@@ -52,8 +52,11 @@ export function QuizResult({
                     : "mcq",
                 stem: answer.question,
                 options: answer.options || [],
-                correct_answer: answer.correctAnswer,
-                user_answer: answer.userAnswer || "",
+                correct_answer: String(answer.correctAnswer || ""),
+                user_answer:
+                  answer.userAnswer === "Không trả lời"
+                    ? ""
+                    : String(answer.userAnswer || ""),
                 topic: answer.topic || "General",
               })
             ),
