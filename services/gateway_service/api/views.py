@@ -1026,10 +1026,13 @@ def export_document_pdf(request, doc_id):
 
         try:
             from reportlab.lib.pagesizes import letter
-            from reportlab.lib.styles import getSampleStyleSheet
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
             from reportlab.lib.units import inch
             from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+            from reportlab.pdfbase import pdfmetrics
+            from reportlab.pdfbase.ttfonts import TTFont
             from io import BytesIO
+            import os
         except ImportError:
             logger.error("reportlab not installed")
             return JsonResponse(
@@ -1039,28 +1042,74 @@ def export_document_pdf(request, doc_id):
                 status=500,
             )
 
+        try:
+            font_path = "C:\\Windows\\Fonts\\arial.ttf"
+            if os.path.exists(font_path):
+                pdfmetrics.registerFont(TTFont("ArialUnicode", font_path))
+                font_name = "ArialUnicode"
+            else:
+                font_name = "Helvetica"
+        except Exception as font_err:
+            logger.warning(f"Failed to register Unicode font: {font_err}")
+            font_name = "Helvetica"
+
         pdf_buffer = BytesIO()
         doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
         styles = getSampleStyleSheet()
+
+        styles.add(
+            ParagraphStyle(
+                name="CustomHeading1",
+                parent=styles["Heading1"],
+                fontName=font_name,
+                fontSize=18,
+                spaceAfter=12,
+            )
+        )
+
+        styles.add(
+            ParagraphStyle(
+                name="CustomHeading2",
+                parent=styles["Heading2"],
+                fontName=font_name,
+                fontSize=14,
+                spaceAfter=10,
+            )
+        )
+
+        styles.add(
+            ParagraphStyle(
+                name="CustomNormal",
+                parent=styles["Normal"],
+                fontName=font_name,
+                fontSize=11,
+                leading=14,
+            )
+        )
+
         story = []
 
         doc_title = title or file_name or "Document"
-        story.append(Paragraph(doc_title, styles["Heading1"]))
+        story.append(Paragraph(doc_title, styles["CustomHeading1"]))
         story.append(Spacer(1, 0.3 * inch))
 
         if summary:
-            story.append(Paragraph("<b>Tom tat:</b>", styles["Heading2"]))
-            story.append(Paragraph(summary.replace("\n", "<br/>"), styles["Normal"]))
+            story.append(Paragraph("<b>Tóm tắt:</b>", styles["CustomHeading2"]))
+            story.append(
+                Paragraph(summary.replace("\n", "<br/>"), styles["CustomNormal"])
+            )
             story.append(Spacer(1, 0.3 * inch))
 
         if content:
-            story.append(Paragraph("<b>Noi dung:</b>", styles["Heading2"]))
-            story.append(Paragraph(content.replace("\n", "<br/>"), styles["Normal"]))
+            story.append(Paragraph("<b>Nội dung:</b>", styles["CustomHeading2"]))
+            story.append(
+                Paragraph(content.replace("\n", "<br/>"), styles["CustomNormal"])
+            )
         elif extracted_text:
-            story.append(Paragraph("<b>Noi dung:</b>", styles["Heading2"]))
+            story.append(Paragraph("<b>Nội dung:</b>", styles["CustomHeading2"]))
             story.append(
                 Paragraph(
-                    extracted_text[:5000].replace("\n", "<br/>"), styles["Normal"]
+                    extracted_text[:5000].replace("\n", "<br/>"), styles["CustomNormal"]
                 )
             )
 
