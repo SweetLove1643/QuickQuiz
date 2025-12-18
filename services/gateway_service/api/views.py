@@ -26,6 +26,7 @@ import logging
 import base64
 import requests
 from contextlib import closing
+from docx import Document
 
 logger = logging.getLogger(__name__)
 
@@ -577,9 +578,8 @@ def ocr_and_summarize(request):
                 },
             }
         )
-
-    except json.JSONDecodeError:
-        return JsonResponse({"error": "Invalid JSON data"}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON data"}, status=400)
     except Exception as e:
         logger.error(f"[Gateway] Unexpected error: {e}", exc_info=True)
         return JsonResponse({"error": str(e)}, status=500)
@@ -1062,7 +1062,6 @@ def get_current_user(request):
         )
 
 import base64
-from docx import Document 
 import io
 
 @csrf_exempt
@@ -1080,7 +1079,6 @@ def process_document(request):
             return JsonResponse({"error": "No file provided"}, status=400)
 
         try:
-            import base64
             file_data = base64.b64decode(file_base64)
             logger.info(f"Base64 decoded: {len(file_data)} bytes")
         except Exception as b64_err:
@@ -1092,9 +1090,6 @@ def process_document(request):
         if file_type == "docx" or filename.lower().endswith(".docx"):
             try:
                 logger.info("Extracting text from DOCX...")
-                
-                import io
-                from docx import Document
                 
                 doc = Document(io.BytesIO(file_data))
 
