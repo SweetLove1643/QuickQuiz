@@ -36,9 +36,7 @@ class SummaryProcessor:
         self.model.to(self.device)
         self.model.eval()
 
-        logger.info(
-            f"SummaryProcessor initialized with device={self.device}"
-        )
+        logger.info(f"SummaryProcessor initialized with device={self.device}")
 
     async def summarize_text(self, text: str) -> str:
         if not text or not text.strip():
@@ -48,7 +46,8 @@ class SummaryProcessor:
             # input_text = "tóm tắt: " + text.strip()
             input_text = (
                 "Nhiệm vụ: Tóm tắt nội dung sau thành một đoạn văn đầy đủ, "
-                "chi tiết, có thể dùng để học tập:\n\n"
+                "chi tiết, có thể dùng để học tập và bám sát nội dung (không tự tạo thêm)."
+                "Thêm vào đó, có thể dùng con số và gạch đầu dòng để trình bày (không định dạng kiểu markdown):\n\n"
                 + text
             )
 
@@ -77,9 +76,7 @@ class SummaryProcessor:
                     no_repeat_ngram_size=3,
                 )
 
-            summary = self.tokenizer.decode(
-                outputs[0], skip_special_tokens=True
-            )
+            summary = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
 
             return summary.strip()
 
