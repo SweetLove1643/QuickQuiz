@@ -6,7 +6,6 @@ import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
 import { useState } from "react";
 import { quizAPI } from "../api/quizAPI";
-import { quizAPI } from "../api/quizAPI";
 
 interface ViewDocumentProps {
   document: any;
@@ -63,14 +62,17 @@ Tài liệu này cung cấp một cái nhìn tổng quan về chủ đề. Ngư�
         summary: editedSummary,
         content: editedContent,
       };
-      
-      const result = await quizAPI.updateDocument(document.document_id || document.id, updatedDocument);
-      
+
+      const result = await quizAPI.updateDocument(
+        document.document_id || document.id,
+        updatedDocument
+      );
+
       if (result.success) {
         onSave?.({
           ...document,
           ...updatedDocument,
-          updated_at: result.updated_at
+          updated_at: result.updated_at,
         });
         setIsEditing(false);
       }

@@ -348,6 +348,7 @@ class QuizView(View):
             logger.error(f"Quiz operation failed: {str(e)}")
             return JsonResponse({"error": str(e)}, status=500)
 
+
 @method_decorator(csrf_exempt, name="dispatch")
 class OCRView(View):
     def get(self, request):
@@ -441,8 +442,6 @@ def extract_information_legacy(request):
     except Exception as e:
         logger.error(f"Legacy OCR extraction failed: {str(e)}")
         return JsonResponse({"error": str(e)}, status=500)
-
-
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -545,18 +544,18 @@ def ocr_and_summarize(request):
         import base64
         import io
         from django.core.files.uploadedfile import InMemoryUploadedFile
-        
+
         try:
             image_data = base64.b64decode(image_base64)
             image_file = InMemoryUploadedFile(
                 file=io.BytesIO(image_data),
-                field_name='files',
-                name='image.png',
-                content_type='image/png',
+                field_name="files",
+                name="image.png",
+                content_type="image/png",
                 size=len(image_data),
-                charset=None
+                charset=None,
             )
-            
+
             files_data = [
                 {
                     "filename": "image.png",
@@ -566,18 +565,19 @@ def ocr_and_summarize(request):
             ]
 
             result = summary_service.ocr_and_summarize(files_data)
-            
-            return JsonResponse({
-                "ocr": {
-                    "extracted_text": result.get("extracted_text", ""),
-                    "confidence_score": 0.85,
-                },
-                "summary": {
-                    "summary": result.get("summary", ""),
-                    "confidence_score": 0.85,
-                },
-            }
-        )
+
+            return JsonResponse(
+                {
+                    "ocr": {
+                        "extracted_text": result.get("extracted_text", ""),
+                        "confidence_score": 0.85,
+                    },
+                    "summary": {
+                        "summary": result.get("summary", ""),
+                        "confidence_score": 0.85,
+                    },
+                }
+            )
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON data"}, status=400)
     except Exception as e:
@@ -633,8 +633,6 @@ def image_ocr_legacy(request):
     except Exception as e:
         logger.error(f"Legacy image OCR failed: {str(e)}")
         return JsonResponse({"error": str(e)}, status=500)
-
-
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -786,7 +784,9 @@ def save_document(request):
 
         if not extracted_text_valid and not summary_valid:
             logger.error(f"Validation failed: content too short")
-            logger.error(f"extracted_text: {len(extracted_text)} chars (min: {MIN_TEXT_LENGTH})")
+            logger.error(
+                f"extracted_text: {len(extracted_text)} chars (min: {MIN_TEXT_LENGTH})"
+            )
             logger.error(f"summary: {len(summary)} chars (min: {MIN_TEXT_LENGTH})")
             return JsonResponse(
                 {
@@ -818,7 +818,9 @@ def save_document(request):
             insert_document(document_data)
             logger.info(f"Document saved to gateway DB successfully: {document_id}")
         except Exception as insert_err:
-            logger.error(f"Failed to insert into gateway DB: {insert_err}", exc_info=True)
+            logger.error(
+                f"Failed to insert into gateway DB: {insert_err}", exc_info=True
+            )
             return JsonResponse(
                 {"error": f"Database insertion failed: {str(insert_err)}"},
                 status=500,
@@ -830,13 +832,15 @@ def save_document(request):
             if rag_sync_success:
                 logger.info(f"Document synced to RAG service DB")
             else:
-                logger.warning(f"Document sync to RAG service failed, will try rebuild-index")
+                logger.warning(
+                    f"Document sync to RAG service failed, will try rebuild-index"
+                )
         except Exception as sync_err:
             logger.warning(f"RAG sync failed: {sync_err}, will try rebuild-index")
 
         try:
             logger.info(f"Requesting RAG rebuild-index...")
-            
+
             original_timeout = rag_chatbot.timeout
             rag_chatbot.timeout = 120
 
@@ -846,8 +850,10 @@ def save_document(request):
                 if response.success:
                     logger.info(f"RAG rebuild-index successful")
                 else:
-                    logger.warning(f"RAG rebuild-index returned error: {response.error}")
-                    
+                    logger.warning(
+                        f"RAG rebuild-index returned error: {response.error}"
+                    )
+
             finally:
                 rag_chatbot.timeout = original_timeout
 
@@ -877,20 +883,22 @@ def update_document(request, doc_id):
     """Update an existing document"""
     try:
         data = json.loads(request.body)
-        
+
         title = data.get("title")
         summary = data.get("summary")
         content = data.get("content")
-        
+
         if not any([title, summary, content]):
             logger.warning(f"Update document failed: no fields provided for {doc_id}")
             return JsonResponse(
-                {"error": "At least one field (title, summary, or content) must be provided"},
-                status=400
+                {
+                    "error": "At least one field (title, summary, or content) must be provided"
+                },
+                status=400,
             )
-        
+
         ensure_document_table()
-        
+
         with closing(sqlite3.connect(DOCUMENT_DB_PATH)) as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -902,31 +910,27 @@ def update_document(request, doc_id):
                     updated_at = ?
                 WHERE document_id = ?
                 """,
-                (title, summary, content, timezone.now().isoformat(), doc_id)
+                (title, summary, content, timezone.now().isoformat(), doc_id),
             )
             conn.commit()
-            
+
             if cursor.rowcount == 0:
                 logger.error(f"Update document failed: document not found {doc_id}")
-                return JsonResponse(
-                    {"error": "Document not found"},
-                    status=404
-                )
-        
+                return JsonResponse({"error": "Document not found"}, status=404)
+
         logger.info(f"Document updated: {doc_id}")
-        return JsonResponse({
-            "success": True,
-            "message": "Document updated successfully",
-            "document_id": doc_id,
-            "updated_at": timezone.now().isoformat()
-        })
-        
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Document updated successfully",
+                "document_id": doc_id,
+                "updated_at": timezone.now().isoformat(),
+            }
+        )
+
     except Exception as e:
         logger.error(f"Update document failed: {e}", exc_info=True)
-        return JsonResponse(
-            {"error": f"Update failed: {str(e)}"},
-            status=500
-        )
+        return JsonResponse({"error": f"Update failed: {str(e)}"}, status=500)
 
 
 @api_view(["GET"])
@@ -953,8 +957,6 @@ def list_documents(request):
     except Exception as e:
         logger.error(f"Document list failed: {str(e)}")
         return JsonResponse({"success": False, "error": str(e)}, status=500)
-
-
 
 
 @api_view(["POST"])
@@ -1119,8 +1121,10 @@ def get_current_user(request):
             status=status.HTTP_401_UNAUTHORIZED,
         )
 
+
 import base64
 import io
+
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -1148,29 +1152,29 @@ def process_document(request):
         if file_type == "docx" or filename.lower().endswith(".docx"):
             try:
                 logger.info("Extracting text from DOCX...")
-                
+
                 doc = Document(io.BytesIO(file_data))
 
                 paragraphs = []
                 for para in doc.paragraphs:
                     if para.text.strip():
                         paragraphs.append(para.text)
-                
+
                 extracted_text = "\n".join(paragraphs)
-                
+
                 logger.info(f"DOCX extracted: {len(extracted_text)} chars")
-                
+
             except Exception as docx_err:
                 logger.error(f"DOCX extraction failed: {docx_err}", exc_info=True)
                 return JsonResponse(
                     {"error": f"Failed to extract from DOCX: {str(docx_err)}"},
-                    status=400
+                    status=400,
                 )
 
         elif file_type == "pdf" or filename.lower().endswith(".pdf"):
             try:
                 logger.warning("PDF not implemented - using summary service fallback")
-                
+
                 files_data = [
                     {
                         "filename": filename,
@@ -1180,38 +1184,35 @@ def process_document(request):
                 ]
                 result = summary_service.ocr_and_summarize(files_data)
                 extracted_text = result.get("extracted_text", "")
-                
+
             except Exception as pdf_err:
                 logger.error(f"PDF processing failed: {pdf_err}", exc_info=True)
                 return JsonResponse(
-                    {"error": f"Failed to process PDF: {str(pdf_err)}"},
-                    status=400
+                    {"error": f"Failed to process PDF: {str(pdf_err)}"}, status=400
                 )
 
         else:
             return JsonResponse(
-                {"error": f"File type '{file_type}' not supported"},
-                status=400
+                {"error": f"File type '{file_type}' not supported"}, status=400
             )
 
         if not extracted_text or len(extracted_text.strip()) < 20:
             logger.warning(f"Extracted text too short: {len(extracted_text)} chars")
             return JsonResponse(
-                {"error": "Could not extract meaningful text from document"},
-                status=400
+                {"error": "Could not extract meaningful text from document"}, status=400
             )
 
         try:
             logger.info("Creating summary...")
-            summary = extracted_text[:2000]  
-            
+            summary = extracted_text[:2000]
+
             try:
                 summary_response = summary_service.summarize_text(extracted_text)
                 summary = summary_response.get("summary", extracted_text)
             except Exception as summary_err:
                 logger.warning(f"Summary generation failed: {summary_err}")
                 summary = extracted_text[:2000]
-                
+
         except Exception as summary_err:
             logger.warning(f"Summary creation failed: {summary_err}")
             summary = extracted_text[:2000]
@@ -1220,13 +1221,15 @@ def process_document(request):
         logger.info(f"Extracted: {len(extracted_text)} chars")
         logger.info(f"Summary: {len(summary)} chars")
 
-        return JsonResponse({
-            "success": True,
-            "extracted_text": extracted_text[:5000],
-            "summary": summary[:2000],
-            "filename": filename,
-            "file_type": file_type,
-        })
+        return JsonResponse(
+            {
+                "success": True,
+                "extracted_text": extracted_text[:5000],
+                "summary": summary[:2000],
+                "filename": filename,
+                "file_type": file_type,
+            }
+        )
 
     except json.JSONDecodeError:
         logger.error("Invalid JSON in request")
