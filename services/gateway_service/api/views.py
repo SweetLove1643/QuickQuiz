@@ -312,15 +312,15 @@ def export_quiz_pdf(request, quiz_id):
     """Export quiz as PDF with Vietnamese text support"""
     try:
         result = quiz_generator.get_quiz_details(quiz_id)
-        
+
         if not result.get("success"):
             logger.error(f"Export quiz PDF failed: quiz not found {quiz_id}")
             return JsonResponse({"error": "Quiz not found"}, status=404)
-        
+
         quiz = result.get("quiz", {})
         quiz_title = quiz.get("title", "Quiz")
         questions = quiz.get("questions", [])
-        
+
         try:
             from reportlab.lib.pagesizes import letter
             from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -338,7 +338,7 @@ def export_quiz_pdf(request, quiz_id):
                 },
                 status=500,
             )
-        
+
         try:
             font_path = "C:\\Windows\\Fonts\\arial.ttf"
             if os.path.exists(font_path):
@@ -349,11 +349,11 @@ def export_quiz_pdf(request, quiz_id):
         except Exception as font_err:
             logger.warning(f"Failed to register Unicode font: {font_err}")
             font_name = "Helvetica"
-        
+
         pdf_buffer = BytesIO()
         doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
         styles = getSampleStyleSheet()
-        
+
         styles.add(
             ParagraphStyle(
                 name="CustomHeading1",
@@ -363,7 +363,7 @@ def export_quiz_pdf(request, quiz_id):
                 spaceAfter=12,
             )
         )
-        
+
         styles.add(
             ParagraphStyle(
                 name="CustomHeading2",
@@ -373,7 +373,7 @@ def export_quiz_pdf(request, quiz_id):
                 spaceAfter=10,
             )
         )
-        
+
         styles.add(
             ParagraphStyle(
                 name="CustomNormal",
@@ -383,61 +383,62 @@ def export_quiz_pdf(request, quiz_id):
                 leading=14,
             )
         )
-        
+
         story = []
-        
+
         story.append(Paragraph(quiz_title, styles["CustomHeading1"]))
         story.append(Spacer(1, 0.3 * inch))
-        
+
         metadata_text = f"Số câu hỏi: {len(questions)}"
         if quiz.get("created_at"):
             metadata_text += f" | Ngày tạo: {quiz.get('created_at')}"
         story.append(Paragraph(metadata_text, styles["CustomNormal"]))
         story.append(Spacer(1, 0.3 * inch))
-        
+
         for idx, q in enumerate(questions, 1):
             question_text = q.get("stem") or q.get("question", "")
+            formatted_question = (
+                question_text.replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\n", "<br/>")
+            )
             story.append(
                 Paragraph(
-                    f"<b>Câu {idx}:</b> {question_text.replace('<', '&lt;').replace('>', '&gt;').replace('\n', '<br/>')}",
-                    styles["CustomNormal"]
+                    f"<b>Câu {idx}:</b> {formatted_question}", styles["CustomNormal"]
                 )
             )
             story.append(Spacer(1, 0.1 * inch))
-            
+
             q_type = q.get("type", "mcq")
-            
+
             if q_type == "mcq" and q.get("options"):
                 for opt_idx, option in enumerate(q.get("options", []), 1):
                     option_letter = chr(64 + opt_idx)
                     story.append(
                         Paragraph(
                             f"{option_letter}. {option.replace('<', '&lt;').replace('>', '&gt;')}",
-                            styles["CustomNormal"]
+                            styles["CustomNormal"],
                         )
                     )
                 story.append(Spacer(1, 0.1 * inch))
-            
+
             correct_answer = q.get("answer", "")
             story.append(
-                Paragraph(
-                    f"<b>Đáp án:</b> {correct_answer}",
-                    styles["CustomNormal"]
-                )
+                Paragraph(f"<b>Đáp án:</b> {correct_answer}", styles["CustomNormal"])
             )
-            
+
             story.append(Spacer(1, 0.2 * inch))
-        
+
         doc.build(story)
         pdf_buffer.seek(0)
-        
+
         response = HttpResponse(pdf_buffer.getvalue(), content_type="application/pdf")
-        safe_filename = quiz_title.replace('"', '').replace('/', '-')
+        safe_filename = quiz_title.replace('"', "").replace("/", "-")
         response["Content-Disposition"] = f'attachment; filename="{safe_filename}.pdf"'
-        
+
         logger.info(f"Quiz exported as PDF: {quiz_id}")
         return response
-        
+
     except Exception as e:
         logger.error(f"Export quiz PDF failed: {e}", exc_info=True)
         return JsonResponse({"error": f"Export failed: {str(e)}"}, status=500)
