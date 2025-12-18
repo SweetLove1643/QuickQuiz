@@ -675,7 +675,8 @@ def ocr_and_summarize(request):
                 )
 
             summary_service_url = f"{summary_service.base_url}/ocr_and_summarize"
-            resp = requests.post(summary_service_url, files=files, timeout=600)
+            # Timeout = 300s cho OCR (có thể điều chỉnh nếu cần)
+            resp = requests.post(summary_service_url, files=files, timeout=300)
             if resp.status_code != 200:
                 return JsonResponse(
                     {"error": f"Summary service error: {resp.text}"},

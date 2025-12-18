@@ -1,6 +1,7 @@
 import sys
 import io
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
 import requests
 import logging
@@ -10,7 +11,7 @@ from dataclasses import dataclass
 from enum import Enum
 from django.conf import settings
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util import Retry
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,9 @@ class BaseServiceClient:
             raise ValueError(f"Service '{service_name}' not configured in settings")
 
         self.base_url = self.config["base_url"]
-        self.timeout = self.config.get("timeout", 30)
+        # Timeout mặc định 300s cho các tác vụ nặng (OCR, Summary)
+        # Nếu cần thay đổi, điều chỉnh giá trị này hoặc trong config
+        self.timeout = self.config.get("timeout", 300)
         self.retry_count = self.config.get("retry_count", 3)
 
         self.session = self._create_session()
@@ -75,23 +78,23 @@ class BaseServiceClient:
         endpoint: str,
         data: Optional[Dict] = None,
         params: Optional[Dict] = None,
-        timeout: Optional[int] = None,  
+        timeout: Optional[int] = None,
         **kwargs,
     ) -> ServiceResponse:
         url = f"{self.base_url}{endpoint}"
         start_time = time.time()
-    
+
         try:
             logger.debug(f"[{self.service_name}] {method} {url}")
             effective_timeout = timeout or self.timeout
-    
-            if 'files' in kwargs:
+
+            if "files" in kwargs:
                 response = self.session.request(
                     method=method,
                     url=url,
                     params=params,
                     timeout=effective_timeout,
-                    **kwargs,  
+                    **kwargs,
                 )
             else:
                 response = self.session.request(
@@ -103,21 +106,21 @@ class BaseServiceClient:
                     timeout=effective_timeout,
                     **kwargs,
                 )
-    
+
             response_time = time.time() - start_time
-    
+
             if response_time > 5.0:
                 logger.warning(
                     f"[{self.service_name}] Slow request: {response_time:.2f}s"
                 )
-    
+
             response.raise_for_status()
-    
+
             try:
                 response_data = response.json()
             except ValueError:
                 response_data = {"raw_content": response.text}
-    
+
             return ServiceResponse(
                 success=True,
                 data=response_data,
@@ -126,11 +129,11 @@ class BaseServiceClient:
                 response_time=response_time,
                 service_name=self.service_name,
             )
-    
+
         except requests.exceptions.ConnectionError as e:
             error_msg = f"Connection failed to {self.service_name}"
             logger.error(f"[{self.service_name}] {error_msg}: {e}")
-    
+
             return ServiceResponse(
                 success=False,
                 data=None,
@@ -139,19 +142,19 @@ class BaseServiceClient:
                 response_time=time.time() - start_time,
                 service_name=self.service_name,
             )
-    
+
         except requests.exceptions.HTTPError as e:
             response_time = time.time() - start_time
             status_code = e.response.status_code if e.response else 500
-    
+
             try:
                 error_data = e.response.json() if e.response else {}
                 error_msg = error_data.get("error", str(e))
             except ValueError:
                 error_msg = e.response.text if e.response else str(e)
-    
+
             logger.error(f"[{self.service_name}] HTTP {status_code}: {error_msg}")
-    
+
             return ServiceResponse(
                 success=False,
                 data=None,
@@ -160,11 +163,11 @@ class BaseServiceClient:
                 response_time=response_time,
                 service_name=self.service_name,
             )
-    
+
         except requests.exceptions.Timeout as e:
             error_msg = f"Request timeout after {self.timeout}s"
             logger.error(f"[{self.service_name}] {error_msg}")
-    
+
             return ServiceResponse(
                 success=False,
                 data=None,
@@ -173,11 +176,11 @@ class BaseServiceClient:
                 response_time=self.timeout,
                 service_name=self.service_name,
             )
-    
+
         except Exception as e:
             error_msg = f"Unexpected error: {str(e)}"
             logger.error(f"[{self.service_name}] {error_msg}")
-    
+
             return ServiceResponse(
                 success=False,
                 data=None,
@@ -186,7 +189,7 @@ class BaseServiceClient:
                 response_time=time.time() - start_time,
                 service_name=self.service_name,
             )
-        
+
     def health_check(self) -> Dict[str, Any]:
         health_endpoint = self.config.get("health_endpoint", "/health")
         response = self._make_request("GET", health_endpoint)
@@ -343,7 +346,8 @@ class OCRServiceClient(BaseServiceClient):
             f"[{self.service_name}] Extracting text from single image: {filename}"
         )
 
-        response = self._make_request("POST", "/extract_text", files=files, timeout=600)
+        # Timeout = 300s
+        response = self._make_request("POST", "/extract_text", files=files, timeout=300)
 
         if not response.success:
             raise ServiceClientError(
@@ -365,7 +369,10 @@ class OCRServiceClient(BaseServiceClient):
             f"[{self.service_name}] Extracting text from {len(files_data)} images"
         )
 
-        response = self._make_request("POST", "/extract_text_multi", files=files, timeout=600)
+        # Timeout = 300s
+        response = self._make_request(
+            "POST", "/extract_text_multi", files=files, timeout=300
+        )
 
         if not response.success:
             raise ServiceClientError(
@@ -389,7 +396,10 @@ class OCRServiceClient(BaseServiceClient):
             f"[{self.service_name}] Legacy extraction from {len(files_data)} images"
         )
 
-        response = self._make_request("POST", "/extract_information", files=files, timeout=600)
+        # Timeout = 300s
+        response = self._make_request(
+            "POST", "/extract_information", files=files, timeout=300
+        )
 
         if not response.success:
             raise ServiceClientError(
@@ -409,7 +419,8 @@ class SummaryServiceClient(BaseServiceClient):
 
         logger.info(f"[{self.service_name}] Summarizing text: {len(text)} characters")
 
-        response = self._make_request("POST", "/summarize_text", data=data, timeout=600)
+        # Timeout = 300s
+        response = self._make_request("POST", "/summarize_text", data=data, timeout=300)
 
         if not response.success:
             raise ServiceClientError(
@@ -431,7 +442,10 @@ class SummaryServiceClient(BaseServiceClient):
             f"[{self.service_name}] OCR and summarize from {len(files_data)} files"
         )
 
-        response = self._make_request("POST", "/ocr_and_summarize", files=files, timeout=600)
+        # Timeout = 300s
+        response = self._make_request(
+            "POST", "/ocr_and_summarize", files=files, timeout=300
+        )
 
         if not response.success:
             raise ServiceClientError(
@@ -453,7 +467,10 @@ class SummaryServiceClient(BaseServiceClient):
             f"[{self.service_name}] Generating recommendations for {difficulty_level} level"
         )
 
-        response = self._make_request("POST", "/recommend_study", data=data, timeout=600)
+        # Timeout = 300s
+        response = self._make_request(
+            "POST", "/recommend_study", data=data, timeout=300
+        )
 
         if not response.success:
             raise ServiceClientError(
@@ -473,7 +490,8 @@ class SummaryServiceClient(BaseServiceClient):
 
         logger.info(f"[{self.service_name}] Legacy OCR from {len(files_data)} files")
 
-        response = self._make_request("POST", "/image_ocr", files=files, timeout=600)
+        # Timeout = 300s
+        response = self._make_request("POST", "/image_ocr", files=files, timeout=300)
 
         if not response.success:
             raise ServiceClientError(
@@ -518,7 +536,6 @@ class QuizEvaluatorClient(BaseServiceClient):
             logger.info(
                 f"[{self.service_name}] Quiz {quiz_id} evaluated: {score:.1f}% ({correct_answers}/{total_questions})"
             )
-
 
         result["gateway_response_meta"] = {
             "response_time": response.response_time,

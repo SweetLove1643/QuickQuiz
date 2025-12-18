@@ -46,9 +46,7 @@ class SummaryProcessor:
             # input_text = "tóm tắt: " + text.strip()
             input_text = (
                 "Nhiệm vụ: Tóm tắt nội dung sau thành một đoạn văn đầy đủ, "
-                "chi tiết, có thể dùng để học tập và bám sát nội dung (không tự tạo thêm)."
-                "Thêm vào đó, có thể dùng con số và gạch đầu dòng để trình bày (không định dạng kiểu markdown):\n\n"
-                + text
+                "chi tiết, có thể dùng để học tập:\n\n" + text
             )
 
             word_count = len(text.split())
