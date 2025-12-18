@@ -1,12 +1,14 @@
 import torch
-from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
+from transformers import (
+    Qwen2VLForConditionalGeneration,
+    AutoProcessor,
+    GenerationConfig,
+)
 from qwen_vl_utils import process_vision_info
 from PIL import Image
 from typing import List
 import logging
 import gc
-
-# Yêu cầu cài đặt: pip install bitsandbytes accelerate
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +34,7 @@ class OCRProcessor:
             # Tối ưu cho GTX 1650 (4GB VRAM): sử dụng 8-bit quantization
             self.model = Qwen2VLForConditionalGeneration.from_pretrained(
                 self.model_id,
-                torch_dtype="auto",
+                torch_dtype=(torch.float16 if self.device == "cuda" else torch.float32),
                 device_map="auto",
                 load_in_8bit=True,  # Giảm VRAM từ ~6GB xuống ~3GB
                 max_memory={0: "3GB"},  # Giới hạn VRAM cho GPU 0
@@ -40,6 +42,20 @@ class OCRProcessor:
             self.model.eval()
 
             self.processor = AutoProcessor.from_pretrained(self.model_id)
+
+            # Làm sạch generation config để tránh cảnh báo flags bị bỏ qua
+            try:
+                gcfg = (
+                    self.model.generation_config
+                    or GenerationConfig.from_model_config(self.model.config)
+                )
+                gcfg.do_sample = False
+                for k in ("temperature", "top_p", "top_k"):
+                    if hasattr(gcfg, k):
+                        setattr(gcfg, k, None)
+                self.model.generation_config = gcfg
+            except Exception as cfg_err:
+                logger.warning(f"Generation config sanitize skipped: {cfg_err}")
 
             logger.info("Qwen2-VL model loaded successfully")
 
