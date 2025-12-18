@@ -15,7 +15,9 @@ interface ViewDocumentProps {
 
 export function ViewDocument({ document, onBack, onSave }: ViewDocumentProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editedTitle, setEditedTitle] = useState(document?.title || "");
+  const [editedTitle, setEditedTitle] = useState(
+    document?.title || document?.file_name || ""
+  );
   const [editedSummary, setEditedSummary] = useState(
     document?.summary ||
       "Đây là bản tóm tắt tài liệu. Bạn có thể chỉnh sửa nội dung này để phù hợp với nhu cầu học tập của mình."

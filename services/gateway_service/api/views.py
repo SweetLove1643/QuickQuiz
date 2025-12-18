@@ -45,10 +45,34 @@ def ensure_document_table():
                 file_type TEXT,
                 extracted_text TEXT,
                 summary TEXT,
-                created_at TEXT
+                title TEXT,
+                content TEXT,
+                created_at TEXT,
+                updated_at TEXT
             )
             """
         )
+        conn.commit()
+
+        cursor = conn.cursor()
+        cursor.execute("PRAGMA table_info(documents)")
+        columns = {row[1] for row in cursor.fetchall()}
+
+        if "title" not in columns:
+            try:
+                conn.execute("ALTER TABLE documents ADD COLUMN title TEXT")
+            except sqlite3.OperationalError:
+                pass
+        if "content" not in columns:
+            try:
+                conn.execute("ALTER TABLE documents ADD COLUMN content TEXT")
+            except sqlite3.OperationalError:
+                pass
+        if "updated_at" not in columns:
+            try:
+                conn.execute("ALTER TABLE documents ADD COLUMN updated_at TEXT")
+            except sqlite3.OperationalError:
+                pass
         conn.commit()
 
 
@@ -901,17 +925,33 @@ def update_document(request, doc_id):
 
         with closing(sqlite3.connect(DOCUMENT_DB_PATH)) as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                """
-                UPDATE documents
-                SET title = COALESCE(?, title),
-                    summary = COALESCE(?, summary),
-                    content = COALESCE(?, content),
-                    updated_at = ?
-                WHERE document_id = ?
-                """,
-                (title, summary, content, timezone.now().isoformat(), doc_id),
-            )
+
+            update_fields = []
+            update_values = []
+
+            if title:
+                update_fields.append("title = ?")
+                update_values.append(title)
+            if summary:
+                update_fields.append("summary = ?")
+                update_values.append(summary)
+            if content:
+                update_fields.append("content = ?")
+                update_values.append(content)
+
+            update_fields.append("updated_at = ?")
+            update_values.append(timezone.now().isoformat())
+            update_values.append(doc_id)
+
+            if not update_fields or len(update_fields) == 1:
+                logger.error(f"Update document failed: no valid fields for {doc_id}")
+                return JsonResponse(
+                    {"error": "At least one field must be provided for update"},
+                    status=400,
+                )
+
+            query = f"UPDATE documents SET {', '.join(update_fields[:-1])} WHERE id = ?"
+            cursor.execute(query, tuple(update_values))
             conn.commit()
 
             if cursor.rowcount == 0:
