@@ -1,9 +1,7 @@
-# IAM Service Configuration
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load environment variables
 current_dir = Path(__file__).resolve().parent
 project_root = current_dir.parent.parent.parent
 env_path = project_root / ".env"
@@ -97,7 +95,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# REST Framework Configuration
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -112,7 +109,7 @@ REST_FRAMEWORK = {
     ),
 }
 
-# JWT Configuration
+
 from datetime import timedelta
 
 SIMPLE_JWT = {
@@ -128,7 +125,7 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_id",
 }
 
-# CORS Configuration
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:8000",
@@ -141,10 +138,9 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-# Custom User Model
 AUTH_USER_MODEL = "api.User"
 
-# Logging Configuration
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

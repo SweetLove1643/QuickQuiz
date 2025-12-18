@@ -22,14 +22,12 @@ class OCRMultiResponse(BaseModel):
     filenames: List[str]
 
 
-# Legacy response for backward compatibility
 class ExtractMultiResponse(BaseModel):
     text: str
     processing_time: float
     num_images: int
 
 
-# Database schemas
 class OCRRequest(BaseModel):
     id: Optional[int] = None
     filename: str

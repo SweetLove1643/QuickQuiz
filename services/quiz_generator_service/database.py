@@ -1,10 +1,3 @@
-"""
-Database models for Quiz Generator Service
-=========================================
-
-SQLAlchemy models for quiz generation, templates, and history.
-"""
-
 from sqlalchemy import (
     create_engine,
     Column,
@@ -21,7 +14,6 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 import os
 
-# Database setup
 DATABASE_URL = "sqlite:///./quiz_generator_service.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
@@ -30,7 +22,6 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 class QuizTemplate(Base):
-    """Quiz generation templates for reuse."""
 
     __tablename__ = "quiz_templates"
 
@@ -46,7 +37,6 @@ class QuizTemplate(Base):
 
 
 class GenerationHistory(Base):
-    """History of quiz generations for analytics."""
 
     __tablename__ = "generation_history"
 
@@ -54,87 +44,68 @@ class GenerationHistory(Base):
     job_id = Column(String(100), unique=True, index=True)
     quiz_id = Column(String(100), index=True)
 
-    # Input data
     sections_count = Column(Integer)
     requested_questions = Column(Integer)
     question_types = Column(JSON)
 
-    # Generation results
     generated_questions = Column(Integer)
-    generation_time = Column(Float)  # seconds
+    generation_time = Column(Float) 
     model_used = Column(String(50))
 
-    # Validation results
     validation_score = Column(Float)
     high_risk_count = Column(Integer, default=0)
     validation_issues = Column(JSON)
 
-    # Metadata
     created_at = Column(DateTime, default=datetime.utcnow)
-    status = Column(String(20), default="completed")  # completed, failed, pending
+    status = Column(String(20), default="completed")
     error_message = Column(Text, nullable=True)
 
 
 class GeneratedQuiz(Base):
-    """Store generated quizzes for caching and reuse."""
-
     __tablename__ = "generated_quizzes"
 
     id = Column(Integer, primary_key=True, index=True)
     quiz_id = Column(String(100), unique=True, index=True)
-    user_id = Column(String(100), index=True)  # User who created the quiz
+    user_id = Column(String(100), index=True) 
 
-    # Quiz content
-    questions_data = Column(JSON)  # Full quiz JSON
-    quiz_metadata = Column(JSON)  # Generation metadata
-    title = Column(String(500), nullable=True)  # Quiz title
+    questions_data = Column(JSON) 
+    quiz_metadata = Column(JSON) 
+    title = Column(String(500), nullable=True)
 
-    # Source information
     source_sections = Column(JSON)
     generation_config = Column(JSON)
-    document_id = Column(String(100), nullable=True, index=True)  # Source document
+    document_id = Column(String(100), nullable=True, index=True)  
 
-    # Validation info
     validation_summary = Column(JSON)
 
-    # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
-    expires_at = Column(DateTime, nullable=True)  # For cache expiration
+    expires_at = Column(DateTime, nullable=True) 
 
-    # Usage tracking
     access_count = Column(Integer, default=0)
     last_accessed = Column(DateTime, default=datetime.utcnow)
 
 
 class ContentCache(Base):
-    """Cache for processed content to avoid re-processing."""
-
     __tablename__ = "content_cache"
 
     id = Column(Integer, primary_key=True, index=True)
-    content_hash = Column(String(64), unique=True, index=True)  # SHA256 hash
+    content_hash = Column(String(64), unique=True, index=True)  
 
-    # Original content
     sections_data = Column(JSON)
 
-    # Processed content
     processed_content = Column(Text)
     extraction_metadata = Column(JSON)
 
-    # Cache metadata
     created_at = Column(DateTime, default=datetime.utcnow)
     hits_count = Column(Integer, default=0)
     last_hit = Column(DateTime, default=datetime.utcnow)
 
 
-# Database initialization
 def create_tables():
-    """Create all tables in the database."""
     Base.metadata.create_all(bind=engine)
 
 
 def get_db():
-    """Get database session."""
     db = SessionLocal()
     try:
         yield db
@@ -145,4 +116,4 @@ def get_db():
 if __name__ == "__main__":
     print("Creating Quiz Generator database tables...")
     create_tables()
-    print("✅ Database tables created successfully!")
+    print("Database tables created successfully!")

@@ -13,12 +13,9 @@ class SummaryProcessor:
         checkpoint_path: str,
         base_model_name: str = "VietAI/vit5-base",
         device: Optional[str] = None,
-        max_input_length: int = 1024,
-        max_new_tokens: int = 256,
+        max_input_length: int = 2096,
+        max_new_tokens: int = 512,
     ):
-        """
-        Summary processor using ViT5 + LoRA checkpoint
-        """
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.max_input_length = max_input_length
         self.max_new_tokens = max_new_tokens
@@ -44,15 +41,19 @@ class SummaryProcessor:
         )
 
     async def summarize_text(self, text: str) -> str:
-        """
-        Summarize text using ViT5 + LoRA
-        """
         if not text or not text.strip():
             return ""
 
         try:
-            # Nếu lúc train bạn có prefix "summary:"
-            input_text = "summary: " + text.strip()
+            # input_text = "tóm tắt: " + text.strip()
+            input_text = (
+                "Nhiệm vụ: Tóm tắt nội dung sau thành một đoạn văn đầy đủ, "
+                "chi tiết, có thể dùng để học tập:\n\n"
+                + text
+            )
+
+            word_count = len(text.split())
+            min_tokens = min(200, int(word_count * 0.3))
 
             inputs = self.tokenizer(
                 input_text,
@@ -69,9 +70,11 @@ class SummaryProcessor:
                     input_ids=input_ids,
                     attention_mask=attention_mask,
                     max_new_tokens=self.max_new_tokens,
+                    min_new_tokens=min_tokens,
                     num_beams=4,
-                    length_penalty=1.0,
-                    early_stopping=True,
+                    length_penalty=1.4,
+                    early_stopping=False,
+                    no_repeat_ngram_size=3,
                 )
 
             summary = self.tokenizer.decode(

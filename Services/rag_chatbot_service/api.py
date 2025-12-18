@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-"""
-RAG Chatbot FastAPI Server
-
-REST API server cho RAG chatbot system với document retrieval và conversational AI.
-"""
-
 import os
 import sys
 import logging
@@ -22,13 +15,11 @@ from concurrent.futures import ThreadPoolExecutor
 
 executor = ThreadPoolExecutor(max_workers=2)
 
-# Add project root to path
 project_root = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, project_root)
 
 from chat_engine import get_chat_engine, RAGChatEngine
 
-# Use SQLite retriever for QuickQuiz integration
 from sqlite_retriever import SQLiteDocumentRetriever as DocumentRetriever
 from schemas import (
     RAGChatRequest,
@@ -47,11 +38,9 @@ from database import (
     quiz_data_access,
 )
 
-# Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# FastAPI app
 app = FastAPI(
     title="RAG Chatbot API",
     description="REST API cho RAG-based chatbot system với document retrieval",
@@ -60,37 +49,29 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Global instances
 _chat_engine: Optional[RAGChatEngine] = None
 _retriever: Optional[DocumentRetriever] = None
 
 
-# Initialize database on startup
 @app.on_event("startup")
 async def startup_event():
-    """Initialize database and services on startup"""
     try:
         init_db()
         logger.info("✅ RAG Chatbot database initialized")
 
-        # Test quiz data access
         templates = quiz_data_access.get_quiz_templates(1)
         logger.info(f"✅ Quiz data access working - found {len(templates)} templates")
 
-        # Test gateway documents access
         gateway_docs = quiz_data_access.get_gateway_documents(1)
         logger.info(f"✅ Gateway documents accessible: {len(gateway_docs)} found")
         
-        # Log paths for debugging
         logger.info(f"Quiz DB path: {quiz_data_access.quiz_generator_db}")
         logger.info(f"Gateway DB path: {quiz_data_access.gateway_documents_db}")
 
@@ -98,22 +79,14 @@ async def startup_event():
         logger.error(f"❌ Startup initialization failed: {e}")
 
 
-# Shared logic functions
 async def _process_chat_request(
     request: RAGChatRequest,
     conversation_id: Optional[str] = None,
     chat_engine: RAGChatEngine = None,
 ) -> RAGChatResponse:
-    """
-    Shared logic function cho tất cả chat processing.
-
-    Centralized chat processing logic để tránh code duplication.
-    """
     try:
-        # Use provided conversation_id hoặc từ request
         effective_conversation_id = conversation_id or request.conversation_id
 
-        # Log request với debug info
         log_query = (
             request.query[:50] + "..." if len(request.query) > 50 else request.query
         )
@@ -130,10 +103,8 @@ async def _process_chat_request(
         else:
             logger.info(f"Processing standalone chat: {log_query}")
 
-        # Get quiz context for enhanced responses
         quiz_context = []
         try:
-            # Search quiz data for relevant context
             quiz_content = quiz_data_access.search_quiz_content(request.query, 3)
             if quiz_content:
                 quiz_context = quiz_content
@@ -141,12 +112,9 @@ async def _process_chat_request(
         except Exception as e:
             logger.warning(f"Could not access quiz context: {e}")
 
-        # Process chat với chat engine - KHÔNG modify request.conversation_id
         response = chat_engine.chat(request, effective_conversation_id)
 
-        # Log chat message to database
         try:
-            # Get retrieved documents safely
             retrieved_docs = []
             if hasattr(response.context, 'sources') and response.context.sources:
                 retrieved_docs = [
@@ -166,7 +134,6 @@ async def _process_chat_request(
         except Exception as e:
             logger.warning(f"Could not log chat message: {e}")
 
-        # Log success với debug info
         logger.info(f"=== CHAT RESPONSE DEBUG ===")
         logger.info(f"Retrieved docs: {response.context.retrieved_count}")
         logger.info(f"Context used: {response.context.context_used}")
@@ -177,7 +144,6 @@ async def _process_chat_request(
         return response
 
     except Exception as e:
-        # Log error với full stack trace
         error_context = (
             f"conversation {conversation_id[:8]}"
             if conversation_id
@@ -187,9 +153,7 @@ async def _process_chat_request(
         raise HTTPException(status_code=500, detail=f"Chat processing failed: {str(e)}")
 
 
-# Dependency functions
 def get_retriever_instance() -> DocumentRetriever:
-    """Get document retriever instance."""
     global _retriever
     if _retriever is None:
         _retriever = DocumentRetriever()
@@ -198,7 +162,6 @@ def get_retriever_instance() -> DocumentRetriever:
 
 
 def get_chat_engine_instance() -> RAGChatEngine:
-    """Get chat engine instance."""
     global _chat_engine
     if _chat_engine is None:
         retriever = get_retriever_instance()
@@ -207,20 +170,16 @@ def get_chat_engine_instance() -> RAGChatEngine:
     return _chat_engine
 
 
-# Health check endpoint
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    """Health check endpoint."""
     try:
-        # Check if systems are initialized
         retriever = get_retriever_instance()
         chat_engine = get_chat_engine_instance()
 
-        # Check quiz data access
         quiz_templates = quiz_data_access.get_quiz_templates(1)
         quiz_access_ok = (
             len(quiz_templates) >= 0
-        )  # Just check if we can access without error
+        ) 
 
         stats = chat_engine.get_stats()
 
@@ -232,7 +191,6 @@ async def health_check():
         raise HTTPException(status_code=503, detail=f"Service unhealthy: {str(e)}")
 
 
-# Chat endpoints
 @app.post(
     "/chat",
     response_model=RAGChatResponse,
@@ -275,22 +233,17 @@ async def chat_with_rag(
     request: RAGChatRequest,
     chat_engine: RAGChatEngine = Depends(get_chat_engine_instance),
 ):
-    """Smart chat endpoint - auto-handle conversation creation và continuation."""
 
-    # Smart conversation handling
     if not request.conversation_id:
-        # Mode: New Chat - tạo conversation mới
         request.conversation_id = str(uuid.uuid4())
         logger.info(
-            f"🆕 New Chat - Auto-generated conversation ID: {request.conversation_id}"
+            f"New Chat - Auto-generated conversation ID: {request.conversation_id}"
         )
     else:
-        # Mode: Continue Chat - sử dụng existing conversation
         logger.info(
-            f"🔄 Continue Chat - Using existing conversation ID: {request.conversation_id[:8]}..."
+            f"Continue Chat - Using existing conversation ID: {request.conversation_id[:8]}..."
         )
 
-    # Sử dụng shared logic
     return await _process_chat_request(
         request=request,
         conversation_id=request.conversation_id,
@@ -336,30 +289,26 @@ async def quick_chat(
     ),
     chat_engine: RAGChatEngine = Depends(get_chat_engine_instance),
 ):
-    """Quick chat cho anonymous users."""
     try:
-        # Create request với default values
         request = RAGChatRequest(
             query=query,
             retrieval_config=RetrievalConfig(top_k=top_k),
             chat_config=ChatConfig(temperature=temperature),
-            conversation_id=None,  # Explicitly no conversation - anonymous chat
+            conversation_id=None, 
         )
 
-        # Sử dụng shared logic nhưng không conversation_id
         response = await _process_chat_request(
             request=request,
-            conversation_id=None,  # Anonymous - no conversation saving
+            conversation_id=None, 
             chat_engine=chat_engine,
         )
 
-        # Return simplified response cho anonymous users
         return {
             "answer": response.answer,
             "sources_count": response.context.retrieved_count,
             "processing_time": response.processing_time,
             "sources": response.context.sources[:3] if response.context.sources else [],
-            "conversation_id": None,  # Explicitly show no conversation saved
+            "conversation_id": None,
         }
 
     except Exception as e:
@@ -367,7 +316,6 @@ async def quick_chat(
         raise HTTPException(status_code=500, detail=f"Quick chat failed: {str(e)}")
 
 
-# Conversation management
 @app.post(
     "/conversations/{conversation_id}/chat",
     response_model=RAGChatResponse,
@@ -375,7 +323,7 @@ async def quick_chat(
     description="""
           **[LEGACY] Tiếp tục chat trong existing conversation.**
           
-          **⚠️ Note**: Endpoint này giờ có thể được thay thế bằng `/chat` với conversation_id trong body.
+          **Note**: Endpoint này giờ có thể được thay thế bằng `/chat` với conversation_id trong body.
           
           **Differences với /chat:**
           - **URL Path**: Conversation ID trong URL thay vì request body
@@ -399,15 +347,12 @@ async def chat_in_conversation(
     request: RAGChatRequest = ...,
     chat_engine: RAGChatEngine = Depends(get_chat_engine_instance),
 ):
-    """[LEGACY] Tiếp tục chat trong existing conversation."""
-    # Override conversation_id từ path parameter để đảm bảo consistency
     request.conversation_id = conversation_id
 
     logger.info(
-        f"🔄 Legacy endpoint - Using conversation ID from URL: {conversation_id[:8]}..."
+        f"Legacy endpoint - Using conversation ID from URL: {conversation_id[:8]}..."
     )
 
-    # Sử dụng shared logic
     return await _process_chat_request(
         request=request, conversation_id=conversation_id, chat_engine=chat_engine
     )
@@ -417,7 +362,6 @@ async def chat_in_conversation(
 async def get_conversation(
     conversation_id: str, chat_engine: RAGChatEngine = Depends(get_chat_engine_instance)
 ):
-    """Get conversation history by ID."""
     try:
         conversation = chat_engine.get_conversation(conversation_id)
         if not conversation:
@@ -438,14 +382,13 @@ async def list_conversations(
     ),
     chat_engine: RAGChatEngine = Depends(get_chat_engine_instance),
 ):
-    """List recent conversations."""
     try:
         conversations = chat_engine.list_conversations(limit=limit)
 
         return ConversationListResponse(
             conversations=conversations,
             total=len(conversations),
-            has_more=False,  # Simple implementation
+            has_more=False,
         )
 
     except Exception as e:
@@ -457,7 +400,6 @@ async def list_conversations(
 async def delete_conversation(
     conversation_id: str, chat_engine: RAGChatEngine = Depends(get_chat_engine_instance)
 ):
-    """Delete conversation by ID."""
     try:
         success = chat_engine.delete_conversation(conversation_id)
         if not success:
@@ -472,7 +414,6 @@ async def delete_conversation(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Document search endpoints
 @app.get("/search/documents")
 async def search_documents(
     query: str = Query(..., description="Search query", min_length=1),
@@ -484,21 +425,13 @@ async def search_documents(
     category: Optional[str] = Query(default=None, description="Filter by category"),
     retriever: DocumentRetriever = Depends(get_retriever_instance),
 ):
-    """
-    Search documents sử dụng vector similarity.
-
-    Return relevant document chunks với similarity scores.
-    """
     try:
-        # Create retrieval config
         config = RetrievalConfig(
             top_k=top_k, similarity_threshold=threshold, topic_filter=topic
         )
 
-        # Search documents
         results = retriever.retrieve_documents(query, config)
 
-        # Filter by category if specified
         if category:
             results = [r for r in results if r.category.lower() == category.lower()]
 
@@ -523,7 +456,6 @@ async def search_documents(
 async def get_document_by_id(
     document_id: str, retriever: DocumentRetriever = Depends(get_retriever_instance)
 ):
-    """Get full document by ID."""
     try:
         document = retriever.get_document_by_id(document_id)
         if not document:
@@ -537,10 +469,8 @@ async def get_document_by_id(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Metadata endpoints
 @app.get("/metadata/topics")
 async def list_topics(retriever: DocumentRetriever = Depends(get_retriever_instance)):
-    """List all available topics."""
     try:
         topics = retriever.list_all_topics()
         return {"topics": topics, "count": len(topics)}
@@ -554,7 +484,6 @@ async def list_topics(retriever: DocumentRetriever = Depends(get_retriever_insta
 async def list_categories(
     retriever: DocumentRetriever = Depends(get_retriever_instance),
 ):
-    """List all available categories."""
     try:
         categories = retriever.list_all_categories()
         return {"categories": categories, "count": len(categories)}
@@ -568,7 +497,6 @@ async def list_categories(
 async def get_filter_options(
     retriever: DocumentRetriever = Depends(get_retriever_instance),
 ):
-    """Get all available filter options."""
     try:
         topics = retriever.list_all_topics()
         categories = retriever.list_all_categories()
@@ -585,12 +513,10 @@ async def get_filter_options(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Statistics endpoint
 @app.get("/stats")
 async def get_system_stats(
     chat_engine: RAGChatEngine = Depends(get_chat_engine_instance),
 ):
-    """Get comprehensive system statistics."""
     try:
         stats = chat_engine.get_stats()
 
@@ -615,21 +541,17 @@ async def get_system_stats(
 async def rebuild_search_index(
     retriever: DocumentRetriever = Depends(get_retriever_instance),
 ):
-    """Rebuild FAISS search index từ source data (async)."""
     try:
-        logger.info("🔄 Rebuilding search index...")
+        logger.info("Rebuilding search index...")
         
-        # Run rebuild in thread pool to avoid blocking
         loop = asyncio.get_event_loop()
         result = await loop.run_in_executor(executor, retriever.rebuild_index)
         
-        # Verify rebuild results
         stats = retriever.get_stats()
-        logger.info(f"✅ Rebuild complete. Stats: {stats}")
+        logger.info(f"Rebuild complete. Stats: {stats}")
         
-        # Double-check: try a test search
         test_results = retriever.search_documents("test", RetrievalConfig(top_k=1))
-        logger.info(f"🧪 Test search after rebuild: {len(test_results)} documents found")
+        logger.info(f"Test search after rebuild: {len(test_results)} documents found")
 
         return {
             "message": "Search index rebuilt successfully",
@@ -639,7 +561,7 @@ async def rebuild_search_index(
         }
 
     except Exception as e:
-        logger.error(f"❌ Rebuild index error: {e}", exc_info=True)
+        logger.error(f"Rebuild index error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -647,7 +569,6 @@ async def rebuild_search_index(
 async def clear_system_cache(
     retriever: DocumentRetriever = Depends(get_retriever_instance),
 ):
-    """Clear system cache including FAISS index cache."""
     try:
         logger.info("Clearing system cache...")
         retriever.clear_cache()
@@ -662,7 +583,6 @@ async def clear_system_cache(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Error handlers
 @app.exception_handler(404)
 async def not_found_handler(request, exc):
     return JSONResponse(
@@ -688,7 +608,6 @@ async def internal_error_handler(request, exc):
 
 
 def main():
-    """Main server entry point."""
     import argparse
 
     parser = argparse.ArgumentParser(description="RAG Chatbot API Server")
@@ -699,18 +618,16 @@ def main():
 
     args = parser.parse_args()
 
-    # Configure logging
     log_config = uvicorn.config.LOGGING_CONFIG
     log_config["formatters"]["default"][
         "fmt"
     ] = "%(asctime)s [%(name)s] %(levelprefix)s %(message)s"
 
-    print(f"🚀 Starting RAG Chatbot API server...")
-    print(f"📍 Server: http://{args.host}:{args.port}")
-    print(f"📖 Docs: http://{args.host}:{args.port}/docs")
-    print(f"🔄 Auto-reload: {args.reload}")
+    print(f"Starting RAG Chatbot API server...")
+    print(f"Server: http://{args.host}:{args.port}")
+    print(f"Docs: http://{args.host}:{args.port}/docs")
+    print(f"Auto-reload: {args.reload}")
 
-    # Run server
     uvicorn.run(
         "api:app",
         host=args.host,

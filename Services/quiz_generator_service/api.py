@@ -1,10 +1,3 @@
-"""
-FastAPI server for Quiz Generator
-=================================
-
-RESTful API endpoints for generating quizzes from Vietnamese text content.
-"""
-
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ValidationError
@@ -16,7 +9,6 @@ from typing import Dict, Any, List
 from datetime import datetime
 import uuid
 
-# Add ai_validation to Python path
 ai_validation_path = Path(__file__).parent.parent / "ai_validation"
 sys.path.insert(0, str(ai_validation_path))
 
@@ -25,17 +17,14 @@ from tasks import generate_quiz_job, get_db_session
 from schemas import QuizQuestion, Quiz
 from database import GeneratedQuiz, create_tables
 
-# Initialize database tables on startup
 create_tables()
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Initialize content validator
 content_validator = ContentValidator()
 
-# Create FastAPI app
 app = FastAPI(
     title="Quiz Generator API",
     description="Generate Vietnamese quizzes from text content using Google Gemini API",
@@ -44,10 +33,9 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure this for production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -82,7 +70,7 @@ class GenerateQuizRequest(BaseModel):
 
 class SaveQuizRequest(BaseModel):
     quiz_id: str | None = None
-    user_id: str  # Required: user who creates the quiz
+    user_id: str 
     title: str | None = None
     document_id: str | None = None
     document_name: str | None = None
@@ -92,9 +80,7 @@ class SaveQuizRequest(BaseModel):
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    """Health check endpoint with AI validation status."""
     try:
-        # Test validator functionality by creating a simple test question
         test_question = {
             "id": "health_check",
             "type": "mcq",
@@ -118,40 +104,18 @@ async def health_check():
 
 @app.post("/quiz/generate")
 async def generate_quiz_endpoint(request: GenerateQuizRequest):
-    """
-    Generate quiz from text content.
-
-    Expected input format:
-    {
-        "sections": [
-            {
-                "id": "Section title",
-                "summary": "Section content..."
-            }
-        ],
-        "config": {
-            "n_questions": 10,
-            "types": ["multiple_choice", "true_false", "fill_blank"]
-        }
-    }
-
-    Returns JSON quiz data.
-    """
     try:
-        # Convert Pydantic model to dict
         request_data = request.dict()
 
         logger.info(
             f"Received quiz generation request: {json.dumps(request_data, ensure_ascii=False)}"
         )
 
-        # Generate quiz using the existing function
         import uuid
 
         job_id = f"api-{uuid.uuid4().hex[:8]}"
         result_data = generate_quiz_job(job_id, request_data)
 
-        # Validate generated content to prevent AI hallucination
         logger.info("Validating generated quiz content...")
         questions = result_data.get("questions", [])
         if questions:
@@ -160,14 +124,12 @@ async def generate_quiz_endpoint(request: GenerateQuizRequest):
                 validation_results
             )
 
-            # Log validation warnings if any
             high_risk_questions = [
                 r for r in validation_results if r.risk_level == "high"
             ]
             if high_risk_questions:
                 logger.warning(f"Found {len(high_risk_questions)} high-risk questions")
 
-            # Add validation metadata to response
             result_data["validation"] = {
                 "summary": validation_summary,
                 "total_questions": len(questions),
@@ -180,7 +142,6 @@ async def generate_quiz_endpoint(request: GenerateQuizRequest):
                 "validation_timestamp": datetime.now().isoformat(),
             }
 
-        # Result is already a dict, no need to parse JSON
         question_count = len(result_data.get("questions", []))
         validation_info = result_data.get("validation", {})
         logger.info(
@@ -204,11 +165,9 @@ async def generate_quiz_endpoint(request: GenerateQuizRequest):
 
 @app.post("/quiz/save")
 async def save_quiz_endpoint(request: SaveQuizRequest):
-    """Persist a quiz payload for later retrieval/analytics."""
     quiz_id = request.quiz_id or f"quiz-{uuid.uuid4().hex[:8]}"
 
     try:
-        # Validate questions via Pydantic
         question_objs = [QuizQuestion(**q.model_dump()) for q in request.questions]
         quiz = Quiz(
             id=quiz_id,
@@ -260,9 +219,7 @@ async def save_quiz_endpoint(request: SaveQuizRequest):
 
 @app.get("/validation/metrics")
 async def get_validation_metrics():
-    """Get AI validation metrics and statistics."""
     try:
-        # Get basic validation info
         validator_info = {
             "validator_initialized": True,
             "high_risk_keywords": len(content_validator.high_risk_keywords),
@@ -282,7 +239,6 @@ async def get_validation_metrics():
 
 @app.get("/quiz/user/{user_id}")
 async def get_user_quizzes(user_id: str, limit: int = 50, offset: int = 0):
-    """Get all quizzes created by a specific user."""
     try:
         db = get_db_session()
         quizzes = (
@@ -328,7 +284,6 @@ async def get_user_quizzes(user_id: str, limit: int = 50, offset: int = 0):
 
 @app.get("/quiz/user/{user_id}/recent")
 async def get_user_recent_quizzes(user_id: str, limit: int = 10):
-    """Get recent quizzes created by a user (for home page)."""
     try:
         db = get_db_session()
         quizzes = (
@@ -369,7 +324,6 @@ async def get_user_recent_quizzes(user_id: str, limit: int = 10):
 
 @app.get("/quiz/{quiz_id}")
 async def get_quiz_details(quiz_id: str):
-    """Get full quiz details including all questions."""
     try:
         db = get_db_session()
         quiz = db.query(GeneratedQuiz).filter(GeneratedQuiz.quiz_id == quiz_id).first()
@@ -377,7 +331,6 @@ async def get_quiz_details(quiz_id: str):
         if not quiz:
             raise HTTPException(status_code=404, detail="Quiz not found")
 
-        # Update last accessed time
         quiz.last_accessed = datetime.utcnow()
         quiz.access_count = (quiz.access_count or 0) + 1
         db.commit()
@@ -417,7 +370,6 @@ async def get_quiz_details(quiz_id: str):
 
 @app.delete("/quiz/{quiz_id}")
 async def delete_quiz(quiz_id: str):
-    """Delete a quiz by ID."""
     try:
         db = get_db_session()
         quiz = db.query(GeneratedQuiz).filter(GeneratedQuiz.quiz_id == quiz_id).first()
@@ -445,7 +397,6 @@ async def delete_quiz(quiz_id: str):
 
 @app.get("/")
 async def root():
-    """Root endpoint with API information."""
     return {
         "service": "Quiz Generator API",
         "version": "1.0.0",

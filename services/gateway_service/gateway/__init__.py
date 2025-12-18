@@ -1,3 +1,0 @@
-"""
-Gateway Service package initialization.
-"""

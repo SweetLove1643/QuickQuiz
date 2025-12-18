@@ -5,7 +5,6 @@ import uuid
 
 
 class User(AbstractUser):
-    """Custom User model with additional fields"""
 
     ROLE_CHOICES = [
         ("student", "Student"),
@@ -38,7 +37,6 @@ class User(AbstractUser):
 
 
 class UserProfile(models.Model):
-    """Extended user profile information"""
 
     profile_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
@@ -63,7 +61,6 @@ class UserProfile(models.Model):
 
 
 class Role(models.Model):
-    """User roles and permissions management"""
 
     role_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, unique=True)
@@ -80,7 +77,6 @@ class Role(models.Model):
 
 
 class Permission(models.Model):
-    """Fine-grained permissions"""
 
     permission_id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
@@ -88,10 +84,10 @@ class Permission(models.Model):
     name = models.CharField(max_length=100, unique=True)
     code = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)
-    resource = models.CharField(max_length=100)  # e.g., 'quiz', 'document', 'user'
+    resource = models.CharField(max_length=100)
     action = models.CharField(
         max_length=50
-    )  # e.g., 'create', 'read', 'update', 'delete'
+    )  
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -103,7 +99,6 @@ class Permission(models.Model):
 
 
 class AuditLog(models.Model):
-    """Log all user activities for security and auditing"""
 
     ACTION_CHOICES = [
         ("login", "Login"),
@@ -146,7 +141,6 @@ class AuditLog(models.Model):
 
 
 class RefreshTokenBlacklist(models.Model):
-    """Blacklist for refresh tokens (logout)"""
 
     token_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(

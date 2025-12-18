@@ -18,28 +18,18 @@ logger = logging.getLogger(__name__)
 
 
 class RAGChatEngine:
-    """RAG-based chat engine kết hợp document retrieval và Gemini LLM."""
 
     def __init__(
         self,
         retriever: Optional[DocumentRetriever] = None,
         llm_adapter: Optional[GeminiChatAdapter] = None,
     ):
-        """
-        Initialize RAG chat engine.
-
-        Args:
-            retriever: Document retriever instance
-            llm_adapter: LLM adapter for chat generation
-        """
         self.retriever = retriever or DocumentRetriever()
         self.llm_adapter = llm_adapter or GeminiChatAdapter()
 
-        # Conversation storage (in-memory, có thể migrate to DB)
         self.conversations: Dict[str, ConversationHistory] = {}
 
     def initialize(self, force_rebuild_index: bool = False) -> None:
-        """Initialize all components."""
         logger.info("Initializing RAG chat engine...")
         self.retriever.initialize(force_rebuild=force_rebuild_index)
         logger.info("RAG chat engine initialized")
@@ -47,32 +37,20 @@ class RAGChatEngine:
     def chat(
         self, request: RAGChatRequest, conversation_id: Optional[str] = None
     ) -> RAGChatResponse:
-        """
-        Process chat request sử dụng RAG approach.
 
-        Args:
-            request: Chat request với query và configs
-            conversation_id: Optional conversation ID for context
-
-        Returns:
-            Chat response with answer và context
-        """
         start_time = datetime.now()
 
         try:
-            # Debug log
             logger.info(f"=== CHAT REQUEST ===")
             logger.info(f"Query: '{request.query}'")
             logger.info(f"Conversation ID: {conversation_id}")
             
-            # 1. Retrieve relevant documents
-            logger.info(f"🔍 Attempting to retrieve documents...")
+            logger.info(f"Attempting to retrieve documents...")
             
-            # ✅ FIX: Check if retriever has the method
             if not hasattr(self.retriever, 'retrieve_documents'):
-                logger.error("❌ Retriever does not have retrieve_documents method!")
-                logger.info(f"📦 Retriever type: {type(self.retriever)}")
-                logger.info(f"📦 Retriever methods: {dir(self.retriever)}")
+                logger.error("Retriever does not have retrieve_documents method!")
+                logger.info(f"Retriever type: {type(self.retriever)}")
+                logger.info(f"Retriever methods: {dir(self.retriever)}")
                 retrieved_docs = []
             else:
                 try:
@@ -80,20 +58,18 @@ class RAGChatEngine:
                         query=request.query, config=request.retrieval_config
                     )
                 except Exception as retrieve_err:
-                    logger.error(f"❌ Error retrieving documents: {retrieve_err}", exc_info=True)
+                    logger.error(f"Error retrieving documents: {retrieve_err}", exc_info=True)
                     retrieved_docs = []
             
-            logger.info(f"📊 Retrieved {len(retrieved_docs)} documents")
+            logger.info(f"Retrieved {len(retrieved_docs)} documents")
             
-            # DEBUG: Check if chunks exist at all
             total_chunks = self.retriever.get_document_count()
-            logger.info(f"📈 Total documents available in system: {total_chunks}")
+            logger.info(f"Total documents available in system: {total_chunks}")
             
             if len(retrieved_docs) == 0:
-                logger.warning(f"⚠️ No documents retrieved for query: '{request.query}'")
+                logger.warning(f"No documents retrieved for query: '{request.query}'")
                 logger.info(f"Retrieval config: {request.retrieval_config}")
-                # Try a broader search
-                logger.info("🔄 Trying fallback: search all documents...")
+                logger.info("Trying fallback: search all documents...")
                 fallback_config = RetrievalConfig(top_k=10)
                 fallback_docs = self.retriever.retrieve_documents(
                     query="document", config=fallback_config
@@ -105,13 +81,10 @@ class RAGChatEngine:
                     f"  Doc {i+1}: {doc.topic} (score: {doc.similarity_score:.3f}, content_len: {len(doc.content)})"
                 )
 
-            # 2. Build context từ retrieved documents
             context = self._build_context(retrieved_docs, request.chat_config)
 
-            # 3. Get conversation history if available
             conversation_history = self._get_conversation_history(conversation_id)
 
-            # 4. Generate response sử dụng LLM
             llm_response = self._generate_response(
                 query=request.query,
                 context=context,
@@ -119,11 +92,9 @@ class RAGChatEngine:
                 config=request.chat_config,
             )
 
-            # 5. Store conversation
             if conversation_id:
                 self._update_conversation(conversation_id, request.query, llm_response)
 
-            # 6. Build response
             response = RAGChatResponse(
                 answer=llm_response,
                 context=context,
@@ -139,7 +110,6 @@ class RAGChatEngine:
         except Exception as e:
             logger.error(f"Error processing chat request: {e}")
 
-            # Return error response
             return RAGChatResponse(
                 answer=f"Xin lỗi, đã có lỗi xảy ra khi xử lý câu hỏi của bạn: {str(e)}",
                 context=ConversationContext(
@@ -154,18 +124,15 @@ class RAGChatEngine:
     def _build_context(
         self, retrieved_docs: List, config: ChatConfig
     ) -> ConversationContext:
-        """Build context object từ retrieved documents."""
         if not retrieved_docs:
             return ConversationContext(
                 retrieved_count=0, context_used=False, sources=[]
             )
 
-        # Collect sources
         sources = []
         context_text_parts = []
 
         for doc in retrieved_docs[: config.max_context_docs]:
-            # Add to sources
             sources.append(
                 {
                     "document_id": doc.document_id,
@@ -180,7 +147,6 @@ class RAGChatEngine:
                 }
             )
 
-            # Add to context text
             chunk_text = getattr(doc, "chunk_text", doc.content)
             context_text_parts.append(f"[{doc.topic}] {chunk_text}")
 
@@ -196,15 +162,12 @@ class RAGChatEngine:
     def _get_conversation_history(
         self, conversation_id: Optional[str]
     ) -> Optional[List[Dict[str, str]]]:
-        """Get conversation history for context."""
         if not conversation_id or conversation_id not in self.conversations:
             return None
 
         history = self.conversations[conversation_id]
 
-        # Return recent messages for context (limit to avoid token overflow)
-        recent_messages = history.messages[-6:]  # Last 6 messages (3 exchanges)
-
+        recent_messages = history.messages[-6:] 
         formatted_history = []
         for msg in recent_messages:
             formatted_history.append({"role": msg["role"], "content": msg["content"]})
@@ -218,28 +181,21 @@ class RAGChatEngine:
         conversation_history: Optional[List[Dict[str, str]]],
         config: ChatConfig,
     ) -> str:
-        """Generate response sử dụng Gemini LLM."""
 
-        # Build prompt
         system_prompt = self._build_system_prompt(config)
         user_prompt = self._build_user_prompt(query, context, config)
 
-        # Prepare messages
         messages = [{"role": "system", "content": system_prompt}]
 
-        # Add conversation history if available
         if conversation_history:
             messages.extend(conversation_history)
 
-        # Add current user query
         messages.append({"role": "user", "content": user_prompt})
 
-        # Generate response
         response = self.llm_adapter.generate_response(messages, config)
         return response
 
     def _build_system_prompt(self, config: ChatConfig) -> str:
-        """Build system prompt cho Gemini."""
 
         base_prompt = """Bạn là một trợ lý AI thông minh chuyên trả lời câu hỏi dựa trên các tài liệu và tóm tắt được cung cấp.
 
@@ -269,7 +225,6 @@ QUY TẮC:
     def _build_user_prompt(
         self, query: str, context: ConversationContext, config: ChatConfig
     ) -> str:
-        """Build user prompt với context và query."""
 
         if not context.context_used or not context.context_text:
             return f"""Câu hỏi: {query}
@@ -299,7 +254,6 @@ Lưu ý: Tôi không tìm thấy tài liệu nào liên quan đến câu hỏi n
     def _update_conversation(
         self, conversation_id: str, query: str, response: str
     ) -> None:
-        """Update conversation history."""
 
         if conversation_id not in self.conversations:
             self.conversations[conversation_id] = ConversationHistory(
@@ -311,12 +265,10 @@ Lưu ý: Tôi không tìm thấy tài liệu nào liên quan đến câu hỏi n
 
         conversation = self.conversations[conversation_id]
 
-        # Add user message
         conversation.messages.append(
             {"role": "user", "content": query, "timestamp": datetime.now().isoformat()}
         )
 
-        # Add assistant response
         conversation.messages.append(
             {
                 "role": "assistant",
@@ -328,24 +280,20 @@ Lưu ý: Tôi không tìm thấy tài liệu nào liên quan đến câu hỏi n
         conversation.updated_at = datetime.now().isoformat()
 
     def get_conversation(self, conversation_id: str) -> Optional[ConversationHistory]:
-        """Get conversation by ID."""
         return self.conversations.get(conversation_id)
 
     def list_conversations(self, limit: int = 50) -> List[ConversationHistory]:
-        """List recent conversations."""
         conversations = list(self.conversations.values())
         conversations.sort(key=lambda x: x.updated_at, reverse=True)
         return conversations[:limit]
 
     def delete_conversation(self, conversation_id: str) -> bool:
-        """Delete conversation by ID."""
         if conversation_id in self.conversations:
             del self.conversations[conversation_id]
             return True
         return False
 
     def get_stats(self) -> Dict[str, Any]:
-        """Get chat engine statistics."""
         retriever_stats = self.retriever.get_stats()
 
         return {
@@ -363,20 +311,10 @@ Lưu ý: Tôi không tìm thấy tài liệu nào liên quan đến câu hỏi n
         }
 
 
-# Global chat engine instance (singleton pattern)
 _chat_engine = None
 
 
 def get_chat_engine(retriever: Optional[DocumentRetriever] = None) -> RAGChatEngine:
-    """
-    Get global chat engine instance.
-
-    Args:
-        retriever: Optional document retriever
-
-    Returns:
-        RAGChatEngine instance
-    """
     global _chat_engine
 
     if _chat_engine is None:
@@ -385,10 +323,8 @@ def get_chat_engine(retriever: Optional[DocumentRetriever] = None) -> RAGChatEng
     return _chat_engine
 
 
-# Add get_stats method to RAGChatEngine
 def _add_stats_method():
     def get_stats(self) -> Dict[str, Any]:
-        """Get chat engine statistics."""
         try:
             retriever_stats = (
                 self.retriever.get_stats()
@@ -408,8 +344,6 @@ def _add_stats_method():
     RAGChatEngine.get_stats = get_stats
 
 
-# Apply the stats method
 _add_stats_method()
-
 
 __all__ = ["RAGChatEngine", "get_chat_engine"]

@@ -6,19 +6,12 @@ from dotenv import load_dotenv
 import requests
 import json
 
-# Load environment variables from .env file
 load_dotenv()
 
 logger = logging.getLogger(__name__)
 
 
 class GeminiEvaluationAdapter:
-    """Adapter for Google Gemini API cho Quiz Evaluation Analysis.
-
-    Expects environment variables:
-    - GEMINI_API_KEY (required)
-    - GEMINI_MODEL (optional, defaults to gemini-2.5-flash)
-    """
 
     def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY")
@@ -37,9 +30,7 @@ class GeminiEvaluationAdapter:
         max_tokens: int = 2048,
         temperature: float = 0.3,
     ) -> str:
-        """Phân tích kết quả quiz và đưa ra đề xuất cải thiện."""
 
-        # Allow canned response for testing
         use_canned = os.environ.get("USE_CANNED_LLM", "0").lower() in (
             "1",
             "true",
@@ -48,7 +39,6 @@ class GeminiEvaluationAdapter:
         if use_canned:
             logger.info("Using canned evaluation analysis response")
 
-            # Sample analysis result
             canned_analysis = {
                 "strengths": [
                     "Hiểu tốt về khái niệm cơ bản của Python",
@@ -79,25 +69,22 @@ class GeminiEvaluationAdapter:
             }
             return json.dumps(canned_analysis, ensure_ascii=False)
 
-        # Build analysis prompt
+
         prompt = self._build_analysis_prompt(
             quiz_data, correct_count, total_count, topic_breakdown
         )
 
-        # Try different model names if default fails
         model_names = [
             self.model,
             "gemini-2.0-flash",
             "gemini-2.5-flash",
         ]
 
-        # Remove duplicates while preserving order
         seen = set()
         model_names = [x for x in model_names if not (x in seen or seen.add(x))]
 
         headers = {"Content-Type": "application/json"}
 
-        # Construct the request payload for Gemini API
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {
@@ -122,23 +109,19 @@ class GeminiEvaluationAdapter:
 
                 data = resp.json()
 
-                # Extract text from Gemini response
                 if "candidates" in data and len(data["candidates"]) > 0:
                     candidate = data["candidates"][0]
 
-                    # Check for text content in parts (older format)
                     if "content" in candidate and "parts" in candidate["content"]:
                         parts = candidate["content"]["parts"]
                         if len(parts) > 0 and "text" in parts[0]:
                             logger.info(f"Successfully used model: {model_name}")
                             return parts[0]["text"]
 
-                    # Check for text directly in content (newer format)
                     elif "content" in candidate and "text" in candidate["content"]:
                         logger.info(f"Successfully used model: {model_name}")
                         return candidate["content"]["text"]
 
-                    # Check finish reason
                     elif candidate.get("finishReason") == "MAX_TOKENS":
                         logger.warning(
                             f"Model {model_name} hit MAX_TOKENS, trying next model"
@@ -155,7 +138,6 @@ class GeminiEvaluationAdapter:
                         )
                         continue
 
-                # If no candidates, try next model
                 logger.warning(f"No candidates in response from model {model_name}")
                 last_error = f"No candidates in response from model {model_name}"
                 continue
@@ -176,7 +158,6 @@ class GeminiEvaluationAdapter:
                 last_error = f"Unexpected error with model {model_name}: {e}"
                 continue
 
-        # If all models failed, raise the last error
         error_msg = f"All Gemini models failed. Last error: {last_error}"
         logger.exception(error_msg)
         raise RuntimeError(error_msg)
@@ -188,16 +169,13 @@ class GeminiEvaluationAdapter:
         total_count: int,
         topic_breakdown: List[Dict],
     ) -> str:
-        """Xây dựng prompt cho phân tích kết quả quiz."""
 
         score_percent = (correct_count / total_count * 100) if total_count > 0 else 0
 
-        # Build topic analysis summary
         topic_summary = ""
         for topic in topic_breakdown:
             topic_summary += f"- {topic['topic']}: {topic['correct_answers']}/{topic['total_questions']} đúng ({topic['accuracy_rate']:.1f}%)\n"
 
-        # Build prompt for Vietnamese analysis (ultra-compact)
         prompt = f"""Phân tích quiz và trả JSON ngắn:
 
 Điểm: {correct_count}/{total_count} ({score_percent:.1f}%)
@@ -219,7 +197,6 @@ YC: Súc tích, tiếng Việt"""
         return prompt
 
     def _format_wrong_answers(self, quiz_data: Dict) -> str:
-        """Format thông tin câu trả lời sai để đưa vào prompt."""
         wrong_answers = []
 
         for question in quiz_data.get("questions", []):

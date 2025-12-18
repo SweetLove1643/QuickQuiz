@@ -10,7 +10,6 @@ class HealthResponse(BaseModel):
 
 
 class SummaryDocument(BaseModel):
-    """Model cho summary document."""
 
     id: str
     content: str
@@ -22,7 +21,6 @@ class SummaryDocument(BaseModel):
 
 
 class DocumentChunk(BaseModel):
-    """Model cho document chunk sau khi chia nhỏ."""
 
     chunk_id: str
     document_id: str
@@ -34,7 +32,6 @@ class DocumentChunk(BaseModel):
 
 
 class RetrievalConfig(BaseModel):
-    """Cấu hình cho document retrieval."""
 
     top_k: int = Field(
         default=5, ge=1, le=20, description="Number of documents to retrieve"
@@ -66,7 +63,6 @@ class RetrievalConfig(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    """Request cho chat API."""
 
     question: str = Field(min_length=1, max_length=1000)
     user_id: Optional[str] = None
@@ -75,7 +71,6 @@ class ChatRequest(BaseModel):
 
 
 class RetrievedDocument(BaseModel):
-    """Document được retrieve với similarity score."""
 
     document_id: str
     chunk_id: str
@@ -87,7 +82,6 @@ class RetrievedDocument(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    """Response cho chat API."""
 
     answer: str
     question: str
@@ -99,7 +93,6 @@ class ChatResponse(BaseModel):
 
 
 class VectorStoreStats(BaseModel):
-    """Thống kê vector store."""
 
     total_documents: int
     total_chunks: int
@@ -109,7 +102,6 @@ class VectorStoreStats(BaseModel):
 
 
 class ChatConfig(BaseModel):
-    """Configuration for chat generation."""
 
     temperature: float = Field(
         default=0.7, ge=0.0, le=2.0, description="Creativity level (0.0-2.0)"
@@ -144,7 +136,6 @@ class ChatConfig(BaseModel):
 
 
 class ConversationContext(BaseModel):
-    """Context information for conversation."""
 
     retrieved_count: int = Field(..., description="Number of documents retrieved")
     context_used: bool = Field(..., description="Whether context was used")
@@ -155,7 +146,6 @@ class ConversationContext(BaseModel):
 
 
 class ConversationHistory(BaseModel):
-    """Conversation history schema."""
 
     conversation_id: str = Field(..., description="Unique conversation ID")
     created_at: str = Field(..., description="Creation timestamp")
@@ -166,7 +156,6 @@ class ConversationHistory(BaseModel):
 
 
 class ConversationListResponse(BaseModel):
-    """Response for listing conversations."""
 
     conversations: List[ConversationHistory] = Field(
         ..., description="List of conversations"
@@ -176,7 +165,6 @@ class ConversationListResponse(BaseModel):
 
 
 class RAGChatRequest(BaseModel):
-    """Enhanced chat request for RAG system."""
 
     query: str = Field(
         ...,
@@ -237,7 +225,6 @@ class RAGChatRequest(BaseModel):
 
 
 class RAGChatResponse(BaseModel):
-    """Enhanced chat response for RAG system."""
 
     answer: str = Field(..., description="Generated answer")
     context: ConversationContext = Field(..., description="Context information")
