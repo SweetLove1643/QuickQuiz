@@ -11,6 +11,7 @@ import {
   Copy,
   Check,
 } from "lucide-react";
+import { chatbotAPI } from "../api/quizAPI";
 
 interface Message {
   id: string;
@@ -28,67 +29,6 @@ interface ChatbotProps {
   documentId?: string;
   documentName?: string;
 }
-
-const chatbotAPI = {
-  BASE_URL: "http://localhost:8002/api",
-
-  async chat(
-    query: string,
-    conversationId?: string,
-    documentId?: string
-  ): Promise<{
-    answer: string;
-    context: {
-      retrieved_documents: string[];
-    };
-    processing_time: number;
-  }> {
-    const response = await fetch(`${this.BASE_URL}/chat`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        query,
-        conversation_id: conversationId,
-        document_id: documentId,
-        retrieval_config: {
-          top_k: 5,
-          similarity_threshold: 0.3,
-        },
-        chat_config: {
-          temperature: 0.7,
-          max_tokens: 500,
-        },
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Lỗi khi gửi tin nhắn đến chatbot");
-    }
-
-    return response.json();
-  },
-
-  async getConversationHistory(conversationId: string): Promise<Message[]> {
-    const response = await fetch(
-      `${this.BASE_URL}/conversations/${conversationId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      return [];
-    }
-
-    const data = await response.json();
-    return data.messages || [];
-  },
-};
 
 export function Chatbot({ documentId, documentName }: ChatbotProps) {
   const [messages, setMessages] = useState<Message[]>([
@@ -129,7 +69,6 @@ ${
 
     if (!input.trim() || isLoading) return;
 
-    // Add user message
     const userMessage: Message = {
       id: `msg-${Date.now()}`,
       type: "user",
@@ -142,7 +81,19 @@ ${
     setIsLoading(true);
 
     try {
-      const response = await chatbotAPI.chat(input, conversationId, documentId);
+      const response = await chatbotAPI.sendMessage({
+        query: input,
+        conversation_id: conversationId,
+        document_id: documentId,
+        retrieval_config: {
+          top_k: 5,
+          similarity_threshold: 0.3,
+        },
+        chat_config: {
+          temperature: 0.7,
+          max_tokens: 500,
+        },
+      });
 
       const assistantMessage: Message = {
         id: `msg-${Date.now() + 1}`,
@@ -150,7 +101,8 @@ ${
         content: response.answer,
         timestamp: new Date(),
         sources: response.context.retrieved_documents.map((doc) => ({
-          content: doc,
+          content: doc.content || String(doc),
+          similarity_score: doc.similarity_score,
         })),
       };
 
@@ -162,7 +114,9 @@ ${
         id: `msg-${Date.now() + 1}`,
         type: "assistant",
         content:
-          "Xin lỗi, tôi gặp lỗi khi xử lý câu hỏi của bạn. Vui lòng thử lại sau.",
+          error instanceof Error
+            ? error.message
+            : "Xin lỗi, tôi gặp lỗi khi xử lý câu hỏi của bạn. Vui lòng thử lại sau.",
         timestamp: new Date(),
       };
 
@@ -318,7 +272,7 @@ ${
       {!documentId && (
         <div className="px-4 py-2 bg-yellow-50 border-t border-yellow-200 text-xs text-yellow-700 flex items-center gap-2">
           <Zap className="size-4" />
-          Vui lòng chọn tài liệu để sử dụng chatbot
+          Chatbot có thể hoạt động tốt hơn khi bạn chọn một tài liệu cụ thể
         </div>
       )}
     </div>

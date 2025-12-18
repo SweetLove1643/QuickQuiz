@@ -570,4 +570,109 @@ export const convertFromBackendFormat = (backendQuestions: QuizQuestion[]) => {
   }));
 };
 
+// RAG Chatbot interfaces
+export interface ChatRequest {
+  query: string;
+  conversation_id?: string;
+  document_id?: string;
+  retrieval_config?: {
+    top_k: number;
+    similarity_threshold: number;
+  };
+  chat_config?: {
+    temperature: number;
+    max_tokens: number;
+  };
+}
+
+export interface ChatResponse {
+  answer: string;
+  context: {
+    retrieved_documents: Array<{
+      content: string;
+      source?: string;
+      similarity_score?: number;
+    }>;
+    retrieved_count: number;
+    context_used: boolean;
+  };
+  processing_time: number;
+  conversation_id?: string;
+}
+
+export interface ConversationMessage {
+  role: "user" | "assistant";
+  content: string;
+  timestamp: string;
+}
+
+export interface ConversationHistoryResponse {
+  conversation_id: string;
+  messages: ConversationMessage[];
+  total_messages: number;
+}
+
+// RAG Chatbot API functions
+export const chatbotAPI = {
+  /**
+   * Send chat message to RAG chatbot
+   */
+  async sendMessage(request: ChatRequest): Promise<ChatResponse> {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/rag/chat/`, {
+      method: "POST",
+      headers: API_CONFIG.DEFAULT_HEADERS,
+      body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to send chat message");
+    }
+
+    const result = await response.json();
+    return result.data;
+  },
+
+  /**
+   * Get conversation history
+   */
+  async getConversationHistory(
+    conversationId: string,
+    limit: number = 10
+  ): Promise<ConversationHistoryResponse> {
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/rag/conversations/${conversationId}/?limit=${limit}`,
+      {
+        method: "GET",
+        headers: API_CONFIG.DEFAULT_HEADERS,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch conversation history");
+    }
+
+    return response.json();
+  },
+
+  /**
+   * List all conversations
+   */
+  async listConversations(limit: number = 20): Promise<any> {
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/rag/conversations/?limit=${limit}`,
+      {
+        method: "GET",
+        headers: API_CONFIG.DEFAULT_HEADERS,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to list conversations");
+    }
+
+    return response.json();
+  },
+};
+
 export default quizAPI;
