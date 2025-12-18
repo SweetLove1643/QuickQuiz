@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.utils.decorators import method_decorator
@@ -971,6 +971,112 @@ def update_document(request, doc_id):
     except Exception as e:
         logger.error(f"Update document failed: {e}", exc_info=True)
         return JsonResponse({"error": f"Update failed: {str(e)}"}, status=500)
+
+
+@api_view(["DELETE"])
+@permission_classes([AllowAny])
+def delete_document(request, doc_id):
+    """Delete a document"""
+    try:
+        ensure_document_table()
+
+        with closing(sqlite3.connect(DOCUMENT_DB_PATH)) as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM documents WHERE id = ?", (doc_id,))
+            conn.commit()
+
+            if cursor.rowcount == 0:
+                logger.error(f"Delete document failed: document not found {doc_id}")
+                return JsonResponse({"error": "Document not found"}, status=404)
+
+        logger.info(f"Document deleted: {doc_id}")
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Document deleted successfully",
+                "document_id": doc_id,
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"Delete document failed: {e}", exc_info=True)
+        return JsonResponse({"error": f"Delete failed: {str(e)}"}, status=500)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def export_document_pdf(request, doc_id):
+    """Export document as PDF"""
+    try:
+        ensure_document_table()
+
+        with closing(sqlite3.connect(DOCUMENT_DB_PATH)) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT file_name, title, summary, content, extracted_text FROM documents WHERE id = ?",
+                (doc_id,),
+            )
+            row = cursor.fetchone()
+
+            if not row:
+                logger.error(f"Export PDF failed: document not found {doc_id}")
+                return JsonResponse({"error": "Document not found"}, status=404)
+
+        file_name, title, summary, content, extracted_text = row
+
+        try:
+            from reportlab.lib.pagesizes import letter
+            from reportlab.lib.styles import getSampleStyleSheet
+            from reportlab.lib.units import inch
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+            from io import BytesIO
+        except ImportError:
+            logger.error("reportlab not installed")
+            return JsonResponse(
+                {
+                    "error": "PDF export requires reportlab library. Please install: pip install reportlab"
+                },
+                status=500,
+            )
+
+        pdf_buffer = BytesIO()
+        doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+        styles = getSampleStyleSheet()
+        story = []
+
+        doc_title = title or file_name or "Document"
+        story.append(Paragraph(doc_title, styles["Heading1"]))
+        story.append(Spacer(1, 0.3 * inch))
+
+        if summary:
+            story.append(Paragraph("<b>Tom tat:</b>", styles["Heading2"]))
+            story.append(Paragraph(summary.replace("\n", "<br/>"), styles["Normal"]))
+            story.append(Spacer(1, 0.3 * inch))
+
+        if content:
+            story.append(Paragraph("<b>Noi dung:</b>", styles["Heading2"]))
+            story.append(Paragraph(content.replace("\n", "<br/>"), styles["Normal"]))
+        elif extracted_text:
+            story.append(Paragraph("<b>Noi dung:</b>", styles["Heading2"]))
+            story.append(
+                Paragraph(
+                    extracted_text[:5000].replace("\n", "<br/>"), styles["Normal"]
+                )
+            )
+
+        doc.build(story)
+        pdf_buffer.seek(0)
+
+        response = HttpResponse(pdf_buffer.getvalue(), content_type="application/pdf")
+        safe_filename = (file_name or "document").replace('"', "")
+        response["Content-Disposition"] = f'attachment; filename="{safe_filename}.pdf"'
+
+        logger.info(f"Document exported as PDF: {doc_id}")
+        return response
+
+    except Exception as e:
+        logger.error(f"Export PDF failed: {e}", exc_info=True)
+        return JsonResponse({"error": f"Export failed: {str(e)}"}, status=500)
 
 
 @api_view(["GET"])

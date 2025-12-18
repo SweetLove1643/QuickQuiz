@@ -91,6 +91,22 @@ Tài liệu này cung cấp một cái nhìn tổng quan về chủ đề. Ngư�
     setIsEditing(false);
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm("Ban chac chan muon xoa tai lieu nay?")) return;
+
+    try {
+      const result = await quizAPI.deleteDocument(
+        document.document_id || document.id
+      );
+      if (result.success) {
+        onBack?.();
+      }
+    } catch (error) {
+      console.error("Delete failed:", error);
+      alert("Xoa that bai. Vui long thu lai.");
+    }
+  };
+
   return (
     <div>
       {/* Header */}
@@ -147,6 +163,13 @@ Tài liệu này cung cấp một cái nhìn tổng quan về chủ đề. Ngư�
                 <Button variant="outline" onClick={handleDownload}>
                   <Download className="size-4 mr-2" />
                   Tải xuống
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleDelete}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  Xoa
                 </Button>
               </>
             )}

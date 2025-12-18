@@ -54,6 +54,14 @@ urlpatterns = [
     path(
         "documents/<str:doc_id>/update/", views.update_document, name="update_document"
     ),
+    path(
+        "documents/<str:doc_id>/delete/", views.delete_document, name="delete_document"
+    ),
+    path(
+        "documents/<str:doc_id>/pdf/",
+        views.export_document_pdf,
+        name="export_document_pdf",
+    ),
     path("rag/", views.ChatView.as_view(), name="rag_chat"),
     path("rag/chat/", views.chat_message, name="rag_chat_message"),
     path("rag/conversations/", views.list_conversations, name="rag_list_conversations"),
