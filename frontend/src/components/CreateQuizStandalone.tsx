@@ -166,7 +166,7 @@ export function CreateQuizStandalone({
     if (aiQuestionTypes.trueFalse) requestedTypes.push("tf");
     if (aiQuestionTypes.fillBlank) requestedTypes.push("fill_blank");
     if (requestedTypes.length === 0) {
-      requestedTypes.push("multiple_choice");
+      requestedTypes.push("mcq");
     }
 
     try {
@@ -186,7 +186,7 @@ export function CreateQuizStandalone({
 
       const response = await quizAPI.generateQuiz(payload);
       const generated = convertFromBackendFormat(response.questions).map(
-        (q) => ({
+        (q): Question => ({
           id: q.id,
           question: q.question,
           options: q.options || ["Đúng", "Sai"],
@@ -314,12 +314,11 @@ export function CreateQuizStandalone({
         questions: questions.map((q) => ({
           id: q.id,
           stem: q.question,
-          type:
-            q.type === "multiple-choice"
-              ? "mcq"
-              : q.type === "true-false"
-              ? "tf"
-              : "fill_blank",
+          type: (q.type === "multiple-choice"
+            ? "mcq"
+            : q.type === "true-false"
+            ? "tf"
+            : "fill_blank") as "mcq" | "tf" | "fill_blank",
           options: q.options,
           answer:
             q.type === "true-false"
