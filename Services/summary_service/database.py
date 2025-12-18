@@ -4,19 +4,17 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 import os
 
-# Database setup
 DATABASE_URL = "sqlite:///./summary_service.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
-# Database Models
 class SummaryRequestModel(Base):
     __tablename__ = "summary_requests"
 
     id = Column(Integer, primary_key=True, index=True)
-    content_type = Column(String, nullable=False)  # "text", "ocr", "file"
+    content_type = Column(String, nullable=False) 
     input_text = Column(Text, nullable=False)
     summary = Column(Text, nullable=False)
     processing_method = Column(String, nullable=False)
@@ -26,12 +24,10 @@ class SummaryRequestModel(Base):
 
 
 def init_db():
-    """Initialize database and create tables"""
     Base.metadata.create_all(bind=engine)
 
 
 def get_db():
-    """Get database session"""
     db = SessionLocal()
     try:
         yield db
@@ -47,7 +43,6 @@ async def log_summary_request(
     num_files: int = None,
     processing_time: float = None,
 ):
-    """Log summary request to database"""
     try:
         db = SessionLocal()
 
@@ -73,7 +68,6 @@ async def log_summary_request(
 
 
 async def get_summary_stats():
-    """Get summary service statistics"""
     try:
         db = SessionLocal()
 
@@ -86,7 +80,6 @@ async def get_summary_stats():
             or 0.0
         )
 
-        # Count by content type
         content_types = (
             db.query(
                 SummaryRequestModel.content_type, db.func.count(SummaryRequestModel.id)

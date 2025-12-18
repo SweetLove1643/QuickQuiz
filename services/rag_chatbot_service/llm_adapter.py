@@ -7,24 +7,19 @@ from google.generativeai.types import HarmCategory, HarmBlockThreshold
 import time
 from schemas import ChatConfig
 
-# Load environment variables from parent directory
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
 
 logger = logging.getLogger(__name__)
 
 
 class GeminiChatAdapter:
-    """Gemini LLM adapter tối ưu cho RAG chatbot conversations."""
-
     def __init__(self):
-        """Initialize Gemini chat adapter."""
         self.api_key = os.getenv("GEMINI_API_KEY")
         self.default_model = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
         logger.info(
             f"GEMINI_API_KEY loaded: {'***' + self.api_key[-4:] if self.api_key else 'None'}"
         )
         logger.info(f"Default model: {self.default_model}")
-        # Enable canned responses by default for development
         use_canned_env = os.getenv("USE_CANNED_LLM", "true")
         self.use_canned_responses = use_canned_env.lower() == "true"
 
@@ -32,7 +27,6 @@ class GeminiChatAdapter:
             f"USE_CANNED_LLM env: '{use_canned_env}', use_canned_responses: {self.use_canned_responses}"
         )
 
-        # Model fallback order for chat (working models only)
         self.model_fallback = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.5-pro"]
 
         self.current_model = self.default_model
@@ -50,16 +44,6 @@ class GeminiChatAdapter:
     def generate_response(
         self, messages: List[Dict[str, str]], config: ChatConfig
     ) -> str:
-        """
-        Generate chat response từ conversation messages.
-
-        Args:
-            messages: List of messages [{"role": "system/user/assistant", "content": "..."}]
-            config: Chat configuration
-
-        Returns:
-            Generated response text
-        """
         if self.use_canned_responses:
             logger.info(
                 f"Using canned responses (use_canned={self.use_canned_responses})"
@@ -71,14 +55,12 @@ class GeminiChatAdapter:
     def _generate_with_retry(
         self, messages: List[Dict[str, str]], config: ChatConfig
     ) -> str:
-        """Generate response với retry logic across models."""
 
         for model_name in self.model_fallback:
             try:
                 self.current_model = model_name
                 logger.info(f"Trying chat generation với model: {model_name}")
 
-                # Create model instance
                 model = genai.GenerativeModel(
                     model_name=model_name,
                     generation_config={
@@ -95,10 +77,8 @@ class GeminiChatAdapter:
                     },
                 )
 
-                # Convert messages to Gemini format
                 formatted_messages = self._format_messages_for_gemini(messages)
 
-                # Generate response
                 response = model.generate_content(formatted_messages)
 
                 if response.text:
@@ -116,18 +96,12 @@ class GeminiChatAdapter:
                     time.sleep(2)  # Rate limit backoff
                 continue
 
-        # All models failed
         logger.error("All Gemini models failed for chat generation")
         return (
             "Xin lỗi, tôi không thể trả lời câu hỏi này lúc này. Vui lòng thử lại sau."
         )
 
     def _format_messages_for_gemini(self, messages: List[Dict[str, str]]) -> str:
-        """
-        Convert conversation messages thành format cho Gemini.
-
-        Gemini không support native conversation format, nên concat thành single prompt.
-        """
         formatted_parts = []
 
         for message in messages:
@@ -141,38 +115,29 @@ class GeminiChatAdapter:
             elif role == "assistant":
                 formatted_parts.append(f"[Trợ lý]\n{content}\n")
 
-        # Add explicit instruction for current response
         formatted_parts.append("[Trợ lý] (hãy trả lời câu hỏi mới nhất):")
 
         return "\n".join(formatted_parts)
 
     def _get_canned_response(self, messages: List[Dict[str, str]]) -> str:
-        """Generate canned response cho development testing."""
 
-        # Get the last user message
         user_messages = [msg for msg in messages if msg["role"] == "user"]
         if not user_messages:
             return "Bạn có câu hỏi gì không?"
 
         full_content = user_messages[-1]["content"]
 
-        # Extract original query từ RAG-formatted content
         if "=== câu hỏi ===" in full_content.lower():
-            # Extract query after "=== câu hỏi ==="
             parts = full_content.lower().split("=== câu hỏi ===")
             if len(parts) > 1:
-                # Get text after the marker and before any additional instructions
                 query_part = parts[1].strip()
-                # Extract just the query line (first line after marker)
                 query_lines = query_part.split("\n")
                 last_query = query_lines[0].strip() if query_lines else query_part
             else:
                 last_query = full_content.lower()
         else:
-            # Fallback to full content if no RAG format
             last_query = full_content.lower()
 
-        # Enhanced keyword matching for RAG canned responses
         canned_responses = {
             "python": """Dựa trên tài liệu về Python programming, Python có những ưu điểm nổi bật sau:
 
@@ -225,12 +190,10 @@ Việc chọn database phụ thuộc vào yêu cầu về data structure, scalab
 Modern alternatives bao gồm GraphQL cho flexible queries và gRPC cho high-performance services.""",
         }
 
-        # Check for keywords và return appropriate response
         for keyword, response in canned_responses.items():
             if keyword in last_query:
                 return response
 
-        # Default canned response
         return """Tôi hiểu câu hỏi của bạn. Dựa trên các tài liệu có sẵn, đây là những thông tin liên quan:
 
 • Các tài liệu chứa nhiều chủ đề về công nghệ và lập trình

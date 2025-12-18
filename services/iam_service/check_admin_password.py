@@ -7,7 +7,6 @@ django.setup()
 from api.models import User
 from django.contrib.auth import authenticate
 
-# Check user exists
 user = User.objects.filter(username="Admin").first()
 print(f"User found: {user}")
 if user:
@@ -17,7 +16,6 @@ if user:
     print(f'check_password("Admin@123"): {user.check_password("Admin@123")}')
     print(f"password hash: {user.password[:50]}...")
 
-    # Try authenticate
     auth_user = authenticate(username="Admin", password="Admin@123")
     print(f"\nauthenticate() result: {auth_user}")
     print(

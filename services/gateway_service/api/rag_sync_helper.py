@@ -1,7 +1,3 @@
-"""
-Helper để sync documents từ gateway_service sang rag_chatbot_service
-Giải quyết vấn đề: documents.db có data nhưng rag_chatbot.db không
-"""
 import logging
 import os
 import sqlite3
@@ -17,7 +13,6 @@ RAG_DB_PATH = os.path.abspath(os.path.join(
 
 
 def create_rag_chunks_table():
-    """Tạo bảng document_chunks nếu chưa có"""
     try:
         os.makedirs(os.path.dirname(RAG_DB_PATH), exist_ok=True)
         with closing(sqlite3.connect(RAG_DB_PATH)) as conn:
@@ -36,15 +31,14 @@ def create_rag_chunks_table():
                 )
             """)
             conn.commit()
-        logger.info(f"✅ RAG chunks table ready: {RAG_DB_PATH}")
+        logger.info(f"RAG chunks table ready: {RAG_DB_PATH}")
         return True
     except Exception as e:
-        logger.error(f"❌ Failed to create RAG chunks table: {e}", exc_info=True)
+        logger.error(f"Failed to create RAG chunks table: {e}", exc_info=True)
         return False
 
 
 def split_text_into_chunks(text: str, chunk_size: int = 500, overlap: int = 50) -> list:
-    """Chia text thành chunks với overlap"""
     chunks = []
     if not text or len(text) < chunk_size:
         return [text]
@@ -55,7 +49,6 @@ def split_text_into_chunks(text: str, chunk_size: int = 500, overlap: int = 50) 
         if chunk.strip():
             chunks.append(chunk)
         
-        # Nếu đây là chunk cuối cùng, dừng
         if i + chunk_size >= len(text):
             break
     
@@ -63,24 +56,9 @@ def split_text_into_chunks(text: str, chunk_size: int = 500, overlap: int = 50) 
 
 
 def insert_document_to_rag_db(document_data: dict) -> bool:
-    """
-    Insert document chunks trực tiếp vào rag_chatbot.db
-    
-    Args:
-        document_data: {
-            "document_id": "doc_xxx",
-            "file_name": "papernew.pdf",
-            "extracted_text": "...",
-            "summary": "...",
-        }
-    
-    Returns:
-        bool: True nếu thành công
-    """
     try:
-        logger.info(f"📥 Syncing document to RAG DB: {document_data['document_id']}")
+        logger.info(f"Syncing document to RAG DB: {document_data['document_id']}")
         
-        # Tạo bảng nếu chưa có
         if not create_rag_chunks_table():
             return False
         
@@ -89,18 +67,15 @@ def insert_document_to_rag_db(document_data: dict) -> bool:
         extracted_text = (document_data.get("extracted_text") or "").strip()
         summary_text = (document_data.get("summary") or "").strip()
         
-        # Sử dụng content tốt hơn
         content = extracted_text if len(extracted_text) >= len(summary_text) else summary_text
         
         if not content or len(content) < 20:
-            logger.warning(f"⚠️ Document content too short, skip: {len(content)} chars")
+            logger.warning(f"Document content too short, skip: {len(content)} chars")
             return False
         
-        # Chia thành chunks
         text_chunks = split_text_into_chunks(content, chunk_size=500, overlap=50)
-        logger.info(f"  ✂️ Split into {len(text_chunks)} chunks")
+        logger.info(f"Split into {len(text_chunks)} chunks")
         
-        # Insert vào RAG DB
         with closing(sqlite3.connect(RAG_DB_PATH, timeout=30)) as conn:
             conn.execute("DELETE FROM document_chunks WHERE document_id = ?", (doc_id,))
 
@@ -126,10 +101,10 @@ def insert_document_to_rag_db(document_data: dict) -> bool:
                     inserted += 1
 
             conn.commit()
-            logger.info(f"✅ RAG DB insert: {inserted} chunks")
+            logger.info(f"RAG DB insert: {inserted} chunks")
         
         return True
         
     except Exception as e:
-        logger.error(f"❌ Failed to sync document to RAG DB: {e}", exc_info=True)
+        logger.error(f"Failed to sync document to RAG DB: {e}", exc_info=True)
         return False

@@ -1,9 +1,3 @@
-"""
-Enhanced Service Clients for QuickQuiz Gateway.
-
-Improved HTTP clients with better error handling, retry logic, and monitoring.
-"""
-# -*- coding: utf-8 -*-
 import sys
 import io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
@@ -22,8 +16,6 @@ logger = logging.getLogger(__name__)
 
 
 class ServiceStatus(Enum):
-    """Service health status enumeration."""
-
     HEALTHY = "healthy"
     UNHEALTHY = "unhealthy"
     DEGRADED = "degraded"
@@ -32,8 +24,6 @@ class ServiceStatus(Enum):
 
 @dataclass
 class ServiceResponse:
-    """Standardized service response."""
-
     success: bool
     data: Optional[Dict[str, Any]]
     error: Optional[str]
@@ -43,8 +33,6 @@ class ServiceResponse:
 
 
 class ServiceClientError(Exception):
-    """Custom exception for service client errors."""
-
     def __init__(self, message: str, status_code: int = None, service_name: str = None):
         super().__init__(message)
         self.status_code = status_code
@@ -52,8 +40,6 @@ class ServiceClientError(Exception):
 
 
 class BaseServiceClient:
-    """Enhanced base class for service clients."""
-
     def __init__(self, service_name: str):
         self.service_name = service_name
         self.config = settings.MICROSERVICES.get(service_name)
@@ -65,14 +51,11 @@ class BaseServiceClient:
         self.timeout = self.config.get("timeout", 30)
         self.retry_count = self.config.get("retry_count", 3)
 
-        # Setup session with retry strategy
         self.session = self._create_session()
 
     def _create_session(self) -> requests.Session:
-        """Create requests session with retry strategy."""
         session = requests.Session()
 
-        # Retry strategy
         retry_strategy = Retry(
             total=self.retry_count,
             status_forcelist=[429, 500, 502, 503, 504],
@@ -95,27 +78,22 @@ class BaseServiceClient:
         timeout: Optional[int] = None,  
         **kwargs,
     ) -> ServiceResponse:
-        """Make HTTP request to the service with enhanced error handling."""
         url = f"{self.base_url}{endpoint}"
         start_time = time.time()
     
         try:
             logger.debug(f"[{self.service_name}] {method} {url}")
             effective_timeout = timeout or self.timeout
-
     
-            # Check if files are being sent (multipart)
             if 'files' in kwargs:
-                # For file uploads, don't set json parameter and let requests handle multipart
                 response = self.session.request(
                     method=method,
                     url=url,
                     params=params,
                     timeout=effective_timeout,
-                    **kwargs,  # files parameter will be here
+                    **kwargs,  
                 )
             else:
-                # For JSON requests
                 response = self.session.request(
                     method=method,
                     url=url,
@@ -128,7 +106,6 @@ class BaseServiceClient:
     
             response_time = time.time() - start_time
     
-            # Log slow requests
             if response_time > 5.0:
                 logger.warning(
                     f"[{self.service_name}] Slow request: {response_time:.2f}s"
@@ -211,7 +188,6 @@ class BaseServiceClient:
             )
         
     def health_check(self) -> Dict[str, Any]:
-        """Check service health with detailed status."""
         health_endpoint = self.config.get("health_endpoint", "/health")
         response = self._make_request("GET", health_endpoint)
 
@@ -233,7 +209,6 @@ class BaseServiceClient:
             }
 
     def get_service_info(self) -> Dict[str, Any]:
-        """Get service configuration and status."""
         return {
             "name": self.service_name,
             "base_url": self.base_url,
@@ -244,7 +219,6 @@ class BaseServiceClient:
 
 
 class QuizGeneratorClient(BaseServiceClient):
-    """Enhanced client for Quiz Generator service."""
 
     def __init__(self):
         super().__init__("quiz_generator")
@@ -252,7 +226,6 @@ class QuizGeneratorClient(BaseServiceClient):
     def generate_quiz(
         self, sections: List[Dict], config: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Generate quiz from content sections."""
         payload = {"sections": sections, "config": config}
 
         logger.info(
@@ -268,7 +241,6 @@ class QuizGeneratorClient(BaseServiceClient):
 
         result = response.data
 
-        # Enhanced logging
         if "metadata" in result:
             metadata = result["metadata"]
             total_generated = metadata.get("total_generated", 0)
@@ -284,7 +256,6 @@ class QuizGeneratorClient(BaseServiceClient):
                     f"[{self.service_name}] Filtered {filtered_count} high-risk questions"
                 )
 
-        # Add response metadata
         result["gateway_response_meta"] = {
             "response_time": response.response_time,
             "service": self.service_name,
@@ -294,7 +265,6 @@ class QuizGeneratorClient(BaseServiceClient):
         return result
 
     def save_quiz(self, quiz_payload: Dict[str, Any]) -> Dict[str, Any]:
-        """Persist quiz to generator service."""
         response = self._make_request("POST", "/quiz/save", data=quiz_payload)
 
         if not response.success:
@@ -307,7 +277,6 @@ class QuizGeneratorClient(BaseServiceClient):
     def get_user_quizzes(
         self, user_id: str, limit: int = 50, offset: int = 0
     ) -> Dict[str, Any]:
-        """Get all quizzes created by a specific user."""
         response = self._make_request(
             "GET", f"/quiz/user/{user_id}", params={"limit": limit, "offset": offset}
         )
@@ -320,7 +289,6 @@ class QuizGeneratorClient(BaseServiceClient):
         return response.data or {}
 
     def get_user_recent_quizzes(self, user_id: str, limit: int = 10) -> Dict[str, Any]:
-        """Get recent quizzes created by a user."""
         response = self._make_request(
             "GET", f"/quiz/user/{user_id}/recent", params={"limit": limit}
         )
@@ -333,7 +301,6 @@ class QuizGeneratorClient(BaseServiceClient):
         return response.data or {}
 
     def get_quiz_details(self, quiz_id: str) -> Dict[str, Any]:
-        """Get full quiz details including all questions."""
         response = self._make_request("GET", f"/quiz/{quiz_id}")
 
         if not response.success:
@@ -344,7 +311,6 @@ class QuizGeneratorClient(BaseServiceClient):
         return response.data or {}
 
     def delete_quiz(self, quiz_id: str) -> Dict[str, Any]:
-        """Delete a quiz by ID."""
         response = self._make_request("DELETE", f"/quiz/{quiz_id}")
 
         if not response.success:
@@ -355,7 +321,6 @@ class QuizGeneratorClient(BaseServiceClient):
         return response.data or {}
 
     def get_generator_info(self) -> Dict[str, Any]:
-        """Get generator service information."""
         response = self._make_request("GET", "/")
 
         if response.success:
@@ -365,7 +330,6 @@ class QuizGeneratorClient(BaseServiceClient):
 
 
 class OCRServiceClient(BaseServiceClient):
-    """Enhanced client for OCR service."""
 
     def __init__(self):
         super().__init__("ocr_service")
@@ -373,7 +337,6 @@ class OCRServiceClient(BaseServiceClient):
     def extract_text_single(
         self, file_data: bytes, filename: str, content_type: str
     ) -> Dict[str, Any]:
-        """Extract text from a single image file."""
         files = {"file": (filename, file_data, content_type)}
 
         logger.info(
@@ -390,7 +353,6 @@ class OCRServiceClient(BaseServiceClient):
         return response.data
 
     def extract_text_multi(self, files_data: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Extract text from multiple image files."""
         files = [
             (
                 "files",
@@ -415,7 +377,6 @@ class OCRServiceClient(BaseServiceClient):
     def extract_information_legacy(
         self, files_data: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """Legacy endpoint for backward compatibility."""
         files = [
             (
                 "files",
@@ -439,13 +400,11 @@ class OCRServiceClient(BaseServiceClient):
 
 
 class SummaryServiceClient(BaseServiceClient):
-    """Enhanced client for Summary service."""
 
     def __init__(self):
         super().__init__("summary_service")
 
     def summarize_text(self, text: str) -> Dict[str, Any]:
-        """Summarize provided text."""
         data = {"text": text}
 
         logger.info(f"[{self.service_name}] Summarizing text: {len(text)} characters")
@@ -460,7 +419,6 @@ class SummaryServiceClient(BaseServiceClient):
         return response.data
 
     def ocr_and_summarize(self, files_data: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Extract text from images/PDFs and create summary."""
         files = [
             (
                 "files",
@@ -485,7 +443,6 @@ class SummaryServiceClient(BaseServiceClient):
     def recommend_study(
         self, content: str, difficulty_level: str = "intermediate", study_time: int = 60
     ) -> Dict[str, Any]:
-        """Generate study recommendations based on content."""
         data = {
             "content": content,
             "difficulty_level": difficulty_level,
@@ -506,7 +463,6 @@ class SummaryServiceClient(BaseServiceClient):
         return response.data
 
     def image_ocr_legacy(self, files_data: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Legacy OCR endpoint."""
         files = [
             (
                 "files",
@@ -528,7 +484,6 @@ class SummaryServiceClient(BaseServiceClient):
 
 
 class QuizEvaluatorClient(BaseServiceClient):
-    """Enhanced client for Quiz Evaluator service."""
 
     def __init__(self):
         super().__init__("quiz_evaluator")
@@ -536,7 +491,6 @@ class QuizEvaluatorClient(BaseServiceClient):
     def evaluate_quiz(
         self, submission: Dict[str, Any], config: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Evaluate quiz submission with enhanced logging."""
         payload = {"submission": submission, "config": config}
 
         quiz_id = submission.get("quiz_id", "unknown")
@@ -555,7 +509,6 @@ class QuizEvaluatorClient(BaseServiceClient):
 
         result = response.data
 
-        # Enhanced logging
         if "summary" in result:
             summary = result["summary"]
             score = summary.get("score_percentage", 0)
@@ -566,7 +519,7 @@ class QuizEvaluatorClient(BaseServiceClient):
                 f"[{self.service_name}] Quiz {quiz_id} evaluated: {score:.1f}% ({correct_answers}/{total_questions})"
             )
 
-        # Add response metadata
+
         result["gateway_response_meta"] = {
             "response_time": response.response_time,
             "service": self.service_name,
@@ -576,7 +529,6 @@ class QuizEvaluatorClient(BaseServiceClient):
         return result
 
     def get_grading_scale(self) -> Dict[str, Any]:
-        """Get grading scale configuration."""
         response = self._make_request("GET", "/quiz/grading-scale")
 
         if not response.success:
@@ -589,7 +541,6 @@ class QuizEvaluatorClient(BaseServiceClient):
     def get_user_results(
         self, user_id: str, limit: int = 50, offset: int = 0
     ) -> Dict[str, Any]:
-        """Get all quiz results for a specific user."""
         response = self._make_request(
             "GET", f"/results/user/{user_id}", params={"limit": limit, "offset": offset}
         )
@@ -602,7 +553,6 @@ class QuizEvaluatorClient(BaseServiceClient):
         return response.data or {}
 
     def get_user_recent_results(self, user_id: str, limit: int = 10) -> Dict[str, Any]:
-        """Get recent quiz results for a user."""
         response = self._make_request(
             "GET", f"/results/user/{user_id}/recent", params={"limit": limit}
         )
@@ -615,7 +565,6 @@ class QuizEvaluatorClient(BaseServiceClient):
         return response.data or {}
 
     def get_evaluator_info(self) -> Dict[str, Any]:
-        """Get evaluator service information."""
         response = self._make_request("GET", "/")
 
         if response.success:
@@ -625,7 +574,6 @@ class QuizEvaluatorClient(BaseServiceClient):
 
 
 class RAGChatbotClient(BaseServiceClient):
-    """Enhanced client for RAG Chatbot service."""
 
     def __init__(self):
         super().__init__("rag_chatbot_service")
@@ -637,7 +585,6 @@ class RAGChatbotClient(BaseServiceClient):
         retrieval_config: Optional[Dict] = None,
         chat_config: Optional[Dict] = None,
     ) -> Dict[str, Any]:
-        """Send chat message to RAG service."""
         data = {
             "query": query,
             "conversation_id": conversation_id,
@@ -660,7 +607,6 @@ class RAGChatbotClient(BaseServiceClient):
     def get_conversation_history(
         self, conversation_id: str, limit: int = 10
     ) -> Dict[str, Any]:
-        """Get conversation history."""
         params = {"limit": limit}
 
         logger.info(
@@ -679,7 +625,6 @@ class RAGChatbotClient(BaseServiceClient):
         return response.data
 
     def list_conversations(self, limit: int = 20) -> Dict[str, Any]:
-        """List all conversations."""
         params = {"limit": limit}
 
         logger.info(f"[{self.service_name}] Listing conversations")
@@ -695,18 +640,15 @@ class RAGChatbotClient(BaseServiceClient):
 
 
 class IAMServiceClient(BaseServiceClient):
-    """Enhanced client for IAM (Identity & Access Management) service."""
 
     def __init__(self):
         super().__init__("iam_service")
 
     def register_user(self, user_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Register a new user with all required/optional fields for IAM UserCreateSerializer."""
         logger.info(
             f"[{self.service_name}] Registering user: {user_data.get('username')}"
         )
 
-        # Ensure all fields expected by UserCreateSerializer are present
         payload = {
             "username": user_data.get("username", ""),
             "email": user_data.get("email", ""),
@@ -731,7 +673,6 @@ class IAMServiceClient(BaseServiceClient):
         return response.data
 
     def login(self, username: str, password: str) -> Dict[str, Any]:
-        """Login user and get JWT tokens."""
         logger.info(f"[{self.service_name}] Login attempt for user: {username}")
 
         data = {"username": username, "password": password}
@@ -747,7 +688,6 @@ class IAMServiceClient(BaseServiceClient):
         return response.data
 
     def logout(self, refresh_token: str) -> Dict[str, Any]:
-        """Logout user and blacklist token."""
         logger.info(f"[{self.service_name}] Logging out user")
 
         data = {"refresh": refresh_token}
@@ -761,7 +701,6 @@ class IAMServiceClient(BaseServiceClient):
         return response.data
 
     def get_current_user(self, access_token: str) -> Dict[str, Any]:
-        """Get current user information."""
         headers = {"Authorization": f"Bearer {access_token}"}
         response = self._make_request("GET", "/api/users/me/", headers=headers)
 
@@ -773,7 +712,6 @@ class IAMServiceClient(BaseServiceClient):
         return response.data
 
     def get_user(self, user_id: str, access_token: str) -> Dict[str, Any]:
-        """Get user by ID."""
         headers = {"Authorization": f"Bearer {access_token}"}
         response = self._make_request("GET", f"/api/users/{user_id}/", headers=headers)
 
@@ -787,7 +725,6 @@ class IAMServiceClient(BaseServiceClient):
     def update_user(
         self, user_id: str, access_token: str, user_data: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Update user information."""
         headers = {"Authorization": f"Bearer {access_token}"}
         response = self._make_request(
             "PUT", f"/api/users/{user_id}/", data=user_data, headers=headers
@@ -803,7 +740,6 @@ class IAMServiceClient(BaseServiceClient):
     def change_password(
         self, user_id: str, access_token: str, password_data: Dict[str, str]
     ) -> Dict[str, Any]:
-        """Change user password."""
         headers = {"Authorization": f"Bearer {access_token}"}
         response = self._make_request(
             "POST",
@@ -822,7 +758,6 @@ class IAMServiceClient(BaseServiceClient):
     def list_users(
         self, access_token: str, page: int = 1, search: str = ""
     ) -> Dict[str, Any]:
-        """List users with pagination and search."""
         headers = {"Authorization": f"Bearer {access_token}"}
         params = {"page": page}
         if search:
@@ -840,7 +775,6 @@ class IAMServiceClient(BaseServiceClient):
         return response.data
 
     def verify_token(self, access_token: str) -> bool:
-        """Verify if token is valid."""
         try:
             headers = {"Authorization": f"Bearer {access_token}"}
             response = self._make_request("GET", "/api/users/me/", headers=headers)
@@ -849,7 +783,6 @@ class IAMServiceClient(BaseServiceClient):
             return False
 
     def refresh_token(self, refresh_token: str) -> Dict[str, Any]:
-        """Refresh access token."""
         data = {"refresh": refresh_token}
         response = self._make_request("POST", "/api/token/refresh/", data=data)
 
@@ -862,8 +795,6 @@ class IAMServiceClient(BaseServiceClient):
 
 
 class ServiceRegistry:
-    """Registry for managing all service clients."""
-
     def __init__(self):
         self.clients = {
             "quiz_generator": QuizGeneratorClient(),
@@ -875,13 +806,11 @@ class ServiceRegistry:
         }
 
     def get_client(self, service_name: str) -> BaseServiceClient:
-        """Get service client by name."""
         if service_name not in self.clients:
             raise ValueError(f"Unknown service: {service_name}")
         return self.clients[service_name]
 
     def health_check_all(self) -> Dict[str, Dict[str, Any]]:
-        """Check health of all registered services."""
         health_results = {}
 
         for service_name, client in self.clients.items():
@@ -897,17 +826,14 @@ class ServiceRegistry:
         return health_results
 
     def get_services_info(self) -> Dict[str, Dict[str, Any]]:
-        """Get information about all services."""
         return {
             service_name: client.get_service_info()
             for service_name, client in self.clients.items()
         }
 
 
-# Global service registry instance
 service_registry = ServiceRegistry()
 
-# Backward compatibility - singleton instances
 quiz_generator_client = service_registry.get_client("quiz_generator")
 quiz_evaluator_client = service_registry.get_client("quiz_evaluator")
 ocr_service_client = service_registry.get_client("ocr_service")

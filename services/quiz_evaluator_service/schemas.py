@@ -5,7 +5,6 @@ from enum import Enum
 
 
 class QuestionType(str, Enum):
-    """Các loại câu hỏi hỗ trợ."""
 
     mcq = "mcq"
     tf = "tf"
@@ -13,7 +12,6 @@ class QuestionType(str, Enum):
 
 
 class Grade(str, Enum):
-    """Hệ thống xếp loại."""
 
     A = "A"  # 90-100%
     B = "B"  # 80-89%
@@ -23,7 +21,6 @@ class Grade(str, Enum):
 
 
 class UserQuestion(BaseModel):
-    """Câu hỏi với đáp án của người dùng."""
 
     id: str
     type: QuestionType
@@ -37,16 +34,14 @@ class UserQuestion(BaseModel):
 
 
 class UserInfo(BaseModel):
-    """Thông tin người dùng làm bài."""
 
     user_id: Optional[str] = None
-    completion_time: Optional[int] = None  # seconds
+    completion_time: Optional[int] = None 
     timestamp: datetime = Field(default_factory=datetime.now)
     session_id: Optional[str] = None
 
 
 class QuizSubmission(BaseModel):
-    """Input - Bài nộp của người dùng."""
 
     quiz_id: str
     questions: List[UserQuestion]
@@ -55,7 +50,6 @@ class QuizSubmission(BaseModel):
 
 
 class QuestionResult(BaseModel):
-    """Kết quả từng câu hỏi."""
 
     question_id: str
     is_correct: bool
@@ -68,7 +62,6 @@ class QuestionResult(BaseModel):
 
 
 class EvaluationSummary(BaseModel):
-    """Tổng kết điểm số."""
 
     total_questions: int
     correct_answers: int
@@ -81,7 +74,6 @@ class EvaluationSummary(BaseModel):
 
 
 class TopicBreakdown(BaseModel):
-    """Phân tích theo chủ đề."""
 
     topic: str
     total_questions: int
@@ -91,7 +83,6 @@ class TopicBreakdown(BaseModel):
 
 
 class Analysis(BaseModel):
-    """Phân tích AI chi tiết."""
 
     strengths: List[str] = Field(default_factory=list)
     weaknesses: List[str] = Field(default_factory=list)
@@ -102,7 +93,6 @@ class Analysis(BaseModel):
 
 
 class EvaluationConfig(BaseModel):
-    """Cấu hình đánh giá."""
 
     include_explanations: bool = True
     include_ai_analysis: bool = True
@@ -119,7 +109,6 @@ class EvaluationConfig(BaseModel):
 
 
 class EvaluationResult(BaseModel):
-    """Output - Kết quả đánh giá hoàn chỉnh."""
 
     evaluation_id: str
     quiz_id: str
@@ -133,7 +122,6 @@ class EvaluationResult(BaseModel):
 
 
 class EvaluateRequest(BaseModel):
-    """Request wrapper cho API."""
 
     submission: QuizSubmission
     config: Optional[EvaluationConfig] = None

@@ -1,15 +1,7 @@
-"""
-Django settings for QuickQuiz Gateway Service.
-
-Clean, production-ready API Gateway configuration.
-"""
-
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load environment variables from parent directory
-# Look for .env in QuickQuiz root directory
 current_dir = Path(__file__).resolve().parent
 project_root = current_dir.parent.parent.parent
 env_path = project_root / ".env"
@@ -17,12 +9,7 @@ env_path = project_root / ".env"
 if env_path.exists():
     load_dotenv(env_path)
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# ==============================================================================
-# CORE DJANGO SETTINGS
-# ==============================================================================
 
 SECRET_KEY = os.getenv(
     "DJANGO_SECRET_KEY", "django-insecure-gateway-dev-key-change-in-production"
@@ -32,7 +19,6 @@ DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,0.0.0.0").split(",")
 
-# Application definition
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -40,10 +26,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Third party apps
+
     "rest_framework",
     "corsheaders",
-    # Local apps
+
     "api",
 ]
 
@@ -78,9 +64,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "gateway.wsgi.application"
 
-# ==============================================================================
-# DATABASE CONFIGURATION
-# ==============================================================================
 
 DATABASES = {
     "default": {
@@ -88,10 +71,6 @@ DATABASES = {
         "NAME": BASE_DIR / "data" / "gateway.db",
     }
 }
-
-# ==============================================================================
-# SECURITY & AUTHENTICATION
-# ==============================================================================
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -108,18 +87,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# ==============================================================================
-# INTERNATIONALIZATION
-# ==============================================================================
+
 
 LANGUAGE_CODE = "vi-vn"
 TIME_ZONE = "Asia/Ho_Chi_Minh"
 USE_I18N = True
 USE_TZ = True
 
-# ==============================================================================
-# STATIC FILES & MEDIA
-# ==============================================================================
+
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -130,11 +105,8 @@ STATICFILES_DIRS = [
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# ==============================================================================
-# API GATEWAY CONFIGURATION
-# ==============================================================================
 
-# Django REST Framework
+
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
@@ -156,20 +128,17 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {"anon": "100/hour", "user": "1000/hour"},
 }
 
-# CORS Configuration for Frontend Integration
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React dev server
-    "http://localhost:8080",  # Vue dev server
+    "http://localhost:3000",
+    "http://localhost:8080",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:8080",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = DEBUG  # Only for development
+CORS_ALLOW_ALL_ORIGINS = DEBUG  
 
-# ==============================================================================
-# MICROSERVICES CONFIGURATION
-# ==============================================================================
+
 
 MICROSERVICES = {
     "quiz_generator": {
@@ -190,21 +159,21 @@ MICROSERVICES = {
         "host": os.getenv("OCR_SERVICE_HOST", "localhost"),
         "port": os.getenv("OCR_SERVICE_PORT", "8004"),
         "health_endpoint": "/health",
-        "timeout": 60,  # OCR might take longer
+        "timeout": 60, 
         "retry_count": 3,
     },
     "summary_service": {
         "host": os.getenv("SUMMARY_SERVICE_HOST", "localhost"),
         "port": os.getenv("SUMMARY_SERVICE_PORT", "8005"),
         "health_endpoint": "/health",
-        "timeout": 60,  # Summarization might take longer
+        "timeout": 60,  
         "retry_count": 3,
     },
     "rag_chatbot_service": {
         "host": os.getenv("RAG_CHATBOT_HOST", "localhost"),
         "port": os.getenv("RAG_CHATBOT_PORT", "8006"),
         "health_endpoint": "/health",
-        "timeout": 45,  # RAG processing might take time
+        "timeout": 45,  
         "retry_count": 3,
     },
     "iam_service": {
@@ -214,7 +183,7 @@ MICROSERVICES = {
         "timeout": 30,
         "retry_count": 3,
     },
-    # Legacy service for backward compatibility
+
     "extract_information": {
         "host": os.getenv("EXTRACT_INFORMATION_HOST", "localhost"),
         "port": os.getenv("EXTRACT_INFORMATION_PORT", "8004"),
@@ -224,13 +193,10 @@ MICROSERVICES = {
     },
 }
 
-# Dynamically construct base URLs
 for service_name, config in MICROSERVICES.items():
     config["base_url"] = f"http://{config['host']}:{config['port']}"
 
-# ==============================================================================
-# LOGGING CONFIGURATION
-# ==============================================================================
+
 
 LOGGING = {
     "version": 1,
@@ -281,32 +247,23 @@ LOGGING = {
     },
 }
 
-# ==============================================================================
-# PERFORMANCE & CACHING
-# ==============================================================================
 
-# Cache configuration (for future use)
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": "unique-snowflake",
-        "TIMEOUT": 800,  # 15 minutes
+        "TIMEOUT": 800, 
         "OPTIONS": {"MAX_ENTRIES": 1000},
     }
 }
 
-# ==============================================================================
-# MONITORING & HEALTH CHECK
-# ==============================================================================
 
-# Health check settings
 HEALTH_CHECK = {
-    "CACHE_TIMEOUT": 60,  # Cache health check results for 60 seconds
-    "DISK_USAGE_MAX": 90,  # Maximum disk usage percentage
-    "MEMORY_MIN": 100,  # Minimum available memory in MB
+    "CACHE_TIMEOUT": 60, 
+    "DISK_USAGE_MAX": 90,  
+    "MEMORY_MIN": 100,  
 }
 
-# Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # File Upload Settings

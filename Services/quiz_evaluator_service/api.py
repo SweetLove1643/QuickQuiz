@@ -1,10 +1,3 @@
-"""
-FastAPI server for Quiz Evaluator
-=================================
-
-RESTful API endpoints for evaluating quiz results and providing learning analytics.
-"""
-
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ValidationError
@@ -15,15 +8,12 @@ from typing import Dict, Any
 from tasks import evaluate_quiz
 from database import create_tables
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Create database tables on startup
 create_tables()
 logger.info("Database tables initialized")
 
-# Create FastAPI app
 app = FastAPI(
     title="Quiz Evaluator API",
     description="Evaluate Vietnamese quiz results with AI-powered learning analytics using Google Gemini API",
@@ -32,10 +22,9 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure this for production
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -55,54 +44,18 @@ class ErrorResponse(BaseModel):
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    """Health check endpoint."""
     return HealthResponse(status="healthy", service="quiz_evaluator", version="1.0.0")
 
 
 @app.post("/quiz/evaluate")
 async def evaluate_quiz_endpoint(request_data: Dict[str, Any]):
-    """
-    Evaluate quiz results and provide learning analytics.
-
-    Expected input format:
-    {
-        "submission": {
-            "quiz_id": "quiz-12345",
-            "questions": [
-                {
-                    "id": "q1",
-                    "type": "mcq",
-                    "stem": "Câu hỏi...",
-                    "options": ["A", "B", "C"],
-                    "correct_answer": "A",
-                    "user_answer": "B",
-                    "topic": "Python basics"
-                }
-            ],
-            "user_info": {
-                "user_id": "user123",
-                "completion_time": 300,
-                "session_id": "session456"
-            }
-        },
-        "config": {
-            "include_explanations": true,
-            "include_ai_analysis": true,
-            "save_history": true
-        }
-    }
-
-    Returns comprehensive evaluation results with AI analysis.
-    """
     try:
         logger.info(
             f"Received quiz evaluation request for quiz: {request_data.get('submission', {}).get('quiz_id', 'unknown')}"
         )
 
-        # Evaluate quiz using the existing function
         result_json = evaluate_quiz(request_data)
 
-        # Parse JSON to validate it's correct
         result_data = json.loads(result_json)
 
         logger.info(
@@ -126,7 +79,6 @@ async def evaluate_quiz_endpoint(request_data: Dict[str, Any]):
 
 @app.get("/quiz/grading-scale")
 async def get_grading_scale():
-    """Get the current grading scale configuration."""
     return {
         "grading_scale": {
             "A": {"min": 90, "max": 100, "description": "Xuất sắc"},
@@ -147,7 +99,6 @@ async def get_grading_scale():
 
 @app.get("/results/user/{user_id}")
 async def get_user_results(user_id: str, limit: int = 50, offset: int = 0):
-    """Get all quiz results for a specific user."""
     try:
         from database import QuizSubmission, get_db
 
@@ -205,7 +156,6 @@ async def get_user_results(user_id: str, limit: int = 50, offset: int = 0):
 
 @app.get("/results/user/{user_id}/recent")
 async def get_user_recent_results(user_id: str, limit: int = 10):
-    """Get recent quiz results for a user (for home page)."""
     try:
         from database import QuizSubmission, get_db
 
@@ -245,7 +195,6 @@ async def get_user_recent_results(user_id: str, limit: int = 10):
 
 @app.get("/")
 async def root():
-    """Root endpoint with API information."""
     return {
         "service": "Quiz Evaluator API",
         "version": "1.0.0",

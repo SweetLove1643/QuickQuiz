@@ -22,40 +22,22 @@ logger = logging.getLogger(__name__)
 
 
 def evaluate_quiz(data: Dict[str, Any]) -> str:
-    """Đánh giá kết quả bài kiểm tra và phân tích học tập.
-
-    Args:
-        data: Dictionary chứa submission và config
-
-    Returns:
-        JSON string chứa kết quả đánh giá hoàn chỉnh
-
-    Raises:
-        ValueError: Nếu dữ liệu đầu vào không hợp lệ
-        RuntimeError: Nếu phân tích AI thất bại
-    """
     try:
-        # Parse và validate input
         submission = QuizSubmission(**data.get("submission", {}))
         config = EvaluationConfig(**data.get("config", {}))
 
-        # Tạo ID đánh giá
         evaluation_id = f"eval-{uuid.uuid4().hex[:8]}"
 
-        # Bước 1: Tính điểm cơ bản
         summary, question_results = _calculate_scores(submission, config)
 
-        # Bước 2: Phân tích theo topic/category
         topic_breakdown = _analyze_by_topic(question_results)
 
-        # Bước 3: AI analysis (nếu được bật)
-        analysis = Analysis()  # Default empty analysis
+        analysis = Analysis() 
         if config.include_ai_analysis:
             analysis = _get_ai_analysis(
                 submission, summary, topic_breakdown, question_results
             )
 
-        # Bước 4: Tạo kết quả cuối cùng
         result = EvaluationResult(
             evaluation_id=evaluation_id,
             quiz_id=submission.quiz_id,
@@ -80,7 +62,6 @@ def evaluate_quiz(data: Dict[str, Any]) -> str:
             },
         )
 
-        # Bước 5: Lưu lịch sử (nếu được bật)
         if config.save_history:
             _save_evaluation_history(result)
 
@@ -98,7 +79,6 @@ def evaluate_quiz(data: Dict[str, Any]) -> str:
 def _calculate_scores(
     submission: QuizSubmission, config: EvaluationConfig
 ) -> tuple[EvaluationSummary, List[QuestionResult]]:
-    """Tính điểm số và tạo kết quả từng câu hỏi."""
 
     question_results = []
     correct_count = 0
@@ -108,7 +88,6 @@ def _calculate_scores(
     max_points = 0.0
 
     for question in submission.questions:
-        # Điểm cho mỗi câu (có thể custom theo difficulty)
         points_per_question = 1.0
         if question.difficulty == "hard":
             points_per_question = 1.5
@@ -117,7 +96,6 @@ def _calculate_scores(
 
         max_points += points_per_question
 
-        # Check câu trả lời
         user_answer = question.user_answer.strip() if question.user_answer else None
         correct_answer = question.correct_answer.strip()
 
@@ -150,7 +128,6 @@ def _calculate_scores(
 
         question_results.append(question_result)
 
-    # Tính phần trăm và xếp loại
     total_questions = len(submission.questions)
     score_percentage = (
         (correct_count / total_questions * 100) if total_questions > 0 else 0
@@ -172,25 +149,20 @@ def _calculate_scores(
 
 
 def _analyze_by_topic(question_results: List[QuestionResult]) -> List[TopicBreakdown]:
-    """Phân tích kết quả theo topic/category."""
 
     topic_stats = defaultdict(lambda: {"total": 0, "correct": 0})
 
-    # Collect stats by topic
     for result in question_results:
         topic = result.topic or "General"
         topic_stats[topic]["total"] += 1
         if result.is_correct:
             topic_stats[topic]["correct"] += 1
 
-    # Build topic breakdown
     topic_breakdown = []
     for topic, stats in topic_stats.items():
         accuracy = (
             (stats["correct"] / stats["total"] * 100) if stats["total"] > 0 else 0
         )
-
-        # Đề xuất cơ bản dựa trên accuracy
         recommendations = []
         if accuracy < 50:
             recommendations.append(f"Cần học lại toàn bộ chủ đề {topic}")
@@ -211,7 +183,6 @@ def _analyze_by_topic(question_results: List[QuestionResult]) -> List[TopicBreak
 
         topic_breakdown.append(breakdown)
 
-    # Sort by accuracy (worst first để ưu tiên cải thiện)
     topic_breakdown.sort(key=lambda x: x.accuracy_rate)
 
     return topic_breakdown
@@ -223,10 +194,8 @@ def _get_ai_analysis(
     topic_breakdown: List[TopicBreakdown],
     question_results: List[QuestionResult],
 ) -> Analysis:
-    """Lấy phân tích AI từ Gemini."""
 
     try:
-        # Chuẩn bị data cho AI
         quiz_data = {"quiz_id": submission.quiz_id, "questions": []}
 
         for i, question in enumerate(submission.questions):
@@ -246,7 +215,6 @@ def _get_ai_analysis(
                 }
             )
 
-        # Topic breakdown để truyền cho AI
         topic_data = []
         for topic in topic_breakdown:
             topic_data.append(
@@ -258,7 +226,6 @@ def _get_ai_analysis(
                 }
             )
 
-        # Gọi AI
         gemini = GeminiEvaluationAdapter()
         ai_response = gemini.analyze_quiz_results(
             quiz_data=quiz_data,
@@ -267,7 +234,6 @@ def _get_ai_analysis(
             topic_breakdown=topic_data,
         )
 
-        # Parse AI response
         analysis_data = _parse_ai_analysis(ai_response)
 
         return Analysis(**analysis_data)
@@ -275,7 +241,6 @@ def _get_ai_analysis(
     except Exception as e:
         logger.error(f"AI analysis failed: {e}")
 
-        # Fallback analysis
         return Analysis(
             strengths=["Hoàn thành bài kiểm tra"],
             weaknesses=(
@@ -289,10 +254,8 @@ def _get_ai_analysis(
 
 
 def _parse_ai_analysis(raw_response: str) -> Dict[str, Any]:
-    """Parse response từ AI thành format Analysis."""
 
     try:
-        # Clean up response
         cleaned = raw_response.strip()
         if cleaned.startswith("```json"):
             cleaned = cleaned[7:]
@@ -302,30 +265,24 @@ def _parse_ai_analysis(raw_response: str) -> Dict[str, Any]:
             cleaned = cleaned[:-3]
         cleaned = cleaned.strip()
 
-        # Parse JSON - attempt to fix incomplete JSON
         try:
             analysis_data = json.loads(cleaned)
         except json.JSONDecodeError as parse_error:
-            # Try to fix incomplete JSON by closing brackets
             logger.warning(f"JSON parsing failed, attempting to fix: {parse_error}")
 
-            # Count opening/closing brackets to fix incomplete JSON
             open_square = cleaned.count("[")
             close_square = cleaned.count("]")
             open_curly = cleaned.count("{")
             close_curly = cleaned.count("}")
 
-            # Add missing closing brackets
             fixed = cleaned
             if open_square > close_square:
                 fixed += "]" * (open_square - close_square)
             if open_curly > close_curly:
                 fixed += "}" * (open_curly - close_curly)
 
-            # Try parsing again
             analysis_data = json.loads(fixed)
 
-        # Validate required fields và set defaults
         required_fields = [
             "strengths",
             "weaknesses",
@@ -346,7 +303,6 @@ def _parse_ai_analysis(raw_response: str) -> Dict[str, Any]:
         logger.error(f"Failed to parse AI analysis JSON: {e}")
         logger.error(f"Raw response was: {raw_response}")
 
-        # Return default analysis
         return {
             "strengths": ["Tham gia làm bài kiểm tra"],
             "weaknesses": ["Cần phân tích chi tiết hơn"],
@@ -358,7 +314,6 @@ def _parse_ai_analysis(raw_response: str) -> Dict[str, Any]:
 
 
 def _generate_explanation(question, user_answer: str, correct_answer: str) -> str:
-    """Tạo giải thích cơ bản cho câu trả lời sai."""
 
     if question.type == QuestionType.mcq:
         return f"Đáp án đúng là '{correct_answer}'. Bạn đã chọn '{user_answer}'."
@@ -371,18 +326,15 @@ def _generate_explanation(question, user_answer: str, correct_answer: str) -> st
 
 
 def _determine_grade(score_percentage: float, grading_scale: Dict[str, tuple]) -> Grade:
-    """Xác định grade dựa trên điểm số và thang điểm."""
 
     for grade_letter, (min_score, max_score) in grading_scale.items():
         if min_score <= score_percentage <= max_score:
             return Grade(grade_letter)
 
-    # Default fallback
     return Grade.F
 
 
 def _save_evaluation_history(result: EvaluationResult) -> None:
-    """Lưu lịch sử đánh giá vào database."""
     from database import (
         SessionLocal,
         QuizSubmission as DBQuizSubmission,
@@ -393,7 +345,6 @@ def _save_evaluation_history(result: EvaluationResult) -> None:
 
     db = SessionLocal()
     try:
-        # Save quiz submission
         submission = DBQuizSubmission(
             submission_id=f"sub-{uuid.uuid4().hex[:8]}",
             quiz_id=result.quiz_id,
@@ -432,7 +383,6 @@ def _save_evaluation_history(result: EvaluationResult) -> None:
         )
         db.add(submission)
 
-        # Save evaluation result
         evaluation = DBEvaluationResult(
             evaluation_id=result.evaluation_id,
             submission_id=submission.submission_id,

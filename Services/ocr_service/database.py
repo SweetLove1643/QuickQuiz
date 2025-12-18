@@ -2,16 +2,13 @@ from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
-import os
 
-# Database setup
 DATABASE_URL = "sqlite:///./ocr_service.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
-# Database Models
 class OCRRequestModel(Base):
     __tablename__ = "ocr_requests"
 
@@ -25,12 +22,10 @@ class OCRRequestModel(Base):
 
 
 def init_db():
-    """Initialize database and create tables"""
     Base.metadata.create_all(bind=engine)
 
 
 def get_db():
-    """Get database session"""
     db = SessionLocal()
     try:
         yield db
@@ -45,7 +40,6 @@ async def log_ocr_request(
     num_images: int,
     extracted_text: str,
 ):
-    """Log OCR request to database"""
     try:
         db = SessionLocal()
 
@@ -70,7 +64,6 @@ async def log_ocr_request(
 
 
 async def get_ocr_stats():
-    """Get OCR service statistics"""
     try:
         db = SessionLocal()
 

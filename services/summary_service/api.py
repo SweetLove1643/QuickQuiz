@@ -14,13 +14,9 @@ from summary_processor import SummaryProcessor
 from database import init_db, log_summary_request
 
 
-# Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ==============================
-# FastAPI app
-# ==============================
 app = FastAPI(
     title="Summary Service API",
     description="Document summarization service using ViT5 + LoRA",
@@ -29,9 +25,6 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# ==============================
-# CORS
-# ==============================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -40,14 +33,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ==============================
-# Init DB
-# ==============================
 init_db()
 
-# ==============================
-# Init processors (LOAD ONCE)
-# ==============================
 CHECKPOINT_PATH = "./ViT5_checkpoint_epochs4"
 
 try:
@@ -60,9 +47,6 @@ except Exception as e:
     raise e
 
 
-# ==============================
-# Health check
-# ==============================
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
     return HealthResponse(
@@ -72,9 +56,6 @@ async def health_check():
     )
 
 
-# ==============================
-# Summarize text
-# ==============================
 @app.post("/summarize_text", response_model=SummaryResponse)
 async def summarize_text(request: SummaryRequestModel):
     if not request.text or not request.text.strip():
@@ -109,9 +90,6 @@ async def summarize_text(request: SummaryRequestModel):
         )
 
 
-# ==============================
-# OCR + Summarize
-# ==============================
 @app.post("/ocr_and_summarize", response_model=OCRSummaryResponse)
 async def ocr_and_summarize(
     files: List[UploadFile] = File(...)
@@ -188,9 +166,6 @@ async def ocr_and_summarize(
         )
 
 
-# ==============================
-# Legacy endpoint
-# ==============================
 @app.post("/image_ocr")
 async def image_ocr_legacy(
     files: List[UploadFile] = File(...)

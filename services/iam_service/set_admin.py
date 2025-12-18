@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import os
 import django
 
@@ -10,4 +9,4 @@ from api.models import User
 user = User.objects.get(username="Admin")
 user.is_staff = True
 user.save()
-print(f"✓ User {user.username} is_staff set to True")
+print(f"User {user.username} is_staff set to True")

@@ -32,7 +32,6 @@ logger = logging.getLogger(__name__)
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    """User management endpoints"""
 
     queryset = User.objects.all()
     permission_classes = [IsAuthenticated]
@@ -49,15 +48,12 @@ class UserViewSet(viewsets.ModelViewSet):
         return UserSerializer
 
     def get_queryset(self):
-        # Students can only see their own profile
         if self.request.user.role == "student":
             return User.objects.filter(user_id=self.request.user.user_id)
-        # Teachers can see students and other teachers
         elif self.request.user.role == "teacher":
             return User.objects.filter(
                 Q(role="student") | Q(user_id=self.request.user.user_id)
             )
-        # Admins can see all users
         return User.objects.all()
 
     def get_permissions(self):
@@ -72,15 +68,12 @@ class UserViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
     def create(self, request, *args, **kwargs):
-        """Register a new user"""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
-        # Create JWT tokens
         refresh = RefreshToken.for_user(user)
 
-        # Log the action
         self._log_action(
             user=user,
             action="create_user",
@@ -99,16 +92,13 @@ class UserViewSet(viewsets.ModelViewSet):
         )
 
     def retrieve(self, request, *args, **kwargs):
-        """Get user details"""
         user = self.get_object()
         serializer = self.get_serializer(user)
         return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):
-        """Update user information"""
         user = self.get_object()
 
-        # Check permission
         if request.user.user_id != user.user_id and not request.user.is_staff:
             return Response(
                 {"detail": "You can only update your own profile."},
@@ -130,7 +120,6 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(UserSerializer(user).data)
 
     def destroy(self, request, *args, **kwargs):
-        """Delete user (admin only)"""
         user = self.get_object()
         user_id = user.user_id
         user.delete()
@@ -147,10 +136,8 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def change_password(self, request, pk=None):
-        """Change user password"""
         user = self.get_object()
 
-        # Check permission
         if request.user.user_id != user.user_id and not request.user.is_staff:
             return Response(
                 {"detail": "You can only change your own password."},
@@ -179,7 +166,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], permission_classes=[IsAdminUser])
     def disable_user(self, request, pk=None):
-        """Disable user account (admin only)"""
         user = self.get_object()
         user.is_active = False
         user.save()
@@ -198,7 +184,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], permission_classes=[IsAdminUser])
     def enable_user(self, request, pk=None):
-        """Enable user account (admin only)"""
         user = self.get_object()
         user.is_active = True
         user.save()
@@ -217,7 +202,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"], permission_classes=[AllowAny])
     def login(self, request):
-        """Login and get JWT tokens"""
         logger.info(
             f"[IAM Login] Received login request from {request.data.get('username')}"
         )
@@ -255,7 +239,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"], permission_classes=[IsAuthenticated])
     def logout(self, request):
-        """Logout and blacklist refresh token"""
         try:
             refresh_token = request.data.get("refresh")
             if refresh_token:
@@ -279,7 +262,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
     def me(self, request):
-        """Get current user information"""
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
@@ -294,7 +276,6 @@ class UserViewSet(viewsets.ModelViewSet):
         user_agent="",
         details=None,
     ):
-        """Log user actions"""
         try:
             AuditLog.objects.create(
                 user=user,
@@ -311,7 +292,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @staticmethod
     def _get_client_ip(request):
-        """Get client IP address"""
         x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
         if x_forwarded_for:
             ip = x_forwarded_for.split(",")[0]
@@ -321,7 +301,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class UserProfileViewSet(viewsets.ModelViewSet):
-    """User profile management"""
 
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
@@ -333,7 +312,6 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         return UserProfile.objects.filter(user=self.request.user)
 
     def update(self, request, *args, **kwargs):
-        """Update user profile"""
         profile = self.get_object()
         if request.user.user_id != profile.user.user_id and not request.user.is_staff:
             return Response(
@@ -344,7 +322,6 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
 
 class RoleViewSet(viewsets.ReadOnlyModelViewSet):
-    """Role management (read-only for non-admin)"""
 
     queryset = Role.objects.all()
     serializer_class = RoleSerializer
@@ -354,7 +331,6 @@ class RoleViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
-    """Permission management (read-only)"""
 
     queryset = Permission.objects.all()
     serializer_class = PermissionSerializer
@@ -364,7 +340,6 @@ class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
-    """Audit log viewing (admin only)"""
 
     queryset = AuditLog.objects.all()
     serializer_class = AuditLogSerializer

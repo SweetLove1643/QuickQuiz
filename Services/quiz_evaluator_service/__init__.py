@@ -1,17 +1,3 @@
-"""
-Quiz Evaluator Package
-=====================
-
-Đánh giá kết quả bài kiểm tra và phân tích học tập cho người dùng.
-
-Features:
-- Tính điểm và xếp loại tự động
-- Phân tích ưu nhược điểm theo topic/category
-- Đề xuất cải thiện từ AI (Gemini API)
-- Lưu lịch sử đánh giá
-- REST API với FastAPI
-"""
-
 from .tasks import evaluate_quiz
 from .schemas import (
     QuizSubmission,

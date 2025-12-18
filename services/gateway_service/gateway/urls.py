@@ -1,9 +1,3 @@
-"""
-URL configuration for QuickQuiz Gateway Service.
-
-Clean URL routing for the API Gateway.
-"""
-
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
@@ -12,7 +6,6 @@ from django.conf.urls.static import static
 
 
 def gateway_info(request):
-    """Gateway information endpoint."""
     return JsonResponse(
         {
             "service": "QuickQuiz API Gateway",
@@ -34,15 +27,11 @@ def gateway_info(request):
 
 
 urlpatterns = [
-    # Gateway info
     path("", gateway_info, name="gateway_info"),
-    # Django admin
     path("admin/", admin.site.urls),
-    # API routes
     path("api/", include("api.urls")),
 ]
 
-# Serve static files during development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

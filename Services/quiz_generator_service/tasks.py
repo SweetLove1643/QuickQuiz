@@ -12,7 +12,6 @@ from schemas import GenerateRequest, Quiz, QuizQuestion
 from llm_adapter import GeminiAdapter
 from database import SessionLocal, GenerationHistory, GeneratedQuiz, ContentCache
 
-# Load environment variables from .env file
 load_dotenv()
 
 logger = logging.getLogger(__name__)
@@ -24,7 +23,6 @@ def get_db_session():
 
 
 def _build_prompt_from_sections(sections):
-    # Simple prompt: include all sections concatenated; production should chunk and RAG
     texts = []
     for s in sections:
         texts.append(f"Section {s['id']}: {s.get('summary')}")
@@ -32,15 +30,8 @@ def _build_prompt_from_sections(sections):
 
 
 def generate_quiz_job(job_id: str, request_payload: dict) -> dict:
-    """Run the quiz generation pipeline (callable from a Celery task).
-
-    request_payload is the parsed JSON matching GenerateRequest.
-    Returns metadata dict including quiz_id and storage path.
-    """
     start_time = time.time()
 
-    # Support a per-request 'use_canned' flag (coming from the UI) without
-    # passing unknown fields into the Pydantic model.
     payload_copy = dict(request_payload or {})
     use_canned = bool(payload_copy.pop("use_canned", False))
     req = GenerateRequest(**payload_copy)
@@ -49,10 +40,8 @@ def generate_quiz_job(job_id: str, request_payload: dict) -> dict:
 
     sections = []
     if req.sections:
-        # use Pydantic v2 API model_dump
         sections = [s.model_dump() for s in req.sections]
 
-    # Incorporate generation config: number of questions and types (Vietnamese only)
     n_questions = req.config.n_questions if req.config and req.config.n_questions else 5
     types = (
         req.config.types
@@ -69,8 +58,6 @@ def generate_quiz_job(job_id: str, request_payload: dict) -> dict:
             types = list(cfg_types)
 
     prompt = _build_prompt_from_sections(sections)
-    # Provide an explicit example schema and examples for each question type to
-    # help the LLM output the correct JSON shape for mcq, tf and short.
     example = (
         "[\n"
         '  {"id": "q1", "type": "mcq", "stem": "Đâu là X?", '
@@ -93,10 +80,7 @@ def generate_quiz_job(job_id: str, request_payload: dict) -> dict:
     )
 
     gemini = GeminiAdapter()
-    # If this request asked for a canned response, temporarily set the
-    # environment variable the adapter checks. Use try/finally to restore.
     prev_canned = os.environ.get("USE_CANNED_LLM")
-    # Read optional default model from env so we send the model name to Gemini
     model_name = os.environ.get("GEMINI_MODEL")
     try:
         if use_canned:
@@ -104,29 +88,22 @@ def generate_quiz_job(job_id: str, request_payload: dict) -> dict:
         out_text = gemini.generate(prompt, max_tokens=4096, model=model_name)
     except Exception:
         logger.exception("LLM generation failed for job %s", job_id)
-        # In real task, mark job as failed in DB
         raise
     finally:
-        # restore previous env var state
         if prev_canned is None:
             os.environ.pop("USE_CANNED_LLM", None)
         else:
             os.environ["USE_CANNED_LLM"] = prev_canned
 
-    # Try parse output as JSON. LLMs often return JSON wrapped in markdown code fences
-    # or with extra text. Try to extract a JSON substring first (balanced braces) before
-    # calling json.loads.
     def _extract_json_text(s: str) -> Optional[str]:
         import re
 
         if not s:
             return None
-        # remove common code fences ```json ... ``` or ``` ... ```
         m = re.search(r"```(?:json)?\s*(.*?)```", s, re.S | re.I)
         if m:
             s = m.group(1)
 
-        # find first JSON opening bracket
         start = None
         for i, ch in enumerate(s):
             if ch in "[{":
@@ -135,7 +112,6 @@ def generate_quiz_job(job_id: str, request_payload: dict) -> dict:
         if start is None:
             return None
 
-        # scan forward to find the matching closing bracket using a stack
         stack = []
         pairs = {"{": "}", "[": "]"}
         for i in range(start, len(s)):
@@ -150,7 +126,6 @@ def generate_quiz_job(job_id: str, request_payload: dict) -> dict:
 
     questions = []
     parsed = None
-    # attempt to extract JSON substring
     json_text = _extract_json_text(out_text)
     try:
         if json_text:
@@ -158,7 +133,6 @@ def generate_quiz_job(job_id: str, request_payload: dict) -> dict:
         else:
             parsed = json.loads(out_text)
         if isinstance(parsed, list):
-            # map to our schema
             for i, q in enumerate(parsed):
                 qobj = {
                     "id": q.get("id") or f"q{i+1}",
@@ -172,7 +146,6 @@ def generate_quiz_job(job_id: str, request_payload: dict) -> dict:
                 }
                 questions.append(qobj)
         else:
-            # If LLM returned a dict or other shape, wrap it
             questions = [
                 {
                     "id": "q1",
@@ -183,7 +156,6 @@ def generate_quiz_job(job_id: str, request_payload: dict) -> dict:
                 }
             ]
     except Exception:
-        # Fallback: wrap raw text as single fill_blank question
         questions = [
             {
                 "id": "q1",
@@ -194,31 +166,25 @@ def generate_quiz_job(job_id: str, request_payload: dict) -> dict:
             }
         ]
 
-    # Post-process / normalize questions to ensure they match expected shapes
     def _normalize(qs):
         norm = []
         for q in qs:
             t = (q.get("type") or "").lower()
             if t not in ("mcq", "tf", "fill_blank"):
-                # fallback to mcq if unknown
                 t = "mcq"
             q["type"] = t
 
             if t == "fill_blank":
-                # fill_blank questions should not have options
                 q["options"] = None
-                # ensure answer is a short text and stem contains blank
                 if q.get("answer") == "" or q.get("answer") is None:
                     q["answer"] = "[đáp án]"
                 else:
                     q["answer"] = str(q.get("answer"))
-                # ensure stem has blank marker
                 stem = q.get("stem", "")
                 if "_____" not in stem and "___" not in stem:
                     q["stem"] = stem + " _____"
 
             elif t == "tf":
-                # normalize TF options and answer
                 q["options"] = ["Đúng", "Sai"]
                 ans = q.get("answer")
                 if isinstance(ans, str):
@@ -228,32 +194,25 @@ def generate_quiz_job(job_id: str, request_payload: dict) -> dict:
                     elif ans_lower in ("false", "f", "0", "sai"):
                         q["answer"] = "Sai"
                     else:
-                        # unknown -> default Sai
                         q["answer"] = "Sai"
                 else:
                     q["answer"] = "Sai"
 
-            else:  # mcq
+            else:  
                 opts = q.get("options")
                 if not isinstance(opts, list) or len(opts) == 0:
-                    # create simple distractors if missing
                     q["options"] = ["A", "B", "C", "D"]
-                # ensure answer matches one option when possible
                 ans = q.get("answer")
                 if ans and ans not in q["options"]:
-                    # try to find close match or default to first
                     q["answer"] = q["options"][0]
             norm.append(q)
         return norm
 
     questions = _normalize(questions)
 
-    # Enforce requested number of questions: truncate if too many. If too few,
-    # leave as-is (could implement padding later).
     if len(questions) > n_questions:
         questions = questions[:n_questions]
 
-    # Convert question dicts to QuizQuestion objects for schema validation
     question_objs = [QuizQuestion(**q) for q in questions]
     quiz = Quiz(
         id=quiz_id, questions=question_objs, meta={"source_count": len(sections)}
@@ -261,11 +220,9 @@ def generate_quiz_job(job_id: str, request_payload: dict) -> dict:
 
     quiz_data = quiz.model_dump()
 
-    # Save to database
     try:
         db = get_db_session()
 
-        # Save generation history
         history = GenerationHistory(
             job_id=job_id,
             quiz_id=quiz_id,
@@ -283,14 +240,13 @@ def generate_quiz_job(job_id: str, request_payload: dict) -> dict:
         )
         db.add(history)
 
-        # Save generated quiz for caching
         generated_quiz = GeneratedQuiz(
             quiz_id=quiz_id,
             questions_data=quiz_data,
             quiz_metadata={"generation_time": time.time()},
             source_sections=sections,
             generation_config=request_payload.get("config", {}),
-            validation_summary={},  # Will be updated by AI validation
+            validation_summary={}, 
         )
         db.add(generated_quiz)
 
@@ -305,7 +261,6 @@ def generate_quiz_job(job_id: str, request_payload: dict) -> dict:
         if "db" in locals():
             db.close()
 
-    # Return quiz data directly without saving to file
     return quiz_data
 
 

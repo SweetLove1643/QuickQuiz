@@ -29,7 +29,6 @@ from contextlib import closing
 
 logger = logging.getLogger(__name__)
 
-# Document storage (lightweight sqlite)
 DOCUMENT_DB_PATH = os.path.abspath(os.path.join(settings.BASE_DIR, "documents.db"))
 
 
@@ -93,7 +92,6 @@ def fetch_documents(limit: int = 50):
         return [dict(row) for row in rows]
 
 
-# Initialize service clients
 quiz_generator = QuizGeneratorClient()
 quiz_evaluator = QuizEvaluatorClient()
 ocr_service = OCRServiceClient()
@@ -105,11 +103,7 @@ iam_service = IAMServiceClient()
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def health_check(request):
-    """
-    Health check endpoint for the API Gateway
-    """
     try:
-        # Check microservices health
         generator_health = quiz_generator.health_check()
         evaluator_health = quiz_evaluator.health_check()
         ocr_health = ocr_service.health_check()
@@ -155,9 +149,6 @@ def health_check(request):
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def api_root(request):
-    """
-    API root endpoint with available endpoints
-    """
     return Response(
         {
             "message": "QuickQuiz API Gateway",
@@ -174,11 +165,7 @@ def api_root(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def generate_quiz(request):
-    """
-    Generate quiz endpoint - proxies to quiz generator service
-    """
     try:
-        # Extract and validate request data
         data = request.data
         sections = data.get("sections", [])
         config = data.get("config", {})
@@ -187,7 +174,6 @@ def generate_quiz(request):
             f"Generating quiz: {len(sections)} sections, {config.get('n_questions', 'unknown')} questions"
         )
 
-        # Call quiz generator service with correct arguments
         result = quiz_generator.generate_quiz(sections, config)
 
         if result:
@@ -206,7 +192,6 @@ def generate_quiz(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def save_quiz(request):
-    """Save quiz payload via quiz generator service."""
     try:
         data = request.data
         logger.info(
@@ -224,11 +209,7 @@ def save_quiz(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def evaluate_quiz(request):
-    """
-    Evaluate quiz endpoint - proxies to quiz evaluator service
-    """
     try:
-        # Extract and validate request data
         data = request.data
         submission = data.get("submission", {})
         config = data.get("config", {})
@@ -236,7 +217,6 @@ def evaluate_quiz(request):
         quiz_id = submission.get("quiz_id", "unknown")
         logger.info(f"Evaluating quiz {quiz_id}")
 
-        # Call quiz evaluator service with correct arguments
         result = quiz_evaluator.evaluate_quiz(submission, config)
 
         if result:
@@ -255,7 +235,6 @@ def evaluate_quiz(request):
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def get_user_quizzes(request, user_id):
-    """Get all quizzes created by a specific user."""
     try:
         limit = request.GET.get("limit", 50)
         offset = request.GET.get("offset", 0)
@@ -270,7 +249,6 @@ def get_user_quizzes(request, user_id):
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def get_user_recent_quizzes(request, user_id):
-    """Get recent quizzes created by a user."""
     try:
         limit = request.GET.get("limit", 10)
 
@@ -284,7 +262,6 @@ def get_user_recent_quizzes(request, user_id):
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def get_quiz_details(request, quiz_id):
-    """Get full quiz details including all questions."""
     try:
         result = quiz_generator.get_quiz_details(quiz_id)
         return Response(result, status=status.HTTP_200_OK)
@@ -296,7 +273,6 @@ def get_quiz_details(request, quiz_id):
 @api_view(["DELETE"])
 @permission_classes([AllowAny])
 def delete_quiz(request, quiz_id):
-    """Delete a quiz by ID."""
     try:
         result = quiz_generator.delete_quiz(quiz_id)
         return Response(result, status=status.HTTP_200_OK)
@@ -308,7 +284,6 @@ def delete_quiz(request, quiz_id):
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def get_user_results(request, user_id):
-    """Get all quiz results for a specific user."""
     try:
         limit = request.GET.get("limit", 50)
         offset = request.GET.get("offset", 0)
@@ -323,7 +298,6 @@ def get_user_results(request, user_id):
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def get_user_recent_results(request, user_id):
-    """Get recent quiz results for a user."""
     try:
         limit = request.GET.get("limit", 10)
 
@@ -336,12 +310,7 @@ def get_user_recent_results(request, user_id):
 
 @method_decorator(csrf_exempt, name="dispatch")
 class QuizView(View):
-    """
-    Class-based view for quiz operations
-    """
-
     def get(self, request):
-        """Get quiz information"""
         return JsonResponse(
             {
                 "available_operations": ["generate", "evaluate"],
@@ -353,7 +322,6 @@ class QuizView(View):
         )
 
     def post(self, request):
-        """Handle quiz operations based on action parameter"""
         try:
             data = json.loads(request.body)
             action = data.get("action")
@@ -379,16 +347,8 @@ class QuizView(View):
             logger.error(f"Quiz operation failed: {str(e)}")
             return JsonResponse({"error": str(e)}, status=500)
 
-
-# ==============================================================================
-# OCR SERVICE VIEWS
-# ==============================================================================
-
-
 @method_decorator(csrf_exempt, name="dispatch")
 class OCRView(View):
-    """OCR service overview and operations"""
-
     def get(self, request):
         """Get OCR service information"""
         return JsonResponse(
@@ -415,12 +375,10 @@ def extract_text_single(request):
 
         uploaded_file = request.FILES["file"]
 
-        # Prepare file data
         file_data = uploaded_file.read()
         filename = uploaded_file.name
         content_type = uploaded_file.content_type
 
-        # Call OCR service
         result = ocr_service.extract_text_single(file_data, filename, content_type)
 
         return JsonResponse(result)
@@ -433,13 +391,11 @@ def extract_text_single(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def extract_text_multi(request):
-    """Extract text from multiple images"""
     try:
         files = request.FILES.getlist("files")
         if not files:
             return JsonResponse({"error": "No files provided"}, status=400)
 
-        # Prepare files data
         files_data = []
         for uploaded_file in files:
             files_data.append(
@@ -450,7 +406,6 @@ def extract_text_multi(request):
                 }
             )
 
-        # Call OCR service
         result = ocr_service.extract_text_multi(files_data)
 
         return JsonResponse(result)
@@ -463,13 +418,11 @@ def extract_text_multi(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def extract_information_legacy(request):
-    """Legacy OCR endpoint for backward compatibility"""
     try:
         files = request.FILES.getlist("files")
         if not files:
             return JsonResponse({"error": "No files provided"}, status=400)
 
-        # Prepare files data
         files_data = []
         for uploaded_file in files:
             files_data.append(
@@ -480,7 +433,6 @@ def extract_information_legacy(request):
                 }
             )
 
-        # Call legacy OCR service
         result = ocr_service.extract_information_legacy(files_data)
 
         return JsonResponse(result)
@@ -490,17 +442,11 @@ def extract_information_legacy(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 
-# ==============================================================================
-# SUMMARY SERVICE VIEWS
-# ==============================================================================
 
 
 @method_decorator(csrf_exempt, name="dispatch")
 class SummaryView(View):
-    """Summary service overview and operations"""
-
     def get(self, request):
-        """Get Summary service information"""
         return JsonResponse(
             {
                 "service": "Summary Service",
@@ -519,7 +465,6 @@ class SummaryView(View):
 @csrf_exempt
 @require_http_methods(["POST"])
 def summarize_text(request):
-    """Summarize provided text"""
     try:
         data = json.loads(request.body)
         text = data.get("text")
@@ -527,7 +472,6 @@ def summarize_text(request):
         if not text:
             return JsonResponse({"error": "Text content is required"}, status=400)
 
-        # Call Summary service
         result = summary_service.summarize_text(text)
 
         return JsonResponse(result)
@@ -542,11 +486,6 @@ def summarize_text(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def ocr_and_summarize(request):
-    """Extract text from base64 image or multipart upload and create summary"""
-    import base64
-    import io
-    import requests
-
     try:
         # Nhận multipart: dùng request.FILES
         if request.content_type and request.content_type.startswith("multipart/"):
@@ -602,22 +541,32 @@ def ocr_and_summarize(request):
         if not image_base64:
             return JsonResponse({"error": "No image provided"}, status=400)
 
-        if "," in image_base64:
-            image_base64 = image_base64.split(",", 1)[1]
-        image_bytes = base64.b64decode(image_base64)
-
-        files = [("files", ("image.png", io.BytesIO(image_bytes), "image/png"))]
-        summary_service_url = f"{summary_service.base_url}/ocr_and_summarize"
-        resp = requests.post(summary_service_url, files=files, timeout=600)
-        if resp.status_code != 200:
-            return JsonResponse(
-                {"error": f"Summary service error: {resp.text}"},
-                status=resp.status_code,
+        import base64
+        import io
+        from django.core.files.uploadedfile import InMemoryUploadedFile
+        
+        try:
+            image_data = base64.b64decode(image_base64)
+            image_file = InMemoryUploadedFile(
+                file=io.BytesIO(image_data),
+                field_name='files',
+                name='image.png',
+                content_type='image/png',
+                size=len(image_data),
+                charset=None
             )
+            
+            files_data = [
+                {
+                    "filename": "image.png",
+                    "data": image_data,
+                    "content_type": "image/png",
+                }
+            ]
 
-        result = resp.json()
-        return JsonResponse(
-            {
+            result = summary_service.ocr_and_summarize(files_data)
+            
+            return JsonResponse({
                 "ocr": {
                     "extracted_text": result.get("extracted_text", ""),
                     "confidence_score": 0.85,
@@ -639,7 +588,6 @@ def ocr_and_summarize(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def recommend_study(request):
-    """Generate study recommendations"""
     try:
         data = json.loads(request.body)
         content = data.get("content")
@@ -649,7 +597,6 @@ def recommend_study(request):
         if not content:
             return JsonResponse({"error": "Content is required"}, status=400)
 
-        # Call Summary service
         result = summary_service.recommend_study(content, difficulty_level, study_time)
 
         return JsonResponse(result)
@@ -664,13 +611,11 @@ def recommend_study(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def image_ocr_legacy(request):
-    """Legacy OCR endpoint for Summary service"""
     try:
         files = request.FILES.getlist("files")
         if not files:
             return JsonResponse({"error": "No files provided"}, status=400)
 
-        # Prepare files data
         files_data = []
         for uploaded_file in files:
             files_data.append(
@@ -681,7 +626,6 @@ def image_ocr_legacy(request):
                 }
             )
 
-        # Call legacy Summary service
         result = summary_service.image_ocr_legacy(files_data)
 
         return JsonResponse(result)
@@ -691,17 +635,12 @@ def image_ocr_legacy(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 
-# ==============================================================================
-# RAG CHATBOT SERVICE VIEWS
-# ==============================================================================
 
 
 @method_decorator(csrf_exempt, name="dispatch")
 class ChatView(View):
-    """RAG Chatbot service overview and operations"""
 
     def get(self, request):
-        """Get RAG Chatbot service information"""
         return JsonResponse(
             {
                 "service": "RAG Chatbot Service",
@@ -720,7 +659,6 @@ class ChatView(View):
 @csrf_exempt
 @require_http_methods(["POST"])
 def chat_message(request):
-    """Send message to RAG chatbot"""
     try:
         data = json.loads(request.body)
         query = data.get("query")
@@ -739,7 +677,6 @@ def chat_message(request):
                 status=400,
             )
 
-        # Call RAG service
         result = rag_chatbot.chat(
             query=query,
             conversation_id=conversation_id,
@@ -772,11 +709,9 @@ def chat_message(request):
 @csrf_exempt
 @require_http_methods(["GET"])
 def list_conversations(request):
-    """List all conversations"""
     try:
         limit = int(request.GET.get("limit", 20))
 
-        # Call RAG service
         result = rag_chatbot.list_conversations(limit=limit)
 
         return JsonResponse(result)
@@ -789,11 +724,9 @@ def list_conversations(request):
 @csrf_exempt
 @require_http_methods(["GET"])
 def get_conversation_history(request, conversation_id):
-    """Get conversation history"""
     try:
         limit = int(request.GET.get("limit", 10))
 
-        # Call RAG service
         result = rag_chatbot.get_conversation_history(
             conversation_id=conversation_id, limit=limit
         )
@@ -808,11 +741,9 @@ def get_conversation_history(request, conversation_id):
 @csrf_exempt
 @require_http_methods(["POST"])
 def save_document(request):
-    """Save processed document to database with comprehensive validation"""
     try:
         data = json.loads(request.body)
 
-        # Extract required fields
         file_name = data.get("fileName")
         file_size = data.get("fileSize")
         file_type = data.get("fileType")
@@ -820,32 +751,28 @@ def save_document(request):
         summary = (data.get("summary") or "").strip()
         document_id = data.get("documentId")
 
-        logger.info(f"📥 Save document request:")
-        logger.info(f"  Document ID: {document_id}")
-        logger.info(f"  File name: {file_name}")
-        logger.info(f"  Extracted text length: {len(extracted_text)}")
-        logger.info(f"  Summary length: {len(summary)}")
+        logger.info(f"Save document request:")
+        logger.info(f"Document ID: {document_id}")
+        logger.info(f"File name: {file_name}")
+        logger.info(f"Extracted text length: {len(extracted_text)}")
+        logger.info(f"Summary length: {len(summary)}")
 
-        # ✅ VALIDATION 1: Required fields
         if not file_name:
-            logger.error("❌ Validation failed: missing file_name")
+            logger.error("Validation failed: missing file_name")
             return JsonResponse(
                 {"error": "Missing required field: fileName"},
                 status=400,
             )
 
         if not document_id:
-            logger.error("❌ Validation failed: missing document_id")
+            logger.error("Validation failed: missing document_id")
             return JsonResponse(
                 {"error": "Missing required field: documentId"},
                 status=400,
             )
 
-        # ✅ VALIDATION 2: Content exists and is meaningful
         if not extracted_text and not summary:
-            logger.error(
-                "❌ Validation failed: both extracted_text and summary are empty"
-            )
+            logger.error("Validation failed: both extracted_text and summary are empty")
             return JsonResponse(
                 {
                     "error": "Both extracted_text and summary are empty. Document has no meaningful content."
@@ -853,17 +780,14 @@ def save_document(request):
                 status=400,
             )
 
-        # ✅ Stricter validation - minimum length check
         MIN_TEXT_LENGTH = 20
         extracted_text_valid = extracted_text and len(extracted_text) >= MIN_TEXT_LENGTH
         summary_valid = summary and len(summary) >= MIN_TEXT_LENGTH
 
         if not extracted_text_valid and not summary_valid:
-            logger.error(f"❌ Validation failed: content too short")
-            logger.error(
-                f"   extracted_text: {len(extracted_text)} chars (min: {MIN_TEXT_LENGTH})"
-            )
-            logger.error(f"   summary: {len(summary)} chars (min: {MIN_TEXT_LENGTH})")
+            logger.error(f"Validation failed: content too short")
+            logger.error(f"extracted_text: {len(extracted_text)} chars (min: {MIN_TEXT_LENGTH})")
+            logger.error(f"summary: {len(summary)} chars (min: {MIN_TEXT_LENGTH})")
             return JsonResponse(
                 {
                     "error": f"Content too short. Minimum {MIN_TEXT_LENGTH} characters required."
@@ -871,15 +795,13 @@ def save_document(request):
                 status=400,
             )
 
-        # ✅ Use the one with more meaningful content
         if extracted_text_valid and not summary_valid:
             summary = extracted_text[:2000]
-            logger.info("ℹ️ Using extracted_text as summary")
+            logger.info(" Using extracted_text as summary")
         elif summary_valid and not extracted_text_valid:
             extracted_text = summary[:5000]
-            logger.info("ℹ️ Using summary as extracted_text")
+            logger.info(" Using summary as extracted_text")
 
-        # Create document record
         document_data = {
             "document_id": document_id,
             "file_name": file_name,
@@ -890,38 +812,31 @@ def save_document(request):
             "created_at": timezone.now().isoformat(),
         }
 
-        logger.info(f"💾 Inserting document to gateway DB: {document_id}")
+        logger.info(f"Inserting document to gateway DB: {document_id}")
 
-        # ✅ Insert vào gateway DB
         try:
             insert_document(document_data)
-            logger.info(f"✅ Document saved to gateway DB successfully: {document_id}")
+            logger.info(f"Document saved to gateway DB successfully: {document_id}")
         except Exception as insert_err:
-            logger.error(
-                f"❌ Failed to insert into gateway DB: {insert_err}", exc_info=True
-            )
+            logger.error(f"Failed to insert into gateway DB: {insert_err}", exc_info=True)
             return JsonResponse(
                 {"error": f"Database insertion failed: {str(insert_err)}"},
                 status=500,
             )
 
-        # 🆕 GIẢI PHÁP 1: Insert trực tiếp vào rag_chatbot.db
-        logger.info(f"� Syncing document to RAG service DB...")
+        logger.info(f"Syncing document to RAG service DB...")
         try:
             rag_sync_success = insert_document_to_rag_db(document_data)
             if rag_sync_success:
-                logger.info(f"✅ Document synced to RAG service DB")
+                logger.info(f"Document synced to RAG service DB")
             else:
-                logger.warning(
-                    f"⚠️ Document sync to RAG service failed, will try rebuild-index"
-                )
+                logger.warning(f"Document sync to RAG service failed, will try rebuild-index")
         except Exception as sync_err:
-            logger.warning(f"⚠️ RAG sync failed: {sync_err}, will try rebuild-index")
+            logger.warning(f"RAG sync failed: {sync_err}, will try rebuild-index")
 
-        # 🆕 GIẢI PHÁP 2: Vẫn gọi rebuild-index để đảm bảo
         try:
-            logger.info(f"🔄 Requesting RAG rebuild-index...")
-
+            logger.info(f"Requesting RAG rebuild-index...")
+            
             original_timeout = rag_chatbot.timeout
             rag_chatbot.timeout = 120
 
@@ -929,17 +844,15 @@ def save_document(request):
                 response = rag_chatbot._make_request("POST", "/admin/rebuild-index")
 
                 if response.success:
-                    logger.info(f"✅ RAG rebuild-index successful")
+                    logger.info(f"RAG rebuild-index successful")
                 else:
-                    logger.warning(
-                        f"⚠️ RAG rebuild-index returned error: {response.error}"
-                    )
-
+                    logger.warning(f"RAG rebuild-index returned error: {response.error}")
+                    
             finally:
                 rag_chatbot.timeout = original_timeout
 
         except Exception as rag_err:
-            logger.warning(f"⚠️ Failed to trigger RAG rebuild: {rag_err}")
+            logger.warning(f"Failed to trigger RAG rebuild: {rag_err}")
 
         return JsonResponse(
             {
@@ -951,22 +864,19 @@ def save_document(request):
         )
 
     except json.JSONDecodeError as e:
-        logger.error(f"❌ Invalid JSON in request: {e}")
+        logger.error(f"Invalid JSON in request: {e}")
         return JsonResponse({"error": "Invalid JSON data"}, status=400)
     except Exception as e:
-        logger.error(f"❌ Document save failed: {e}", exc_info=True)
+        logger.error(f"Document save failed: {e}", exc_info=True)
         return JsonResponse({"error": str(e)}, status=500)
 
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def list_documents(request):
-    """Return available documents from local documents.db."""
-
     try:
         ensure_document_table()
         docs = fetch_documents(limit=100)
-        # Normalize field names for frontend
         documents = [
             {
                 "document_id": d.get("id"),
@@ -987,18 +897,15 @@ def list_documents(request):
         return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 
-# ============= Authentication Endpoints =============
 
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def register(request):
-    """Register a new student account."""
     try:
         data = request.data
         logger.info(f"Registration request for username: {data.get('username')}")
 
-        # Validate required fields
         required_fields = ["username", "email", "password", "password_confirm"]
         for field in required_fields:
             if not data.get(field):
@@ -1007,14 +914,12 @@ def register(request):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-        # Check password match
         if data["password"] != data["password_confirm"]:
             return Response(
                 {"success": False, "error": "Passwords do not match"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Register via IAM service
         user_data = {
             "username": data["username"],
             "email": data["email"],
@@ -1043,7 +948,6 @@ def register(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login(request):
-    """Login with username and password."""
     try:
         data = request.data
         username = data.get("username")
@@ -1057,7 +961,6 @@ def login(request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Login via IAM service
         logger.info(f"Calling IAM service to login user: {username}")
         result = iam_service.login(username, password)
 
@@ -1078,7 +981,6 @@ def login(request):
 
 @api_view(["POST"])
 def logout(request):
-    """Logout and blacklist refresh token."""
     try:
         data = request.data
         refresh_token = data.get("refresh")
@@ -1089,7 +991,6 @@ def logout(request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Logout via IAM service
         iam_service.logout(refresh_token)
 
         logger.info("User logged out")
@@ -1109,7 +1010,6 @@ def logout(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def refresh_token(request):
-    """Refresh access token using refresh token."""
     try:
         data = request.data
         refresh = data.get("refresh")
@@ -1120,7 +1020,6 @@ def refresh_token(request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Refresh via IAM service
         result = iam_service.refresh_token(refresh)
 
         return Response(
@@ -1138,9 +1037,7 @@ def refresh_token(request):
 
 @api_view(["GET"])
 def get_current_user(request):
-    """Get current user information."""
     try:
-        # Get token from Authorization header
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("Bearer "):
             return Response(
@@ -1150,7 +1047,6 @@ def get_current_user(request):
 
         access_token = auth_header.replace("Bearer ", "").strip()
 
-        # Get user info from IAM service
         user_info = iam_service.get_current_user(access_token)
 
         return Response(
@@ -1164,3 +1060,124 @@ def get_current_user(request):
             {"success": False, "error": str(e)},
             status=status.HTTP_401_UNAUTHORIZED,
         )
+
+import base64
+from docx import Document 
+import io
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def process_document(request):
+    try:
+        data = json.loads(request.body)
+        file_base64 = data.get("file_base64")
+        filename = data.get("filename", "document")
+        file_type = data.get("file_type", "unknown")
+
+        logger.info(f"Processing document: {filename} (type: {file_type})")
+
+        if not file_base64:
+            return JsonResponse({"error": "No file provided"}, status=400)
+
+        try:
+            import base64
+            file_data = base64.b64decode(file_base64)
+            logger.info(f"Base64 decoded: {len(file_data)} bytes")
+        except Exception as b64_err:
+            logger.error(f"Base64 decode failed: {b64_err}")
+            return JsonResponse({"error": "Invalid base64 data"}, status=400)
+
+        extracted_text = ""
+
+        if file_type == "docx" or filename.lower().endswith(".docx"):
+            try:
+                logger.info("Extracting text from DOCX...")
+                
+                import io
+                from docx import Document
+                
+                doc = Document(io.BytesIO(file_data))
+
+                paragraphs = []
+                for para in doc.paragraphs:
+                    if para.text.strip():
+                        paragraphs.append(para.text)
+                
+                extracted_text = "\n".join(paragraphs)
+                
+                logger.info(f"DOCX extracted: {len(extracted_text)} chars")
+                
+            except Exception as docx_err:
+                logger.error(f"DOCX extraction failed: {docx_err}", exc_info=True)
+                return JsonResponse(
+                    {"error": f"Failed to extract from DOCX: {str(docx_err)}"},
+                    status=400
+                )
+
+        elif file_type == "pdf" or filename.lower().endswith(".pdf"):
+            try:
+                logger.warning("PDF not implemented - using summary service fallback")
+                
+                files_data = [
+                    {
+                        "filename": filename,
+                        "data": file_data,
+                        "content_type": "application/pdf",
+                    }
+                ]
+                result = summary_service.ocr_and_summarize(files_data)
+                extracted_text = result.get("extracted_text", "")
+                
+            except Exception as pdf_err:
+                logger.error(f"PDF processing failed: {pdf_err}", exc_info=True)
+                return JsonResponse(
+                    {"error": f"Failed to process PDF: {str(pdf_err)}"},
+                    status=400
+                )
+
+        else:
+            return JsonResponse(
+                {"error": f"File type '{file_type}' not supported"},
+                status=400
+            )
+
+        if not extracted_text or len(extracted_text.strip()) < 20:
+            logger.warning(f"Extracted text too short: {len(extracted_text)} chars")
+            return JsonResponse(
+                {"error": "Could not extract meaningful text from document"},
+                status=400
+            )
+
+        try:
+            logger.info("Creating summary...")
+            summary = extracted_text[:2000]  
+            
+            try:
+                summary_response = summary_service.summarize_text(extracted_text)
+                summary = summary_response.get("summary", extracted_text)
+            except Exception as summary_err:
+                logger.warning(f"Summary generation failed: {summary_err}")
+                summary = extracted_text[:2000]
+                
+        except Exception as summary_err:
+            logger.warning(f"Summary creation failed: {summary_err}")
+            summary = extracted_text[:2000]
+
+        logger.info(f"Document processed successfully")
+        logger.info(f"Extracted: {len(extracted_text)} chars")
+        logger.info(f"Summary: {len(summary)} chars")
+
+        return JsonResponse({
+            "success": True,
+            "extracted_text": extracted_text[:5000],
+            "summary": summary[:2000],
+            "filename": filename,
+            "file_type": file_type,
+        })
+
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON in request")
+        return JsonResponse({"error": "Invalid JSON data"}, status=400)
+    except Exception as e:
+        logger.error(f"Document processing failed: {e}", exc_info=True)
+        return JsonResponse({"error": str(e)}, status=500)

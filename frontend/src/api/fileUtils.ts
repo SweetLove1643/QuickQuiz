@@ -49,6 +49,33 @@ export const isDocumentFile = (file: File): boolean => {
   return supportedTypes.includes(file.type.toLowerCase());
 };
 
+// Extract text from DOCX files
+export const extractTextFromDocx = async (file: File): Promise<string> => {
+  try {
+    // Convert file to binary
+    const arrayBuffer = await file.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+    
+    // Try to parse DOCX (simplified - extract from document.xml)
+    // DOCX is a ZIP file containing XML
+    // For now, we'll convert to base64 and let backend handle it
+    const base64 = btoa(String.fromCharCode.apply(null, uint8Array as any));
+    
+    logger.info(`DOCX file converted to base64: ${base64.length} chars`);
+    return base64;
+  } catch (error) {
+    throw new Error(`Failed to process DOCX file: ${error}`);
+  }
+};
+
+// Extract text from DOCX files
+export const isDocxFile = (file: File): boolean => {
+  return (
+    file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+    file.name.toLowerCase().endsWith(".docx")
+  );
+};
+
 // Format file size for display
 export const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return "0 Bytes";
@@ -109,38 +136,84 @@ export const processDocument = async (
 
   try {
     // Handle different file types
-    if (isImageFile(file) || file.type === "application/pdf") {
-      // OCR processing for images and PDFs
-      const result = await quizAPI.ocrAndSummarize(file, {
+    if (isImageFile(file)) {
+      // ========== IMAGE FILES ==========
+      console.log("Processing image file...");
+      const base64 = await fileToBase64(file);
+      const combined = await quizAPI.ocrAndSummarize(base64, {
         style: "detailed",
         max_length: 500,
       });
 
-      // Backend returns { extracted_text, summary, ... } directly
-      if (!result || !result.ocr.extracted_text) {
-        throw new Error("Không nhận được dữ liệu từ server. Vui lòng thử lại.");
+      ocrResponse = combined.ocr;
+      summaryResponse = combined.summary;
+      extractedText = ocrResponse.extracted_text || "";
+      
+      if (!extractedText || extractedText.trim().length === 0) {
+        throw new Error("OCR failed: Không thể trích xuất text từ ảnh. Vui lòng chọn ảnh khác.");
       }
 
-      extractedText = result.ocr.extracted_text;
-      summaryResponse = { summary: result.summary, confidence_score: 0.9 };
-      ocrResponse = {
-        extracted_text: result.ocr.extracted_text,
-        confidence_score: 0.9,
-      };
     } else if (file.type === "text/plain") {
-      // Direct text extraction for text files
+      // ========== TEXT FILES ==========
+      console.log("📝 Processing text file...");
       extractedText = await extractTextFromTextFile(file);
 
-      // Summarize the text content
+      if (!extractedText || extractedText.trim().length === 0) {
+        throw new Error("Tệp text trống. Vui lòng chọn tệp khác.");
+      }
+
       summaryResponse = await quizAPI.summarizeText({
         text: extractedText,
         config: { style: "detailed", max_length: 500 },
       });
+
+        } else if (isDocxFile(file)) {
+      // ========== DOCX FILES (NEW) ==========
+      console.log("📄 Processing DOCX file...");
+      
+      // Convert DOCX to base64 and send to gateway
+      const fileBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          const base64 = result.split(",")[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // FIXED: Call correct gateway endpoint
+      const docxResponse = await quizAPI.makeRequest("/documents/process/", {
+        method: "POST",
+        body: JSON.stringify({
+          file_base64: fileBase64,
+          filename: file.name,
+          file_type: "docx",
+        }),
+      });
+
+      // Extract from response
+      extractedText = docxResponse.extracted_text || docxResponse.summary || "";
+      summaryResponse = { 
+        summary: docxResponse.summary || extractedText 
+      };
+
+      if (!extractedText || extractedText.trim().length === 0) {
+        throw new Error("Không thể trích xuất text từ file DOCX. Vui lòng chọn file khác.");
+      }
+
     } else {
       throw new Error(`Định dạng file ${file.type} chưa được hỗ trợ`);
     }
 
     const processingTime = Date.now() - startTime;
+
+    // Validate summary
+    const finalSummary = summaryResponse?.summary || extractedText;
+    if (!finalSummary || finalSummary.trim().length === 0) {
+      throw new Error("Không thể tạo summary cho tài liệu. Vui lòng thử lại.");
+    }
 
     return {
       fileName: file.name,
