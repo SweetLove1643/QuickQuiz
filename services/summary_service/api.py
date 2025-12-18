@@ -3,6 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 import logging
 import httpx
+import io
+
+try:
+    import fitz  # PyMuPDF
+except ImportError:  # pragma: no cover - optional dependency
+    fitz = None
 
 from schemas import (
     SummaryResponse,
@@ -38,9 +44,7 @@ init_db()
 CHECKPOINT_PATH = "./ViT5_checkpoint_epochs4"
 
 try:
-    summary_processor = SummaryProcessor(
-        checkpoint_path=CHECKPOINT_PATH
-    )
+    summary_processor = SummaryProcessor(checkpoint_path=CHECKPOINT_PATH)
     logger.info("SummaryProcessor initialized successfully")
 except Exception as e:
     logger.exception("Failed to initialize SummaryProcessor")
@@ -65,9 +69,7 @@ async def summarize_text(request: SummaryRequestModel):
         )
 
     try:
-        summary = await summary_processor.summarize_text(
-            request.text
-        )
+        summary = await summary_processor.summarize_text(request.text)
 
         await log_summary_request(
             content_type="text",
@@ -91,9 +93,7 @@ async def summarize_text(request: SummaryRequestModel):
 
 
 @app.post("/ocr_and_summarize", response_model=OCRSummaryResponse)
-async def ocr_and_summarize(
-    files: List[UploadFile] = File(...)
-):
+async def ocr_and_summarize(files: List[UploadFile] = File(...)):
     if not files:
         raise HTTPException(
             status_code=400,
@@ -101,63 +101,100 @@ async def ocr_and_summarize(
         )
 
     try:
-        multipart_files = []
+        pdf_text_parts = []
+        image_files = []
+
         for f in files:
             content = await f.read()
+            content_type = (f.content_type or "").lower()
+            filename = f.filename or ""
 
-            multipart_files.append(
-                (
-                    "files",  
-                    (f.filename, content, f.content_type),
+            if content_type == "application/pdf" or filename.lower().endswith(".pdf"):
+                if fitz is None:
+                    raise HTTPException(
+                        status_code=500,
+                        detail="PDF parsing requires PyMuPDF (pip install pymupdf)",
+                    )
+                text = _extract_pdf_text(content)
+                if text.strip():
+                    pdf_text_parts.append(text)
+                else:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Cannot extract text from PDF: {filename or 'uploaded.pdf'}",
+                    )
+            else:
+                image_files.append(
+                    (
+                        "files",
+                        (
+                            filename or "image.png",
+                            content,
+                            content_type or "application/octet-stream",
+                        ),
+                    )
                 )
-            )
-        OCR_SERVICE_URL = "http://127.0.0.1:8004/extract_information"
-        
-        async with httpx.AsyncClient(timeout=300) as client:
-            response = await client.post(
-                OCR_SERVICE_URL,
-                files=multipart_files,
-            )
-        if response.status_code != 200:
-            raise RuntimeError(
-                f"OCR service error {response.status_code}: {response.text}"
-            )
-        
-        data = response.json()
-        extracted_text = data.get("text", "")
 
-        if isinstance(extracted_text, list):
-            extracted_text = "\n".join(extracted_text)
+        extracted_text_parts = []
 
-        if not isinstance(extracted_text, str):
-            raise ValueError("OCR returned invalid text format")
+        if pdf_text_parts:
+            extracted_text_parts.append("\n\n".join(pdf_text_parts))
 
-        if not extracted_text.strip():
+        if image_files:
+            OCR_SERVICE_URL = "http://127.0.0.1:8004/extract_information"
+            async with httpx.AsyncClient(timeout=300) as client:
+                response = await client.post(
+                    OCR_SERVICE_URL,
+                    files=image_files,
+                )
+            if response.status_code != 200:
+                raise RuntimeError(
+                    f"OCR service error {response.status_code}: {response.text}"
+                )
+
+            data = response.json()
+            extracted_text = data.get("text", "")
+
+            if isinstance(extracted_text, list):
+                extracted_text = "\n".join(extracted_text)
+
+            if not isinstance(extracted_text, str):
+                raise ValueError("OCR returned invalid text format")
+
+            if not extracted_text.strip():
+                raise HTTPException(
+                    status_code=400,
+                    detail="No text could be extracted from uploaded image files",
+                )
+
+            extracted_text_parts.append(extracted_text)
+
+        if not extracted_text_parts:
             raise HTTPException(
                 status_code=400,
                 detail="No text could be extracted from uploaded files",
             )
-        
-        summary = await summary_processor.summarize_text(
-            extracted_text
-        )
+
+        combined_text = "\n\n".join(extracted_text_parts)
+
+        summary = await summary_processor.summarize_text(combined_text)
 
         await log_summary_request(
-            content_type="ocr",
-            input_text=extracted_text[:500],
+            content_type="ocr" if image_files else "pdf",
+            input_text=combined_text[:500],
             summary=summary,
             processing_method="ocr_and_summarize",
             num_files=len(files),
         )
 
         return OCRSummaryResponse(
-            extracted_text=extracted_text,
+            extracted_text=combined_text,
             summary=summary,
             num_files=len(files),
             filenames=[f.filename for f in files],
-            word_count=len(extracted_text.split()),
+            word_count=len(combined_text.split()),
         )
-    
+
     except Exception as e:
         logger.exception("Error in OCR and summarize")
         raise HTTPException(
@@ -167,11 +204,20 @@ async def ocr_and_summarize(
 
 
 @app.post("/image_ocr")
-async def image_ocr_legacy(
-    files: List[UploadFile] = File(...)
-):
+async def image_ocr_legacy(files: List[UploadFile] = File(...)):
     result = await ocr_and_summarize(files)
     return {
         "extracted_text": result.extracted_text,
         "num_files": result.num_files,
     }
+
+
+def _extract_pdf_text(content: bytes) -> str:
+    if fitz is None:
+        raise RuntimeError("PyMuPDF not installed")
+
+    with fitz.open(stream=content, filetype="pdf") as doc:
+        texts = []
+        for page in doc:
+            texts.append(page.get_text("text"))
+    return "\n".join(texts)
