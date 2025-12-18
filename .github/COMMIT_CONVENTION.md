@@ -1,6 +1,6 @@
 # Quy Tắc Viết Commit Message
 
-## Định Dạng: `<type>(<scope>): <subject>`
+## Định Dạng: `<type>: <subject>`
 
 ### Types
 
@@ -13,10 +13,6 @@
 - `chore` - Build process/tools
 - `perf` - Cải thiện hiệu suất
 
-### Scopes
-
-`api`, `ui`, `db`, `quiz-generator`, `quiz-evaluator`, `auth`, `config`
-
 ### Subject Rules
 
 - Thì hiện tại, dạng mệnh lệnh: "add" không phải "added"
@@ -27,17 +23,17 @@
 ## Ví Dụ
 
 ```
-feat(quiz-generator): add multiple choice question generation
-fix(api): resolve null pointer exception in validation
-docs(readme): update installation instructions
-chore(deps): update fastapi to 0.104.0
+feat: add multiple choice question generation
+fix: resolve null pointer exception in validation
+docs: update installation instructions
+chore: update fastapi to 0.104.0
 ```
 
 ## Quy Tắc
 
-✅ Tiếng Anh, tối đa 50 ký tự, một commit một thay đổi
-❌ Tránh: "fix bug", "update code", commit nhiều thay đổi
+Tiếng Anh hoặc tiếng Việt, tối đa 50 ký tự, một commit một thay đổi
+Tránh: "fix bug", "update code", commit nhiều thay đổi
 
 ---
 
-📖 **Tham khảo**: [Conventional Commits](https://www.conventionalcommits.org/)
+> **Tham khảo**: [Conventional Commits](https://www.conventionalcommits.org/)

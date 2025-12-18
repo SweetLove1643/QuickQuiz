@@ -10,3 +10,5 @@
 - [ ] Design documentation is created for new features or updated for changes.
 - [ ] Approved by the reviewer.
 - [ ] The code implemented must match acceptance criteria
+
+> Reference: [pull_request_template](https://github.com/axolo-co/pull_request_template)
