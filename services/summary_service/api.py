@@ -112,17 +112,41 @@ async def ocr_and_summarize(files: List[UploadFile] = File(...)):
 
             if content_type == "application/pdf" or filename_lower.endswith(".pdf"):
                 if fitz is None:
-                    raise HTTPException(
-                        status_code=500,
-                        detail="PDF parsing requires PyMuPDF (pip install pymupdf)",
-                    )
-                text = _extract_pdf_text(content)
-                if text.strip():
-                    pdf_text_parts.append(text)
-                else:
-                    raise HTTPException(
-                        status_code=400,
-                        detail=f"Cannot extract text from PDF: {filename or 'uploaded.pdf'}",
+                    error_detail = "Lỗi xử lý PDF: Thư viện PyMuPDF (fitz) chưa được cài đặt trên máy chủ."
+                    logger.error(error_detail)
+                    raise HTTPException(status_code=500, detail=error_detail)
+                
+                try:
+                    # Attempt to extract text first
+                    text = _extract_pdf_text(content)
+                    if text and text.strip():
+                        logger.info(f"Extracted text from PDF '{filename}' successfully.")
+                        pdf_text_parts.append(text)
+                    else:
+                        # If no text, assume it's an image-based PDF and send to OCR
+                        logger.warning(f"No text found in PDF '{filename}'. Forwarding to OCR service.")
+                        image_files.append(
+                            (
+                                "files",
+                                (
+                                    filename or "document.pdf",
+                                    content,
+                                    "application/pdf",
+                                ),
+                            )
+                        )
+                except Exception as pdf_error:
+                    logger.exception(f"Failed to process PDF '{filename}' directly. Forwarding to OCR as a fallback.")
+                    # If any error occurs during PDF text extraction, treat it as a candidate for OCR
+                    image_files.append(
+                        (
+                            "files",
+                            (
+                                filename or "document.pdf",
+                                content,
+                                "application/pdf",
+                            ),
+                        )
                     )
             elif content_type == "text/plain" or filename_lower.endswith(".txt"):
                 text = content.decode("utf-8", errors="ignore")
