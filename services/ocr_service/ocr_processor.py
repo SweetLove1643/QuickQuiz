@@ -38,27 +38,26 @@ class OCRProcessor:
         except Exception as e:
             logger.error(f"❌ Error loading model: {e}")
             raise e
-    
+
     def estimate_output_tokens(self, image: Image.Image) -> int:
         width, height = image.size
-        print(f'DEBUG: Kích thước hình ảnh đầu vào là: {width}x{height}')
+        print(f"DEBUG: Kích thước hình ảnh đầu vào là: {width}x{height}")
         num_pixels = width * height
         if num_pixels <= 512 * 512:
-            print(f'DEBUG: Max token là: 256')
+            print(f"DEBUG: Max token là: 256")
             return 256
         elif num_pixels <= 720 * 720:
-            print(f'DEBUG: Max token là: 512')
+            print(f"DEBUG: Max token là: 512")
             return 512
         elif num_pixels <= 1024 * 1024:
-            print(f'DEBUG: Max token là: 1024')
+            print(f"DEBUG: Max token là: 1024")
             return 1024
         elif num_pixels <= 1536 * 1536:
-            print(f'DEBUG: Max token là: 1536')
+            print(f"DEBUG: Max token là: 1536")
             return 1536
         else:
-            print(f'DEBUG: Max token là: 2048')
+            print(f"DEBUG: Max token là: 2048")
             return 2048
-    
 
     async def extract_text(self, images: List[Image.Image]) -> str:
         """Extract text from a list of PIL Images"""
@@ -77,7 +76,7 @@ class OCRProcessor:
 
                 BẮT ĐẦU TRÍCH XUẤT DỮ LIỆU:
                 """
-            
+
             # Create messages for the model
             messages = [
                 {
@@ -108,12 +107,13 @@ class OCRProcessor:
             inputs = inputs.to(self.device)
 
             max_tokens = max(self.estimate_output_tokens(img) for img in images)
+            max_tokens = min(max_tokens, 512)  # chặn tối đa 512 tokens
 
             # Generate response
             with torch.no_grad():
                 generated_ids = self.model.generate(
-                    **inputs, 
-                    max_new_tokens=max_tokens, 
+                    **inputs,
+                    max_new_tokens=max_tokens,
                     do_sample=False,
                     use_cache=False,
                 )
@@ -136,5 +136,3 @@ class OCRProcessor:
         except Exception as e:
             logger.error(f"Error in text extraction: {e}")
             raise e
-
-
