@@ -94,7 +94,7 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
     if (aiQuestionTypes.trueFalse) requestedTypes.push("tf");
     if (aiQuestionTypes.fillBlank) requestedTypes.push("fill_blank");
     if (requestedTypes.length === 0) {
-      requestedTypes.push("multiple_choice");
+      requestedTypes.push("mcq");
     }
 
     try {
@@ -119,12 +119,11 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
           question: q.question,
           options: q.options || ["Đúng", "Sai"],
           correctAnswer: q.correctAnswer ?? 0,
-          type:
-            q.type === "multiple-choice"
-              ? "multiple-choice"
-              : q.type === "true-false"
-              ? "true-false"
-              : "fill-blank",
+          type: (q.type === "multiple-choice"
+            ? "multiple-choice"
+            : q.type === "true-false"
+            ? "true-false"
+            : "fill-blank") as "multiple-choice" | "true-false" | "fill-blank",
         })
       );
 
@@ -228,25 +227,31 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
         title: quizTitle,
         document_id: document?.documentId,
         document_name: document?.fileName,
-        questions: questions.map((q) => ({
-          id: q.id,
-          stem: q.question,
-          type:
-            q.type === "true-false"
-              ? "tf"
-              : q.type === "fill-blank"
-              ? "fill_blank"
-              : "mcq",
-          options: q.options,
-          answer:
-            q.type === "true-false"
-              ? q.correctAnswer === 0
-                ? "Đúng"
-                : "Sai"
-              : q.type === "fill-blank"
-              ? q.options[0]
-              : q.options[q.correctAnswer] || "",
-        })),
+        questions: questions.map((q) => {
+          let type: "mcq" | "tf" | "fill_blank";
+          if (q.type === "true-false") {
+            type = "tf";
+          } else if (q.type === "fill-blank") {
+            type = "fill_blank";
+          } else {
+            type = "mcq";
+          }
+
+          return {
+            id: q.id,
+            stem: q.question,
+            type,
+            options: q.options,
+            answer:
+              q.type === "true-false"
+                ? q.correctAnswer === 0
+                  ? "Đúng"
+                  : "Sai"
+                : q.type === "fill-blank"
+                ? q.options[0]
+                : q.options[q.correctAnswer] || "",
+          };
+        }),
         metadata: {
           source: "quick-start",
         },
@@ -258,30 +263,21 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
         throw new Error("Không thể lưu quiz");
       }
 
-      // Show success message
-      const successMsg = `Đã lưu bài quiz "${quizTitle}" thành công!`;
+      // Show success message and navigate to Take Quiz step
+      const successMsg = `Đã lưu bài quiz "${quizTitle}" thành công! Đang chuyển sang bước làm bài...`;
       setSaveSuccess(successMsg);
-      const quizData = {
-        quizId: result.quiz_id,
-        title: quizTitle,
-        questions: questions.map((q) => ({
-          question: q.question,  // Use 'question' field
-          stem: q.question,      // Also keep stem for compatibility
-          type: q.type === "true-false" ? "tf" : q.type === "fill-blank" ? "fill_blank" : "mcq",
-          options: q.options,
-          correctAnswer: q.correctAnswer,  // Index of correct answer
-          answer: q.options[q.correctAnswer],  // Text of answer
-        })),
-        documentId: document?.documentId,
-        documentName: document?.fileName,
-        savedAt: new Date().toISOString(),
-      };
       setIsSavingQuiz(false);
-      // Auto-hide after 3 seconds and reset component
+
+      // Trigger navigation to Take Quiz step with quiz data
       setTimeout(() => {
-        resetComponent();
-        onQuizCreated(quizData);  // <-- Call this!
-      }, 500);
+        onQuizCreated({
+          quiz_id: result.quiz_id || `quiz-${Date.now()}`,
+          title: quizTitle,
+          questions: questions,
+          documentName: document?.fileName,
+          savedAt: new Date().toISOString(),
+        });
+      }, 1000);
       return;
     } catch (err) {
       console.error("Save quiz failed:", err);
@@ -354,13 +350,8 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
                 Loại câu hỏi
               </Label>
               <Select
-                value={question.type || "multiple-choice"}
-                onValueChange={(value) =>
-                  handleQuestionTypeChange(
-                    question.id,
-                    value as "multiple-choice" | "true-false" | "fill-blank"
-                  )
-                }
+                value={aiQuestionCount}
+                onValueChange={(value: string) => setAiQuestionCount(value)}
               >
                 <SelectTrigger id={`type-${question.id}`}>
                   <SelectValue />
@@ -477,10 +468,10 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
                     <Checkbox
                       id="multiple-choice"
                       checked={aiQuestionTypes.multipleChoice}
-                      onCheckedChange={(checked) =>
+                      onCheckedChange={(checked: boolean) =>
                         setAiQuestionTypes({
                           ...aiQuestionTypes,
-                          multipleChoice: checked === true,
+                          multipleChoice: checked,
                         })
                       }
                     />
@@ -492,10 +483,10 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
                     <Checkbox
                       id="true-false"
                       checked={aiQuestionTypes.trueFalse}
-                      onCheckedChange={(checked) =>
+                      onCheckedChange={(checked: boolean) =>
                         setAiQuestionTypes({
                           ...aiQuestionTypes,
-                          trueFalse: checked === true,
+                          trueFalse: checked,
                         })
                       }
                     />
@@ -507,10 +498,10 @@ export function CreateQuiz({ document, onQuizCreated }: CreateQuizProps) {
                     <Checkbox
                       id="fill-blank"
                       checked={aiQuestionTypes.fillBlank}
-                      onCheckedChange={(checked) =>
+                      onCheckedChange={(checked: boolean) =>
                         setAiQuestionTypes({
                           ...aiQuestionTypes,
-                          fillBlank: checked === true,
+                          fillBlank: checked,
                         })
                       }
                     />

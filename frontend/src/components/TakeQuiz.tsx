@@ -1,7 +1,7 @@
 import { Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Progress } from "./ui/progress";
 
 interface TakeQuizProps {
@@ -16,7 +16,7 @@ export function TakeQuiz({ quiz, onQuizCompleted }: TakeQuizProps) {
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Handle null quiz early
+  // Handle null quiz
   if (!quiz || !quiz.questions || quiz.questions.length === 0) {
     return (
       <div className="max-w-4xl mx-auto">
@@ -30,40 +30,16 @@ export function TakeQuiz({ quiz, onQuizCompleted }: TakeQuizProps) {
     );
   }
 
-   // Normalize questions to a single shape used by the UI:
-  const normalizedQuestions = useMemo(() => {
-    return (quiz.questions || []).map((q: any) => {
-      // Extract text from various possible fields
-      const stem = q.stem || q.question || q.text || "";
-      const options = q.options || [];
-      const answerText = q.answer ?? q.correct_answer ?? null;
-  
-      // Determine correct answer index
-      let correctIndex: number;
-  
-      if (q.correctAnswer !== undefined && typeof q.correctAnswer === "number") {
-        correctIndex = q.correctAnswer;
-      } else if (answerText && Array.isArray(options) && options.length > 0) {
-        const idx = options.indexOf(String(answerText));
-        correctIndex = idx >= 0 ? idx : 0;
-      } else {
-        correctIndex = options.length > 0 ? 0 : -1;
-      }
-  
-      return {
-        ...q,
-        question: stem,
-        stem,
-        type: q.type || q.question_type || "mcq",
-        options,
-        correctAnswer: correctIndex,
-        answer: answerText,
-      };
-    });
-  }, [quiz.questions]);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeElapsed((prev) => prev + 1);
+    }, 1000);
 
-  const currentQuestion = normalizedQuestions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / normalizedQuestions.length) * 100;
+    return () => clearInterval(timer);
+  }, []);
+
+  const currentQuestion = quiz.questions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -104,11 +80,11 @@ export function TakeQuiz({ quiz, onQuizCompleted }: TakeQuizProps) {
 
     // Calculate results
     let correctCount = 0;
-    const detailedAnswers = normalizedQuestions.map((q: any, idx: number) => {
+    const detailedAnswers = quiz.questions.map((q: any, idx: number) => {
       let userAnswer;
       let isCorrect = false;
 
-      if (q.type === "fill_blank") {
+      if (q.type === "fill_blank" || q.type === "fill-blank") {
         // For fill-in-the-blank, compare text answer
         userAnswer = textAnswers[idx] || "";
         const correctAnswer = q.options?.[0] || q.answer || "";
@@ -126,13 +102,13 @@ export function TakeQuiz({ quiz, onQuizCompleted }: TakeQuizProps) {
       return {
         question: q.question || q.stem,
         userAnswer:
-          q.type === "fill_blank"
+          q.type === "fill_blank" || q.type === "fill-blank"
             ? textAnswers[idx] || "Không trả lời"
             : userAnswers[idx] !== undefined
             ? q.options?.[userAnswers[idx]]
             : "Không trả lời",
         correctAnswer:
-          q.type === "fill_blank"
+          q.type === "fill_blank" || q.type === "fill-blank"
             ? q.options?.[0] || q.answer
             : q.options?.[q.correctAnswer],
         isCorrect,
@@ -188,7 +164,8 @@ export function TakeQuiz({ quiz, onQuizCompleted }: TakeQuizProps) {
         </h2>
 
         {/* Fill-in-the-blank question */}
-        {currentQuestion.type === "fill_blank" ? (
+        {currentQuestion.type === "fill_blank" ||
+        currentQuestion.type === "fill-blank" ? (
           <div className="space-y-4">
             <label className="block text-slate-700 mb-2">
               Nhập câu trả lời của bạn:
@@ -254,11 +231,11 @@ export function TakeQuiz({ quiz, onQuizCompleted }: TakeQuizProps) {
           Câu trước
         </Button>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap max-w-2xl">
           {quiz.questions.map((q: any, idx: number) => {
             const isAnswered =
-              q.type === "fill_blank"
-                ? textAnswers[idx]?.trim() !== ""
+              q.type === "fill_blank" || q.type === "fill-blank"
+                ? textAnswers[idx]?.trim() && textAnswers[idx]?.trim() !== ""
                 : userAnswers[idx] !== undefined;
 
             return (

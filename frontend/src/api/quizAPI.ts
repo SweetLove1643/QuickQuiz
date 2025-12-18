@@ -13,7 +13,7 @@ const API_CONFIG = {
   },
 
   // Request timeout
-  TIMEOUT: 10 * 60 * 1000,
+  TIMEOUT: 30000,
 
   // Headers
   DEFAULT_HEADERS: {
@@ -221,16 +221,29 @@ class QuizAPI {
 
   // OCR + Summary combined workflow
   async ocrAndSummarize(
-    imageBase64: string,
+    file: File,
     summaryConfig?: SummaryRequest["config"]
   ): Promise<{ ocr: OCRResponse; summary: SummaryResponse }> {
-    return this.makeRequest("/summary/ocr_and_summarize/", {
-      method: "POST",
-      body: JSON.stringify({
-        image: imageBase64,
-        summary_config: summaryConfig || { style: "detailed" },
-      }),
-    });
+    const formData = new FormData();
+    formData.append("files", file);
+    if (summaryConfig) {
+      formData.append("summary_config", JSON.stringify(summaryConfig));
+    }
+
+    // Use fetch directly for FormData (makeRequest adds JSON headers)
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/summary/ocr_and_summarize/`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+    }
+
+    return response.json();
   }
 
   // Get validation metrics
@@ -368,6 +381,11 @@ class QuizAPI {
     });
   }
 
+  // Alias for getQuizDetails - for backward compatibility
+  async getQuizById(quizId: string) {
+    return this.getQuizDetails(quizId);
+  }
+
   // Delete a quiz by ID
   async deleteQuiz(quizId: string): Promise<{
     success: boolean;
@@ -441,6 +459,37 @@ class QuizAPI {
   }> {
     return this.makeRequest("/documents/list/", {
       method: "GET",
+    });
+  }
+
+  // Update an existing document
+  async updateDocument(
+    documentId: string,
+    updates: {
+      title?: string;
+      summary?: string;
+      content?: string;
+    }
+  ): Promise<{
+    success: boolean;
+    message: string;
+    document_id: string;
+    updated_at: string;
+  }> {
+    return this.makeRequest(`/documents/${documentId}/update/`, {
+      method: "PUT",
+      body: JSON.stringify(updates),
+    });
+  }
+
+  // Delete a document
+  async deleteDocument(documentId: string): Promise<{
+    success: boolean;
+    message?: string;
+    error?: string;
+  }> {
+    return this.makeRequest(`/documents/${documentId}/delete/`, {
+      method: "DELETE",
     });
   }
 }

@@ -41,7 +41,15 @@ export function QuizResult({
             questions: result.detailedAnswers.map(
               (answer: any, idx: number) => ({
                 id: `q${idx + 1}`,
-                type: answer.type || "mcq",
+                type:
+                  answer.type === "multiple-choice"
+                    ? "mcq"
+                    : answer.type === "true-false"
+                    ? "tf"
+                    : answer.type === "fill-blank" ||
+                      answer.type === "fill_blank"
+                    ? "fill_blank"
+                    : "mcq",
                 stem: answer.question,
                 options: answer.options || [],
                 correct_answer: answer.correctAnswer,

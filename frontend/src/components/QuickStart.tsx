@@ -70,18 +70,22 @@ export function QuickStart({ onDocumentProcessed }: QuickStartProps) {
         });
 
         if (result.success) {
-          const savedDocument = {
-            ...processedDoc,
-            summary,
-            documentId: result.document_id || processedDoc.documentId,
-            savedAt: result.saved_at,
-          };
-
           setSuccess(
-            `Đã lưu tài liệu "${uploadedFile.name}" vào thư viện thành công!`
+            `Đã lưu tài liệu "${uploadedFile.name}" vào thư viện thành công! Đang chuyển sang bước tạo quiz...`
           );
 
-          onDocumentProcessed(savedDocument);
+          // Trigger auto-navigation to Create Quiz step in Quick Start flow
+          const savedDocument = {
+            ...processedDoc,
+            documentId: result.document_id,
+            extractedText: processedDoc.extractedText,
+            summary: summary,
+          };
+
+          // Small delay to show success message before navigation
+          setTimeout(() => {
+            onDocumentProcessed(savedDocument);
+          }, 1000);
         } else {
           throw new Error("Save failed");
         }

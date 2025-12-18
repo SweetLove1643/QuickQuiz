@@ -1,4 +1,4 @@
-import { ArrowLeft, Edit, Download, Eye, Star, FileText, Calendar } from "lucide-react";
+import { ArrowLeft, Edit, Download, FileText, Calendar } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -16,10 +16,12 @@ export function ViewDocument({ document, onBack, onSave }: ViewDocumentProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(document?.title || "");
   const [editedSummary, setEditedSummary] = useState(
-    document?.summary || "Đây là bản tóm tắt tài liệu. Bạn có thể chỉnh sửa nội dung này để phù hợp với nhu cầu học tập của mình."
+    document?.summary ||
+      "Đây là bản tóm tắt tài liệu. Bạn có thể chỉnh sửa nội dung này để phù hợp với nhu cầu học tập của mình."
   );
   const [editedContent, setEditedContent] = useState(
-    document?.content || `# ${document?.title || "Nội dung tài liệu"}
+    document?.content ||
+      `# ${document?.title || "Nội dung tài liệu"}
 
 ## Giới thiệu
 Đây là nội dung chi tiết của tài liệu. Trong môi trường thực tế, nội dung này sẽ được trích xuất tự động từ file PDF hoặc các định dạng khác mà người dùng upload.
@@ -41,9 +43,9 @@ Tài liệu này cung cấp một cái nhìn tổng quan về chủ đề. Ngư�
 
   const handleDownload = () => {
     const content = `${editedTitle}\n\n${editedSummary}\n\n${editedContent}`;
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
-    const link = window.document.createElement('a');
+    const link = window.document.createElement("a");
     link.href = url;
     link.download = `${editedTitle}.txt`;
     window.document.body.appendChild(link);
@@ -74,11 +76,7 @@ Tài liệu này cung cấp một cái nhìn tổng quan về chủ đề. Ngư�
     <div>
       {/* Header */}
       <div className="mb-6">
-        <Button
-          variant="ghost"
-          className="mb-4"
-          onClick={onBack}
-        >
+        <Button variant="ghost" className="mb-4" onClick={onBack}>
           <ArrowLeft className="size-4 mr-2" />
           Quay lại
         </Button>
@@ -93,28 +91,23 @@ Tài liệu này cung cấp một cái nhìn tổng quan về chủ đề. Ngư�
                 placeholder="Tiêu đề tài liệu"
               />
             ) : (
-              <h1 className="text-slate-900 mb-2">{document?.title || "Tài liệu"}</h1>
+              <h1 className="text-slate-900 mb-2">
+                {document?.title || "Tài liệu"}
+              </h1>
             )}
             <div className="flex items-center gap-4 text-slate-600">
               <div className="flex items-center gap-2">
                 <Calendar className="size-4" />
-                <span>{document?.uploadDate || "Hôm nay"}</span>
+                <span>
+                  {document?.created_at
+                    ? new Date(document.created_at).toLocaleDateString("vi-VN")
+                    : "Hôm nay"}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <FileText className="size-4" />
-                <span>{document?.pages || "0"} trang</span>
+                <span>{document?.file_type || "Tài liệu"}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Eye className="size-4" />
-                <span>{document?.views || "0"} lượt xem</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Star className="size-4 fill-yellow-400 text-yellow-400" />
-                <span>{document?.rating || "0"}</span>
-              </div>
-              <Badge className={document?.status === "Công khai" ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-700"}>
-                {document?.status || "Riêng tư"}
-              </Badge>
             </div>
           </div>
 
@@ -124,9 +117,7 @@ Tài liệu này cung cấp một cái nhìn tổng quan về chủ đề. Ngư�
                 <Button variant="outline" onClick={handleCancel}>
                   Hủy
                 </Button>
-                <Button onClick={handleSave}>
-                  Lưu thay đổi
-                </Button>
+                <Button onClick={handleSave}>Lưu thay đổi</Button>
               </>
             ) : (
               <>
@@ -150,9 +141,7 @@ Tài liệu này cung cấp một cái nhìn tổng quan về chủ đề. Ngư�
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-slate-900">Tóm tắt</h2>
-            {!isEditing && (
-              <Badge variant="outline">AI Generated</Badge>
-            )}
+            {!isEditing && <Badge variant="outline">AI Generated</Badge>}
           </div>
           {isEditing ? (
             <Textarea
@@ -163,9 +152,7 @@ Tài liệu này cung cấp một cái nhìn tổng quan về chủ đề. Ngư�
               className="resize-none"
             />
           ) : (
-            <p className="text-slate-700 leading-relaxed">
-              {editedSummary}
-            </p>
+            <p className="text-slate-700 leading-relaxed">{editedSummary}</p>
           )}
         </Card>
 

@@ -551,22 +551,15 @@ def ocr_and_summarize(request):
 
         # Convert base64 to file-like object
         import base64
-        import io
-        from django.core.files.uploadedfile import InMemoryUploadedFile
-        
+
         try:
+            # Remove data URL prefix if present (e.g., "data:image/png;base64,")
+            if "," in image_base64:
+                image_base64 = image_base64.split(",", 1)[1]
+
             # Decode base64
             image_data = base64.b64decode(image_base64)
-            # Create file-like object
-            image_file = InMemoryUploadedFile(
-                file=io.BytesIO(image_data),
-                field_name='files',
-                name='image.png',
-                content_type='image/png',
-                size=len(image_data),
-                charset=None
-            )
-            
+
             # Prepare files data for service client
             files_data = [
                 {
@@ -578,28 +571,38 @@ def ocr_and_summarize(request):
 
             # Call Summary service
             result = summary_service.ocr_and_summarize(files_data)
-            
-            # Wrap response to match frontend expectations
-            return JsonResponse({
-                "ocr": {
-                    "extracted_text": result.get("extracted_text", ""),
-                    "confidence_score": 0.85,
-                },
-                "summary": {
-                    "summary": result.get("summary", ""),
-                    "confidence_score": 0.85,
-                }
-            })
 
+            # Wrap response to match frontend expectations
+            return JsonResponse(
+                {
+                    "ocr": {
+                        "extracted_text": result.get("extracted_text", ""),
+                        "confidence_score": 0.85,
+                    },
+                    "summary": {
+                        "summary": result.get("summary", ""),
+                        "confidence_score": 0.85,
+                    },
+                }
+            )
+
+        except base64.binascii.Error as b64_err:
+            logger.error(f"Base64 decode failed: {str(b64_err)}")
+            return JsonResponse(
+                {"error": f"Invalid base64 image data: {str(b64_err)}"}, status=400
+            )
         except Exception as e:
-            logger.error(f"Base64 image processing failed: {str(e)}")
-            return JsonResponse({"error": f"Image processing failed: {str(e)}"}, status=400)
+            logger.error(f"Base64 image processing failed: {str(e)}", exc_info=True)
+            return JsonResponse(
+                {"error": f"Image processing failed: {str(e)}"}, status=400
+            )
 
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON data"}, status=400)
     except Exception as e:
-        logger.error(f"OCR and summarization failed: {str(e)}")
+        logger.error(f"OCR and summarization failed: {str(e)}", exc_info=True)
         return JsonResponse({"error": str(e)}, status=500)
+
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -694,12 +697,15 @@ def chat_message(request):
         chat_config = data.get("chat_config", {})
 
         if not query:
-            return JsonResponse({
-                "success": False,
-                "data": None,
-                "error": "Query is required",
-                "status_code": 400
-            }, status=400)
+            return JsonResponse(
+                {
+                    "success": False,
+                    "data": None,
+                    "error": "Query is required",
+                    "status_code": 400,
+                },
+                status=400,
+            )
 
         # Call RAG service
         result = rag_chatbot.chat(
@@ -709,28 +715,26 @@ def chat_message(request):
             chat_config=chat_config,
         )
 
-        return JsonResponse({
-            "success": True,
-            "data": result,
-            "error": None,
-            "status_code": 200
-        })
+        return JsonResponse(
+            {"success": True, "data": result, "error": None, "status_code": 200}
+        )
 
     except json.JSONDecodeError:
-        return JsonResponse({
+        return JsonResponse(
+            {
                 "success": False,
                 "data": None,
                 "error": "Invalid JSON data",
-                "status_code": 400
-            }, status=400)
+                "status_code": 400,
+            },
+            status=400,
+        )
     except Exception as e:
         logger.error(f"Chat message failed: {str(e)}")
-        return JsonResponse({
-                "success": False,
-                "data": None,
-                "error": str(e),
-                "status_code": 500
-            }, status=500)
+        return JsonResponse(
+            {"success": False, "data": None, "error": str(e), "status_code": 500},
+            status=500,
+        )
 
 
 @csrf_exempt
@@ -807,7 +811,9 @@ def save_document(request):
 
         # ✅ VALIDATION 2: Content exists and is meaningful
         if not extracted_text and not summary:
-            logger.error("❌ Validation failed: both extracted_text and summary are empty")
+            logger.error(
+                "❌ Validation failed: both extracted_text and summary are empty"
+            )
             return JsonResponse(
                 {
                     "error": "Both extracted_text and summary are empty. Document has no meaningful content."
@@ -822,7 +828,9 @@ def save_document(request):
 
         if not extracted_text_valid and not summary_valid:
             logger.error(f"❌ Validation failed: content too short")
-            logger.error(f"   extracted_text: {len(extracted_text)} chars (min: {MIN_TEXT_LENGTH})")
+            logger.error(
+                f"   extracted_text: {len(extracted_text)} chars (min: {MIN_TEXT_LENGTH})"
+            )
             logger.error(f"   summary: {len(summary)} chars (min: {MIN_TEXT_LENGTH})")
             return JsonResponse(
                 {
@@ -857,7 +865,9 @@ def save_document(request):
             insert_document(document_data)
             logger.info(f"✅ Document saved to gateway DB successfully: {document_id}")
         except Exception as insert_err:
-            logger.error(f"❌ Failed to insert into gateway DB: {insert_err}", exc_info=True)
+            logger.error(
+                f"❌ Failed to insert into gateway DB: {insert_err}", exc_info=True
+            )
             return JsonResponse(
                 {"error": f"Database insertion failed: {str(insert_err)}"},
                 status=500,
@@ -870,28 +880,32 @@ def save_document(request):
             if rag_sync_success:
                 logger.info(f"✅ Document synced to RAG service DB")
             else:
-                logger.warning(f"⚠️ Document sync to RAG service failed, will try rebuild-index")
+                logger.warning(
+                    f"⚠️ Document sync to RAG service failed, will try rebuild-index"
+                )
         except Exception as sync_err:
             logger.warning(f"⚠️ RAG sync failed: {sync_err}, will try rebuild-index")
 
         # 🆕 GIẢI PHÁP 2: Vẫn gọi rebuild-index để đảm bảo
         try:
             logger.info(f"🔄 Requesting RAG rebuild-index...")
-            
+
             original_timeout = rag_chatbot.timeout
             rag_chatbot.timeout = 120
-            
+
             try:
                 response = rag_chatbot._make_request("POST", "/admin/rebuild-index")
-                
+
                 if response.success:
                     logger.info(f"✅ RAG rebuild-index successful")
                 else:
-                    logger.warning(f"⚠️ RAG rebuild-index returned error: {response.error}")
-                    
+                    logger.warning(
+                        f"⚠️ RAG rebuild-index returned error: {response.error}"
+                    )
+
             finally:
                 rag_chatbot.timeout = original_timeout
-                
+
         except Exception as rag_err:
             logger.warning(f"⚠️ Failed to trigger RAG rebuild: {rag_err}")
 
@@ -910,6 +924,7 @@ def save_document(request):
     except Exception as e:
         logger.error(f"❌ Document save failed: {e}", exc_info=True)
         return JsonResponse({"error": str(e)}, status=500)
+
 
 @api_view(["GET"])
 @permission_classes([AllowAny])

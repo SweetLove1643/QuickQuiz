@@ -45,12 +45,7 @@ export const isImageFile = (file: File): boolean => {
 
 // Check if file is supported document format
 export const isDocumentFile = (file: File): boolean => {
-  const supportedTypes = [
-      "application/pdf",
-      "text/plain",
-      "text/markdown",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    ];
+  const supportedTypes = ["application/pdf", "text/plain", "text/markdown"];
   return supportedTypes.includes(file.type.toLowerCase());
 };
 
@@ -97,6 +92,7 @@ export const extractTextFromTextFile = (file: File): Promise<string> => {
   });
 };
 
+// Process document with appropriate method based on file type
 export const processDocument = async (
   file: File
 ): Promise<ProcessedDocument> => {
@@ -113,30 +109,27 @@ export const processDocument = async (
 
   try {
     // Handle different file types
-    if (isImageFile(file)) {
-      // OCR processing for images
-      const base64 = await fileToBase64(file);
-      const combined = await quizAPI.ocrAndSummarize(base64, {
+    if (isImageFile(file) || file.type === "application/pdf") {
+      // OCR processing for images and PDFs
+      const result = await quizAPI.ocrAndSummarize(file, {
         style: "detailed",
         max_length: 500,
       });
 
-      ocrResponse = combined.ocr;
-      summaryResponse = combined.summary;
-      extractedText = ocrResponse.extracted_text || "";
-      
-      // ✅ FIX 1: Validate extracted text is not empty
-      if (!extractedText || extractedText.trim().length === 0) {
-        throw new Error("OCR failed: Không thể trích xuất text từ ảnh. Vui lòng chọn ảnh khác.");
+      // Backend returns { extracted_text, summary, ... } directly
+      if (!result || !result.ocr.extracted_text) {
+        throw new Error("Không nhận được dữ liệu từ server. Vui lòng thử lại.");
       }
+
+      extractedText = result.ocr.extracted_text;
+      summaryResponse = { summary: result.summary, confidence_score: 0.9 };
+      ocrResponse = {
+        extracted_text: result.ocr.extracted_text,
+        confidence_score: 0.9,
+      };
     } else if (file.type === "text/plain") {
       // Direct text extraction for text files
       extractedText = await extractTextFromTextFile(file);
-
-      // ✅ FIX 2: Validate text file is not empty
-      if (!extractedText || extractedText.trim().length === 0) {
-        throw new Error("Tệp text trống. Vui lòng chọn tệp khác.");
-      }
 
       // Summarize the text content
       summaryResponse = await quizAPI.summarizeText({
@@ -149,28 +142,29 @@ export const processDocument = async (
 
     const processingTime = Date.now() - startTime;
 
-    // ✅ FIX 3: Validate summary response has actual data
-    const finalSummary = summaryResponse?.summary || extractedText;
-    if (!finalSummary || finalSummary.trim().length === 0) {
-      throw new Error("Không thể tạo summary cho tài liệu. Vui lòng thử lại.");
-    }
-
     return {
       fileName: file.name,
       fileSize: file.size,
       fileType: file.type,
-      extractedText: extractedText.trim(),
-      summary: finalSummary.trim(),
+      extractedText,
+      summary:
+        typeof summaryResponse.summary === "string"
+          ? summaryResponse.summary
+          : summaryResponse.summary.summary,
       documentId: `doc_${Date.now()}_${Math.random()
         .toString(36)
         .substr(2, 9)}`,
-      ocrConfidence: ocrResponse?.confidence_score || 0.85,
-      summaryConfidence: summaryResponse?.confidence_score || 0.85,
+      ocrConfidence: ocrResponse?.confidence_score,
+      summaryConfidence: summaryResponse.confidence_score,
       processingTime,
       uploadDate: new Date().toISOString(),
     };
   } catch (error) {
-    console.error("Document processing error:", error);
-    throw error;
+    console.error("Document processing failed:", error);
+    throw new Error(
+      `Xử lý tài liệu thất bại: ${
+        error instanceof Error ? error.message : "Lỗi không xác định"
+      }`
+    );
   }
 };

@@ -1,8 +1,7 @@
 import { Sidebar } from "../components/Sidebar";
 import { TopBar } from "../components/TopBar";
-import { StudySetGrid } from "../components/StudySetGrid";
-import { PopularDocuments } from "../components/PopularDocuments";
-import { PopularQuizzes } from "../components/PopularQuizzes";
+import { RecentDocuments } from "../components/RecentDocuments";
+import { RecentQuizzes } from "../components/RecentQuizzes";
 import { Library } from "../components/Library";
 import { QuickStart } from "../components/QuickStart";
 import { UploadDocumentOnly } from "../components/UploadDocumentOnly";
@@ -12,6 +11,7 @@ import { TakeQuiz } from "../components/TakeQuiz";
 import { QuizResult } from "../components/QuizResult";
 import { ViewDocument } from "../components/ViewDocument";
 import { Chatbot } from "../components/Chatbot";
+import { quizAPI } from "../api/quizAPI";
 import { useState } from "react";
 
 type PageType =
@@ -60,27 +60,21 @@ export const Dashboard = () => {
           <div className="space-y-12">
             <div>
               <div className="mb-8">
-                <h1 className="text-slate-900 mb-2">Gần đây</h1>
-                <p className="text-slate-600">Các bộ thẻ học của bạn</p>
+                <h1 className="text-slate-900 mb-2">Trang chủ</h1>
+                <p className="text-slate-600">
+                  Các tài liệu và quiz gần đây của bạn
+                </p>
               </div>
-              <StudySetGrid
-                onNavigate={navigateToPage}
-                onQuizSelected={setCurrentQuiz}
-                onDocumentSelected={(doc) => {
-                  setCurrentDocument(doc);
-                  setCurrentPage("view-document");
-                }}
-              />
             </div>
 
-            <PopularDocuments
+            <RecentDocuments
               onDocumentSelected={(doc) => {
                 setCurrentDocument(doc);
                 setCurrentPage("view-document");
               }}
             />
 
-            <PopularQuizzes
+            <RecentQuizzes
               onNavigate={navigateToPage}
               onQuizSelected={setCurrentQuiz}
             />
@@ -111,6 +105,7 @@ export const Dashboard = () => {
       case "create-quiz-standalone":
         return (
           <CreateQuizStandalone
+            editingQuiz={currentQuiz}
             onQuizCreated={(quiz) => {
               setCurrentQuiz(quiz);
               setCurrentPage("take-quiz");
@@ -138,7 +133,12 @@ export const Dashboard = () => {
             quiz={currentQuiz}
             onQuizCompleted={(result) => {
               setQuizResult(result);
-              setCurrentPage("quiz-result");
+              // Keep quick-start flow flag when navigating to results
+              if (isInQuickStartFlow) {
+                navigateToPage("quiz-result", true);
+              } else {
+                setCurrentPage("quiz-result");
+              }
             }}
           />
         );
@@ -162,9 +162,31 @@ export const Dashboard = () => {
           <ViewDocument
             document={currentDocument}
             onBack={() => setCurrentPage("library")}
-            onSave={(updatedDocument) => {
-              setCurrentDocument(updatedDocument);
-              console.log("Document saved:", updatedDocument);
+            onSave={async (updatedDocument) => {
+              try {
+                // Call API to update document in database
+                const response = await quizAPI.updateDocument(
+                  currentDocument.document_id,
+                  {
+                    title: updatedDocument.title,
+                    summary: updatedDocument.summary,
+                    content: updatedDocument.content,
+                  }
+                );
+
+                if (response.success) {
+                  // Update local state
+                  setCurrentDocument(updatedDocument);
+                  console.log("Document updated successfully:", response);
+                  alert("Đã lưu thay đổi thành công!");
+                } else {
+                  console.error("Update failed:", response);
+                  alert("Không thể lưu thay đổi. Vui lòng thử lại.");
+                }
+              } catch (error) {
+                console.error("Error updating document:", error);
+                alert("Đã xảy ra lỗi khi lưu. Vui lòng thử lại.");
+              }
             }}
           />
         );
@@ -179,7 +201,7 @@ export const Dashboard = () => {
             </div>
             <div className="max-w-4xl mx-auto">
               <Chatbot
-                documentId={currentDocument?.documentId || "default"}
+                documentId={currentDocument?.documentId}
                 documentName={currentDocument?.fileName}
               />
             </div>
@@ -190,15 +212,21 @@ export const Dashboard = () => {
           <div className="space-y-12">
             <div>
               <div className="mb-8">
-                <h1 className="text-slate-900 mb-2">Gần đây</h1>
-                <p className="text-slate-600">Các bộ thẻ học của bạn</p>
+                <h1 className="text-slate-900 mb-2">Trang chủ</h1>
+                <p className="text-slate-600">
+                  Các tài liệu và quiz gần đây của bạn
+                </p>
               </div>
-              <StudySetGrid />
             </div>
 
-            <PopularDocuments />
+            <RecentDocuments
+              onDocumentSelected={(doc) => {
+                setCurrentDocument(doc);
+                setCurrentPage("view-document");
+              }}
+            />
 
-            <PopularQuizzes />
+            <RecentQuizzes />
           </div>
         );
     }
