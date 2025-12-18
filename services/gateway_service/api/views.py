@@ -950,7 +950,7 @@ def update_document(request, doc_id):
                     status=400,
                 )
 
-            query = f"UPDATE documents SET {', '.join(update_fields[:-1])} WHERE id = ?"
+            query = f"UPDATE documents SET {', '.join(update_fields)} WHERE id = ?"
             cursor.execute(query, tuple(update_values))
             conn.commit()
 
