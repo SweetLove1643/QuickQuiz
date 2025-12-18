@@ -51,9 +51,7 @@ init_db()
 CHECKPOINT_PATH = "./ViT5_checkpoint_epochs4"
 
 try:
-    summary_processor = SummaryProcessor(
-        checkpoint_path=CHECKPOINT_PATH
-    )
+    summary_processor = SummaryProcessor(checkpoint_path=CHECKPOINT_PATH)
     logger.info("SummaryProcessor initialized successfully")
 except Exception as e:
     logger.exception("Failed to initialize SummaryProcessor")
@@ -84,9 +82,7 @@ async def summarize_text(request: SummaryRequestModel):
         )
 
     try:
-        summary = await summary_processor.summarize_text(
-            request.text
-        )
+        summary = await summary_processor.summarize_text(request.text)
 
         await log_summary_request(
             content_type="text",
@@ -113,9 +109,7 @@ async def summarize_text(request: SummaryRequestModel):
 # OCR + Summarize
 # ==============================
 @app.post("/ocr_and_summarize", response_model=OCRSummaryResponse)
-async def ocr_and_summarize(
-    files: List[UploadFile] = File(...)
-):
+async def ocr_and_summarize(files: List[UploadFile] = File(...)):
     if not files:
         raise HTTPException(
             status_code=400,
@@ -129,13 +123,13 @@ async def ocr_and_summarize(
 
             multipart_files.append(
                 (
-                    "files",  
+                    "files",
                     (f.filename, content, f.content_type),
                 )
             )
         OCR_SERVICE_URL = "http://127.0.0.1:8004/extract_information"
-        
-        async with httpx.AsyncClient(timeout=300) as client:
+
+        async with httpx.AsyncClient(timeout=600) as client:
             response = await client.post(
                 OCR_SERVICE_URL,
                 files=multipart_files,
@@ -144,7 +138,7 @@ async def ocr_and_summarize(
             raise RuntimeError(
                 f"OCR service error {response.status_code}: {response.text}"
             )
-        
+
         data = response.json()
         extracted_text = data.get("text", "")
 
@@ -159,10 +153,8 @@ async def ocr_and_summarize(
                 status_code=400,
                 detail="No text could be extracted from uploaded files",
             )
-        
-        summary = await summary_processor.summarize_text(
-            extracted_text
-        )
+
+        summary = await summary_processor.summarize_text(extracted_text)
 
         await log_summary_request(
             content_type="ocr",
@@ -179,7 +171,7 @@ async def ocr_and_summarize(
             filenames=[f.filename for f in files],
             word_count=len(extracted_text.split()),
         )
-    
+
     except Exception as e:
         logger.exception("Error in OCR and summarize")
         raise HTTPException(
@@ -192,9 +184,7 @@ async def ocr_and_summarize(
 # Legacy endpoint
 # ==============================
 @app.post("/image_ocr")
-async def image_ocr_legacy(
-    files: List[UploadFile] = File(...)
-):
+async def image_ocr_legacy(files: List[UploadFile] = File(...)):
     result = await ocr_and_summarize(files)
     return {
         "extracted_text": result.extracted_text,

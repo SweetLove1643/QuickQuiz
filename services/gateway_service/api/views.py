@@ -1,4 +1,3 @@
-import logging
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -23,6 +22,9 @@ import json
 import io
 import os
 import sqlite3
+import logging
+import base64
+import requests
 from contextlib import closing
 
 logger = logging.getLogger(__name__)
@@ -540,39 +542,46 @@ def summarize_text(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def ocr_and_summarize(request):
-    """Extract text from base64 image and create summary"""
+    """Extract text from base64 image or multipart upload and create summary"""
+    import base64
+    import io
+    import requests
+
     try:
-        data = json.loads(request.body)
-        image_base64 = data.get("image")
-        summary_config = data.get("summary_config", {"style": "detailed"})
+        # Nhận multipart: dùng request.FILES
+        if request.content_type and request.content_type.startswith("multipart/"):
+            files_in = request.FILES.getlist("files") or []
+            if not files_in:
+                # fallback: một file với key "file"
+                f = request.FILES.get("file")
+                if f:
+                    files_in = [f]
+            if not files_in:
+                return JsonResponse({"error": "No file provided"}, status=400)
 
-        if not image_base64:
-            return JsonResponse({"error": "No image provided"}, status=400)
+            files = []
+            for f in files_in:
+                content = f.read()
+                files.append(
+                    (
+                        "files",
+                        (
+                            f.name or "image.png",
+                            content,
+                            f.content_type or "application/octet-stream",
+                        ),
+                    )
+                )
 
-        # Convert base64 to file-like object
-        import base64
+            summary_service_url = f"{summary_service.base_url}/ocr_and_summarize"
+            resp = requests.post(summary_service_url, files=files, timeout=600)
+            if resp.status_code != 200:
+                return JsonResponse(
+                    {"error": f"Summary service error: {resp.text}"},
+                    status=resp.status_code,
+                )
 
-        try:
-            # Remove data URL prefix if present (e.g., "data:image/png;base64,")
-            if "," in image_base64:
-                image_base64 = image_base64.split(",", 1)[1]
-
-            # Decode base64
-            image_data = base64.b64decode(image_base64)
-
-            # Prepare files data for service client
-            files_data = [
-                {
-                    "filename": "image.png",
-                    "data": image_data,
-                    "content_type": "image/png",
-                }
-            ]
-
-            # Call Summary service
-            result = summary_service.ocr_and_summarize(files_data)
-
-            # Wrap response to match frontend expectations
+            result = resp.json()
             return JsonResponse(
                 {
                     "ocr": {
@@ -586,21 +595,44 @@ def ocr_and_summarize(request):
                 }
             )
 
-        except base64.binascii.Error as b64_err:
-            logger.error(f"Base64 decode failed: {str(b64_err)}")
+        # Nhận JSON: base64 image
+        data = json.loads(request.body)
+        image_base64 = data.get("image")
+        summary_config = data.get("summary_config", {"style": "detailed"})
+        if not image_base64:
+            return JsonResponse({"error": "No image provided"}, status=400)
+
+        if "," in image_base64:
+            image_base64 = image_base64.split(",", 1)[1]
+        image_bytes = base64.b64decode(image_base64)
+
+        files = [("files", ("image.png", io.BytesIO(image_bytes), "image/png"))]
+        summary_service_url = f"{summary_service.base_url}/ocr_and_summarize"
+        resp = requests.post(summary_service_url, files=files, timeout=600)
+        if resp.status_code != 200:
             return JsonResponse(
-                {"error": f"Invalid base64 image data: {str(b64_err)}"}, status=400
+                {"error": f"Summary service error: {resp.text}"},
+                status=resp.status_code,
             )
-        except Exception as e:
-            logger.error(f"Base64 image processing failed: {str(e)}", exc_info=True)
-            return JsonResponse(
-                {"error": f"Image processing failed: {str(e)}"}, status=400
-            )
+
+        result = resp.json()
+        return JsonResponse(
+            {
+                "ocr": {
+                    "extracted_text": result.get("extracted_text", ""),
+                    "confidence_score": 0.85,
+                },
+                "summary": {
+                    "summary": result.get("summary", ""),
+                    "confidence_score": 0.85,
+                },
+            }
+        )
 
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON data"}, status=400)
     except Exception as e:
-        logger.error(f"OCR and summarization failed: {str(e)}", exc_info=True)
+        logger.error(f"[Gateway] Unexpected error: {e}", exc_info=True)
         return JsonResponse({"error": str(e)}, status=500)
 
 
