@@ -68,7 +68,7 @@ WSGI_APPLICATION = "gateway.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "data" / "gateway.db",
+        "NAME": BASE_DIR / "documents.db",
     }
 }
 

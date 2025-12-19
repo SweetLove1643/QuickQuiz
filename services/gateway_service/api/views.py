@@ -845,9 +845,30 @@ def chat_message(request):
             chat_config=chat_config,
         )
 
-        return JsonResponse(
-            {"success": True, "data": result, "error": None, "status_code": 200}
-        )
+        # --- Fix for Frontend "undefined map" error ---
+        if result and isinstance(result, dict):
+            # Ensure 'sources' key always exists and is a list
+            if "sources" not in result or result["sources"] is None:
+                logger.warning(f"RAG response missing sources, injecting empty list. Keys: {result.keys()}")
+                result["sources"] = []
+            else:
+                logger.info(f"Gateway returning {len(result['sources'])} sources to frontend")
+        # ----------------------------------------------
+
+        # Initialize response with empty sources to guarantee it exists
+        response_data = {
+            "success": True, 
+            "data": result, 
+            "error": None, 
+            "status_code": 200,
+            "sources": [] 
+        }
+        
+        # Compatibility: Lift 'sources' to top level if frontend expects it there
+        if result and isinstance(result, dict) and result.get("sources"):
+            response_data["sources"] = result["sources"]
+
+        return JsonResponse(response_data)
 
     except json.JSONDecodeError:
         return JsonResponse(
