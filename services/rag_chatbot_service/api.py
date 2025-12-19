@@ -5,7 +5,7 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 import uuid
 
-from fastapi import FastAPI, HTTPException, Query, Depends, Path
+from fastapi import FastAPI, HTTPException, Query, Depends, Path, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
@@ -54,7 +54,7 @@ app.add_middleware(
     allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*", "X-User-Id"],
 )
 _chat_engine: Optional[RAGChatEngine] = None
 _retriever: Optional[DocumentRetriever] = None
@@ -83,6 +83,7 @@ async def _process_chat_request(
     request: RAGChatRequest,
     conversation_id: Optional[str] = None,
     chat_engine: RAGChatEngine = None,
+    user_id: Optional[str] = None,
 ) -> RAGChatResponse:
     try:
         effective_conversation_id = conversation_id or request.conversation_id
@@ -90,18 +91,7 @@ async def _process_chat_request(
         log_query = (
             request.query[:50] + "..." if len(request.query) > 50 else request.query
         )
-        logger.info(f"=== CHAT REQUEST DEBUG ===")
-        logger.info(f"Query: {log_query}")
-        logger.info(f"Conversation ID: {effective_conversation_id}")
-        logger.info(f"Retrieval config: top_k={request.retrieval_config.top_k}")
-        logger.info(f"Chat config: temperature={request.chat_config.temperature}")
-
-        if effective_conversation_id:
-            logger.info(
-                f"Processing chat in conversation {effective_conversation_id[:8]}: {log_query}"
-            )
-        else:
-            logger.info(f"Processing standalone chat: {log_query}")
+        logger.info(f"Chat Request: query='{log_query}' conv_id={effective_conversation_id} user={user_id}")
 
         quiz_context = []
         try:
@@ -112,7 +102,7 @@ async def _process_chat_request(
         except Exception as e:
             logger.warning(f"Could not access quiz context: {e}")
 
-        response = chat_engine.chat(request, effective_conversation_id)
+        response = chat_engine.chat(request, effective_conversation_id, user_id=user_id)
 
         try:
             retrieved_docs = []
@@ -134,12 +124,8 @@ async def _process_chat_request(
         except Exception as e:
             logger.warning(f"Could not log chat message: {e}")
 
-        logger.info(f"=== CHAT RESPONSE DEBUG ===")
-        logger.info(f"Retrieved docs: {response.context.retrieved_count}")
-        logger.info(f"Context used: {response.context.context_used}")
-        logger.info(f"Quiz context: {len(quiz_context)} items")
-        logger.info(f"Processing time: {response.processing_time:.2f}s")
-        logger.info(f"Answer preview: {response.answer[:100]}...")
+        sources_count = len(response.sources) if response.sources else 0
+        logger.info(f"Chat Response: docs={response.context.retrieved_count} sources={sources_count} time={response.processing_time:.2f}s answer='{response.answer[:50]}...'")
 
         return response
 
@@ -232,6 +218,7 @@ async def health_check():
 async def chat_with_rag(
     request: RAGChatRequest,
     chat_engine: RAGChatEngine = Depends(get_chat_engine_instance),
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
 ):
 
     if not request.conversation_id:
@@ -248,6 +235,7 @@ async def chat_with_rag(
         request=request,
         conversation_id=request.conversation_id,
         chat_engine=chat_engine,
+        user_id=x_user_id,
     )
 
 
@@ -288,6 +276,7 @@ async def quick_chat(
         default=0.7, description="Độ sáng tạo của LLM (0.0-2.0)", ge=0.0, le=2.0
     ),
     chat_engine: RAGChatEngine = Depends(get_chat_engine_instance),
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
 ):
     try:
         request = RAGChatRequest(
@@ -301,6 +290,7 @@ async def quick_chat(
             request=request,
             conversation_id=None, 
             chat_engine=chat_engine,
+            user_id=x_user_id,
         )
 
         return {
@@ -346,6 +336,7 @@ async def chat_in_conversation(
     ),
     request: RAGChatRequest = ...,
     chat_engine: RAGChatEngine = Depends(get_chat_engine_instance),
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
 ):
     request.conversation_id = conversation_id
 
@@ -354,7 +345,7 @@ async def chat_in_conversation(
     )
 
     return await _process_chat_request(
-        request=request, conversation_id=conversation_id, chat_engine=chat_engine
+        request=request, conversation_id=conversation_id, chat_engine=chat_engine, user_id=x_user_id
     )
 
 

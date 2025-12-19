@@ -234,6 +234,9 @@ class RAGChatResponse(BaseModel):
     retrieved_documents: List[Dict[str, Any]] = Field(
         default_factory=list, description="Retrieved docs"
     )
+    sources: List[Dict[str, Any]] = Field(
+        default_factory=list, description="Sources for frontend compatibility"
+    )
 
 
 __all__ = [
