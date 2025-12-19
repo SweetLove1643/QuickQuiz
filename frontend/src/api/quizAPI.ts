@@ -588,14 +588,19 @@ export interface ChatRequest {
 export interface ChatResponse {
   answer: string;
   context: {
-    retrieved_documents: Array<{
-      content: string;
-      source?: string;
-      similarity_score?: number;
-    }>;
     retrieved_count: number;
     context_used: boolean;
+    sources?: Array<{
+      content?: string;
+      topic?: string;
+      similarity_score?: number;
+    }>;
   };
+  retrieved_documents?: Array<{
+    content?: string;
+    topic?: string;
+    similarity_score?: number;
+  }>;
   processing_time: number;
   conversation_id?: string;
 }

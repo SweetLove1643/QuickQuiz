@@ -177,6 +177,23 @@ export const processDocument = async (
         text: extractedText,
         config: { style: "detailed", max_length: 500 },
       });
+    } else if (file.type === "application/pdf") {
+      // ========== PDF FILES ==========
+      console.log("Processing PDF file...");
+      const combined = await quizAPI.ocrAndSummarize(file, {
+        style: "detailed",
+        max_length: 500,
+      });
+
+      ocrResponse = combined.ocr;
+      summaryResponse = combined.summary;
+      extractedText = ocrResponse.extracted_text || "";
+
+      if (!extractedText || extractedText.trim().length === 0) {
+        throw new Error(
+          "Không thể trích xuất text từ PDF. File có thể chỉ chứa ảnh hoặc bị lỗi."
+        );
+      }
     } else if (isDocxFile(file)) {
       // ========== DOCX FILES (NEW) ==========
       console.log("Processing DOCX file...");

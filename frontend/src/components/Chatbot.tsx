@@ -35,18 +35,9 @@ export function Chatbot({ documentId, documentName }: ChatbotProps) {
     {
       id: "welcome",
       type: "assistant",
-      content: `Xin chào! 👋 Tôi là chatbot RAG của QuickQuiz. Tôi có thể giúp bạn:
+      content: `Xin chào! 👋 Tôi là chatbot thông minh của QuickQuiz. 
       
-• Trả lời các câu hỏi về tài liệu của bạn
-• Giải thích các khái niệm trong bài học
-• Cung cấp ví dụ liên quan
-• Hỗ trợ ôn tập
-
-${
-  documentName
-    ? `📄 Đang làm việc với: ${documentName}`
-    : "Hãy upload một tài liệu để bắt đầu!"
-}`,
+Tôi có thể trả lời các câu hỏi dựa trên tất cả các tài liệu bạn đã tải lên. Hãy bắt đầu bằng cách đặt một câu hỏi!`,
       timestamp: new Date(),
     },
   ]);
@@ -84,7 +75,6 @@ ${
       const response = await chatbotAPI.sendMessage({
         query: input,
         conversation_id: conversationId,
-        document_id: documentId,
         retrieval_config: {
           top_k: 5,
           similarity_threshold: 0.3,
@@ -95,14 +85,29 @@ ${
         },
       });
 
+      const rawSources = (
+        Array.isArray(response.retrieved_documents) &&
+        response.retrieved_documents.length
+          ? response.retrieved_documents
+          : Array.isArray(response.context?.sources)
+          ? response.context.sources
+          : []
+      ) as any[];
+
       const assistantMessage: Message = {
         id: `msg-${Date.now() + 1}`,
         type: "assistant",
         content: response.answer,
         timestamp: new Date(),
-        sources: response.context.retrieved_documents.map((doc) => ({
-          content: doc.content || String(doc),
-          similarity_score: doc.similarity_score,
+        sources: rawSources.slice(0, 3).map((doc: any) => ({
+          content:
+            doc?.content ??
+            (typeof doc === "string" ? doc : JSON.stringify(doc)),
+          similarity_score:
+            typeof doc?.similarity_score === "number"
+              ? doc.similarity_score
+              : undefined,
+          topic: doc?.topic,
         })),
       };
 
@@ -253,12 +258,12 @@ ${
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Đặt câu hỏi của bạn..."
-          disabled={isLoading || !documentId}
+          disabled={isLoading}
           className="flex-1"
         />
         <Button
           type="submit"
-          disabled={isLoading || !input.trim() || !documentId}
+          disabled={isLoading || !input.trim()}
           className="px-4"
         >
           {isLoading ? (
@@ -268,13 +273,6 @@ ${
           )}
         </Button>
       </form>
-
-      {!documentId && (
-        <div className="px-4 py-2 bg-yellow-50 border-t border-yellow-200 text-xs text-yellow-700 flex items-center gap-2">
-          <Zap className="size-4" />
-          Chatbot có thể hoạt động tốt hơn khi bạn chọn một tài liệu cụ thể
-        </div>
-      )}
     </div>
   );
 }
