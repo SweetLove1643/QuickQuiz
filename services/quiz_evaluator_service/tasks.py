@@ -69,7 +69,6 @@ def evaluate_quiz(data: Dict[str, Any]) -> str:
             f"Completed evaluation {evaluation_id} - Score: {summary.score_percentage:.1f}%"
         )
 
-        # Fix Pydantic v2 compatibility: model_dump_json không hỗ trợ ensure_ascii
         import json
 
         return json.dumps(result.model_dump(), default=str, ensure_ascii=False)
