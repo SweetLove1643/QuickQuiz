@@ -50,3 +50,6 @@ Thumbs.db
 staticfiles/
 migrations/
 
+/test/
+/docs/
+

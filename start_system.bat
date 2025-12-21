@@ -40,6 +40,12 @@ set WINDOW_STYLE=min
 REM Development Mode (reload = auto-reload on code changes)
 set DEV_MODE=reload
 
+REM Fix Unicode errors in logs (Vietnamese characters)
+set PYTHONIOENCODING=utf-8
+
+REM Disable Canned Responses (Use real AI)
+set USE_CANNED_LLM=false
+
 REM ====================================================================
 REM END OF CONFIGURATION SECTION
 REM ====================================================================
@@ -69,7 +75,7 @@ REM ====================================================================
 REM STEP 1: Start IAM Service (Authentication - Required First)
 REM ====================================================================
 echo [1/4] Starting IAM Service (Port %IAM_PORT%)...
-start "IAM Service - Port %IAM_PORT%" /%WINDOW_STYLE% cmd /c "cd services\iam_service && python manage.py runserver %IAM_HOST%:%IAM_PORT%"
+start "IAM Service - Port %IAM_PORT%" /%WINDOW_STYLE% cmd /c "chcp 65001 >nul && cd services\iam_service && python manage.py runserver %IAM_HOST%:%IAM_PORT%"
 
 echo       Waiting %IAM_INIT_DELAY% seconds for IAM to initialize...
 timeout /t %IAM_INIT_DELAY% /nobreak >nul
@@ -81,19 +87,19 @@ REM STEP 2: Start Microservices (Can run in parallel)
 REM ====================================================================
 echo [2/4] Starting Microservices...
 echo       - Quiz Generator (Port %QUIZ_GENERATOR_PORT%)
-start "Quiz Generator - Port %QUIZ_GENERATOR_PORT%" /%WINDOW_STYLE% cmd /c "cd services\quiz_generator_service && set PORT=%QUIZ_GENERATOR_PORT% && python api.py"
+start "Quiz Generator - Port %QUIZ_GENERATOR_PORT%" /%WINDOW_STYLE% cmd /c "chcp 65001 >nul && cd services\quiz_generator_service && set PORT=%QUIZ_GENERATOR_PORT% && python api.py"
 
 echo       - Quiz Evaluator (Port %QUIZ_EVALUATOR_PORT%)
-start "Quiz Evaluator - Port %QUIZ_EVALUATOR_PORT%" /%WINDOW_STYLE% cmd /c "cd services\quiz_evaluator_service && set PORT=%QUIZ_EVALUATOR_PORT% && python api.py"
+start "Quiz Evaluator - Port %QUIZ_EVALUATOR_PORT%" /%WINDOW_STYLE% cmd /c "chcp 65001 >nul && cd services\quiz_evaluator_service && set PORT=%QUIZ_EVALUATOR_PORT% && python api.py"
 
 echo       - OCR Service (Port %OCR_PORT%)
-start "OCR Service - Port %OCR_PORT%" /%WINDOW_STYLE% cmd /c "cd services\ocr_service && python -m uvicorn api:app --host %SERVICE_HOST% --port %OCR_PORT%"
+start "OCR Service - Port %OCR_PORT%" /%WINDOW_STYLE% cmd /c "chcp 65001 >nul && cd services\ocr_service && python -m uvicorn api:app --host %SERVICE_HOST% --port %OCR_PORT%"
 
 echo       - Summary Service (Port %SUMMARY_PORT%)
-start "Summary Service - Port %SUMMARY_PORT%" /%WINDOW_STYLE% cmd /c "cd services\summary_service && python -m uvicorn api:app --host %SERVICE_HOST% --port %SUMMARY_PORT% && pause"
+start "Summary Service - Port %SUMMARY_PORT%" /%WINDOW_STYLE% cmd /c "chcp 65001 >nul && cd services\summary_service && python -m uvicorn api:app --host %SERVICE_HOST% --port %SUMMARY_PORT%"
 
 echo       - RAG Chatbot (Port %RAG_CHATBOT_PORT%)
-start "RAG Chatbot - Port %RAG_CHATBOT_PORT%" /%WINDOW_STYLE% cmd /c "cd services\rag_chatbot_service && python api.py --host %SERVICE_HOST% --port %RAG_CHATBOT_PORT%"
+start "RAG Chatbot - Port %RAG_CHATBOT_PORT%" /%WINDOW_STYLE% cmd /c "chcp 65001 >nul && cd services\rag_chatbot_service && python api.py --host %SERVICE_HOST% --port %RAG_CHATBOT_PORT% --reload"
 
 echo       Waiting %SERVICES_INIT_DELAY% seconds for microservices to initialize...
 timeout /t %SERVICES_INIT_DELAY% /nobreak >nul
@@ -104,7 +110,7 @@ REM ====================================================================
 REM STEP 3: Start API Gateway (Needs microservices ready)
 REM ====================================================================
 echo [3/4] Starting API Gateway (Port %GATEWAY_PORT%)...
-start "API Gateway - Port %GATEWAY_PORT%" /%WINDOW_STYLE% cmd /c "cd services\gateway_service && python manage.py runserver %GATEWAY_HOST%:%GATEWAY_PORT%"
+start "API Gateway - Port %GATEWAY_PORT%" /%WINDOW_STYLE% cmd /c "chcp 65001 >nul && cd services\gateway_service && python manage.py runserver %GATEWAY_HOST%:%GATEWAY_PORT%"
 
 echo       Waiting %GATEWAY_INIT_DELAY% seconds for gateway to initialize...
 timeout /t %GATEWAY_INIT_DELAY% /nobreak >nul
@@ -126,18 +132,12 @@ echo    API Gateway:      http://localhost:%GATEWAY_PORT%
 echo    API Health:       http://localhost:%GATEWAY_PORT%/api/health/
 echo.
 echo Backend Services (in startup order):
-echo    1. IAM Service:      http://localhost:%IAM_PORT% (Admin: /admin/)
-echo    2. Quiz Generator:   http://localhost:%QUIZ_GENERATOR_PORT%
-echo    3. Quiz Evaluator:   http://localhost:%QUIZ_EVALUATOR_PORT%
-echo    4. OCR Service:      http://localhost:%OCR_PORT%
-echo    5. Summary Service:  http://localhost:%SUMMARY_PORT%
-echo    6. RAG Chatbot:      http://localhost:%RAG_CHATBOT_PORT%
-echo    - IAM Service:      http://localhost:8005 (Admin: http://localhost:8005/admin/)
-echo    - RAG Chatbot:      http://localhost:8002
-echo    - Quiz Generator:   http://localhost:8003
-echo    - Quiz Evaluator:   http://localhost:8004
-echo    - OCR Service:      http://localhost:8007
-echo    - Summary Service:  http://localhost:8008
+echo    1. IAM Service:      http://%IAM_HOST%:%IAM_PORT% (Admin: /admin/)
+echo    2. Quiz Generator:   http://%SERVICE_HOST%:%QUIZ_GENERATOR_PORT%
+echo    3. Quiz Evaluator:   http://%SERVICE_HOST%:%QUIZ_EVALUATOR_PORT%
+echo    4. OCR Service:      http://%SERVICE_HOST%:%OCR_PORT%
+echo    5. Summary Service:  http://%SERVICE_HOST%:%SUMMARY_PORT%
+echo    6. RAG Chatbot:      http://%SERVICE_HOST%:%RAG_CHATBOT_PORT%
 echo.
 echo Database Files:
 echo    - IAM:              services\iam_service\data\iam.db
@@ -147,18 +147,17 @@ echo    - RAG Chatbot:      services\rag_chatbot_service\rag_chatbot.db
 echo    - OCR Service:      services\ocr_service\ocr_service.db
 echo    - Summary Service:  services\summary_service\summary_service.db
 echo.
-echo Important Endpoints:
-echo    - Web Interface:       http://localhost:3000
-echo    - Health Check:        http://localhost:8001/api/health/
-echo    - API Docs:           http://localhost:8001/api/
-echo    - IAM Admin:          http://localhost:8005/admin/
-echo    - Login:              POST http://localhost:8005/api/users/login/
-echo    - User Profile:       GET http://localhost:8005/api/users/me/
-echo    - Generate Quiz:      POST http://localhost:8001/api/quiz/generate/
-echo    - Evaluate Quiz:      POST http://localhost:8001/api/quiz/evaluate/
-echo    - Chat (RAG):         POST http://localhost:8001/api/chat/
-echo    - Extract Text:       POST http://localhost:8001/api/ocr/extract_text_multi/
-echo    - Summarize Text:     POST http://localhost:8001/api/summary/summarize_text/
+echo Important Gateway Endpoints:
+echo    - Web Interface:       http://localhost:%FRONTEND_PORT%
+echo    - Health Check:        http://localhost:%GATEWAY_PORT%/api/health/
+echo    - API Docs:            http://localhost:%GATEWAY_PORT%/api/
+echo    - Login:               POST http://localhost:%GATEWAY_PORT%/api/users/login/
+echo    - User Profile:        GET http://localhost:%GATEWAY_PORT%/api/users/me/
+echo    - Generate Quiz:       POST http://localhost:%GATEWAY_PORT%/api/quiz/generate/
+echo    - Evaluate Quiz:       POST http://localhost:%GATEWAY_PORT%/api/quiz/evaluate/
+echo    - Chat (RAG):          POST http://localhost:%GATEWAY_PORT%/api/chat/
+echo    - Extract Text:        POST http://localhost:%GATEWAY_PORT%/api/ocr/extract_text_multi/
+echo    - Summarize Text:      POST http://localhost:%GATEWAY_PORT%/api/summary/summarize_text/
 echo ====================================================================
 echo Configuration Tips:
 echo ====================================================================
@@ -173,7 +172,6 @@ echo To stop services:
 echo    - Close individual terminal windows, or
 echo    - Use Task Manager to end Python/Node processes
 echo ====================================================================
-echo.echo    - Password: Admin123
 echo.
 echo To stop services, close the individual terminal windows
 echo    or use Task Manager to end Python processes
