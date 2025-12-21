@@ -1,163 +1,105 @@
-# QuickQuiz - Complete Learning Platform
+# QuickQuiz
 
-🎯 **Intelligent quiz generation and learning platform with AI-powered features**
+Specialized Essay - AI-powered automated quiz creation and evaluation system.
 
-## 🌟 Features
+## Features
 
-- 📝 **Smart Quiz Generation** - Create quizzes from any content
-- 🔍 **OCR Document Processing** - Extract text from images/PDFs
-- 📋 **AI Summarization** - Automatically summarize long content
-- 🧠 **RAG Chatbot** - Interactive Q&A with your documents
-- ✅ **Auto Evaluation** - Intelligent quiz grading and feedback
-- 🎨 **Modern UI** - Clean, responsive interface with dark/light themes
+- Extract text from documents (OCR)
+- Automated document content summarization
+- Create quizzes from documents
+- Assignment assessment, grading, and detailed explanations
+- RAG chatbot answers questions from documents
+- User Management and Authentication (IAM)
+- Interactive user interface
 
-## 🏗️ Architecture
+<!-- ## Demo
 
-**Microservices Backend:**
+- Update soon... -->
 
-- 🌐 **API Gateway** (Port 8001) - Unified entry point & auth
-- 🔐 **IAM Service** (Port 8005) - User management & authentication
-- 🧩 **Quiz Generator** (Port 8003) - Quiz creation service
-- ✅ **Quiz Evaluator** (Port 8004) - Answer evaluation service
-- 👁️ **OCR Service** (Port 8007) - Document text extraction
-- 📄 **Summary Service** (Port 8008) - Content summarization
-- 💬 **RAG Chatbot** (Port 8002) - Conversational AI
+## Architecture
 
-**Frontend:**
+The system is built according to the Microservices architecture:
 
-- ⚡ **React + TypeScript** (Port 3000) - Modern web interface
-- 🎨 **Radix UI + Tailwind** - Beautiful, accessible components
+![Project architecture](<images/Project architecture.png>)
 
-## 🚀 Quick Start
+- Frontend: ReactJS (Port 3000)
+- API Gateway: Django (Port 8007) - Primary Communication Gateway
+- IAM Service: Django (Port 8001) - Authentication Manager
+- Quiz Generator: Python (Port 8002) - Question Generator
+- Quiz Evaluator: Python (Port 8003) - Scoring
+- OCR Service: FastAPI (Port 8004) - Image/PDF Processing
+- Summary Service: FastAPI (Port 8005)
+- RAG Chatbot: Python (Port 8006) - Virtual Assistant
 
-### 1. Start Backend Services
+## Tech Stack
+
+- Client: React, TypeScript, TailwindCSS
+- Server: Django, FastAPI, Python
+- Database: SQLite (Each service has its own database)
+- AI/LLM: Gemini, Qwen-VL, ViT5, RAG
+
+## Installation
+
+### Prerequisites
+
+Hardware:
+
+- Window 10 or later
+- RTX 1650 graphics card or higher
+  Software:
+- Python 3.8+
+- Node.js & npm
+- Vs Code (recommended)
+
+### Setup
+
+1. Clone the project
 
 ```bash
-# Clone and setup
 git clone https://github.com/SweetLove1643/QuickQuiz.git
 cd QuickQuiz
-
-# Start all microservices
-./start_system.bat  # Windows
-# or
-./start_system.sh   # Linux/Mac
 ```
 
-### 2. Start Frontend
+2. Create the environment and install the necessary libraries
 
 ```bash
-cd frontend
-npm install
-npm run dev
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r ./requirements.txt
 ```
 
-### 3. Access Application
-
-- 🌐 **Frontend**: http://localhost:3000
-- 📡 **API Gateway**: http://localhost:8001
-- 🔐 **IAM Admin**: http://localhost:8005/admin/
-- 📊 **Health Check**: http://localhost:8001/api/health/
-
-## 📖 Documentation
-
-- 🔐 **[Authentication Guide](./AUTH.md)** - Complete auth system documentation
-- 🧪 **[Testing Guide](./TEST_AUTH.md)** - How to test login/registration
-- 📋 **[Implementation Summary](./IMPLEMENTATION_SUMMARY.md)** - What was built
-
-## 🔐 Authentication System
-
-QuickQuiz now includes a complete JWT-based authentication system:
-
-### Features
-
-- ✅ Student registration and login
-- ✅ Admin user management
-- ✅ Protected API endpoints
-- ✅ Token refresh mechanism
-- ✅ Secure password handling
-
-### Default Credentials
-
-```
-Admin Username: admin
-Admin Password: Admin123
-```
-
-### Quick Test
+3. Create and configure the .env file
 
 ```bash
-# Register new user via API
-curl -X POST http://localhost:8001/api/auth/register/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "student1",
-    "email": "student@example.com",
-    "password": "password123",
-    "password_confirm": "password123"
-  }'
+# Services
+GEMINI_API_KEY =<your api key here>
 
-# Login
-curl -X POST http://localhost:8001/api/auth/login/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "student1",
-    "password": "password123"
-  }'
+GEMINI_MODEL=gemini-2.5-flash
+
+# Django Gateway Configuration
+DEBUG=True
+DJANGO_SECRET_KEY=<your Django key here>
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Logging
+LOG_LEVEL=INFO
 ```
 
-## 📖 Usage Guide
+## Contributing
 
-### Creating Quizzes
+Contributions are always welcome!
 
-1. Login or register account at http://localhost:3000
-2. Upload document or paste text
-3. Configure quiz settings (question count, types)
-4. Generate quiz with AI
-5. Take quiz and get instant feedback
+See [Contributing.md](Contributing.md) for ways to get started.
 
-### Document Processing
+## Support
 
-1. Upload images/PDFs via OCR service
-2. Get extracted text automatically
-3. Summarize long content
-4. Ask questions via RAG chatbot
+For support, please email to [us](trinhuutho@gmail.com).
 
-## 🛠️ Development
+## License
 
-### Backend Requirements
+This repo is under [MIT](LICENSE) license.
 
-- Python 3.8+
-- FastAPI
-- SQLite
-- Gemini AI API
+## Authors
 
-### Frontend Requirements
-
-- Node.js 18+
-- React 18
-- TypeScript
-- Vite
-
-### Project Structure
-
-```
-QuickQuiz/
-├── services/           # Backend microservices
-│   ├── gateway_service/    # API Gateway (Django)
-│   ├── quiz_generator_service/     # Quiz creation
-│   ├── quiz_evaluator_service/     # Quiz grading
-│   ├── ocr_service/               # OCR processing
-│   ├── summary_service/           # Text summarization
-│   └── rag_chatbot_service/       # Conversational AI
-├── frontend/          # React frontend
-├── start_system.bat   # Windows startup
-└── start_system.sh    # Linux startup
-```
-
-## 🎯 System Status
-
-All services healthy and fully integrated! ✅
-
----
-
-**Built with ❤️ using modern microservices architecture**
+- [@oSweetLove1643](https://www.github.com/SweetLove1643)
+- [@TrinhHuuTho](https://www.github.com/TrinhHuuTho)
