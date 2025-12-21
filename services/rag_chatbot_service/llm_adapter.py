@@ -2,8 +2,8 @@ import os
 import logging
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
-from google import genai
-from google.genai import types
+import google.generativeai as genai
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
 import time
 from schemas import ChatConfig
 
@@ -34,7 +34,7 @@ class GeminiChatAdapter:
         if not self.use_canned_responses:
             if not self.api_key:
                 raise ValueError("GEMINI_API_KEY không được cung cấp trong .env file")
-            self.client = genai.Client(api_key=self.api_key)
+            genai.configure(api_key=self.api_key)
             logger.info(
                 f"Gemini Chat Adapter initialized với model: {self.default_model}"
             )
@@ -61,36 +61,25 @@ class GeminiChatAdapter:
                 self.current_model = model_name
                 logger.info(f"Trying chat generation với model: {model_name}")
 
+                model = genai.GenerativeModel(
+                    model_name=model_name,
+                    generation_config={
+                        "temperature": config.temperature,
+                        "top_p": config.top_p,
+                        "max_output_tokens": config.max_tokens,
+                        "candidate_count": 1,
+                    },
+                    safety_settings={
+                        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+                        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+                        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+                        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+                    },
+                )
+
                 formatted_messages = self._format_messages_for_gemini(messages)
 
-                response = self.client.models.generate_content(
-                    model=model_name,
-                    contents=formatted_messages,
-                    config=types.GenerateContentConfig(
-                        temperature=config.temperature,
-                        top_p=config.top_p,
-                        max_output_tokens=config.max_tokens,
-                        candidate_count=1,
-                        safety_settings=[
-                            types.SafetySetting(
-                                category="HARM_CATEGORY_HATE_SPEECH",
-                                threshold="BLOCK_NONE",
-                            ),
-                            types.SafetySetting(
-                                category="HARM_CATEGORY_HARASSMENT",
-                                threshold="BLOCK_NONE",
-                            ),
-                            types.SafetySetting(
-                                category="HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                                threshold="BLOCK_NONE",
-                            ),
-                            types.SafetySetting(
-                                category="HARM_CATEGORY_DANGEROUS_CONTENT",
-                                threshold="BLOCK_NONE",
-                            ),
-                        ],
-                    ),
-                )
+                response = model.generate_content(formatted_messages)
 
                 if response.text:
                     logger.info(

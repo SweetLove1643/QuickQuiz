@@ -62,7 +62,6 @@ class DocumentChunkModel(Base):
     id = Column(Integer, primary_key=True, index=True)
     chunk_id = Column(String, unique=True, index=True)
     document_id = Column(String, nullable=False, index=True)
-    user_id = Column(String, nullable=True, index=True)
     content = Column(Text, nullable=False)
     chunk_index = Column(Integer, nullable=False)
     topic = Column(String, nullable=False, index=True)
@@ -105,36 +104,6 @@ class QuizDataAccess:
         logger.info(f"quiz_generator exists: {os.path.exists(self.quiz_generator_db)}")
         logger.info(f"gateway_documents exists: {os.path.exists(self.gateway_documents_db)}")
         
-    def get_document_user_map(self) -> Dict[str, str]:
-        logger.info("Building document-to-user map from generated quizzes...")
-        try:
-            if not os.path.exists(self.quiz_generator_db):
-                logger.warning(f"Quiz generator DB not found: {self.quiz_generator_db}")
-                return {}
-
-            conn = sqlite3.connect(self.quiz_generator_db)
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
-
-            # This query gets the most recent user for each document
-            query = """
-            SELECT document_id, user_id
-            FROM generated_quizzes
-            WHERE document_id IS NOT NULL AND user_id IS NOT NULL
-            GROUP BY document_id
-            ORDER BY created_at DESC
-            """
-            cursor.execute(query)
-            rows = cursor.fetchall()
-            conn.close()
-
-            doc_user_map = {row["document_id"]: row["user_id"] for row in rows}
-            logger.info(f"Created document-user map with {len(doc_user_map)} entries.")
-            return doc_user_map
-        except Exception as e:
-            logger.error(f"Error building document-user map: {e}", exc_info=True)
-            return {}
-
     def get_quiz_templates(self, limit: int = 10) -> List[Dict[str, Any]]:
         try:
             if not os.path.exists(self.quiz_generator_db):

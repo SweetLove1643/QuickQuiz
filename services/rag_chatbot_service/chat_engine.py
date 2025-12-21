@@ -35,20 +35,19 @@ class RAGChatEngine:
         logger.info("RAG chat engine initialized")
 
     def chat(
-        self,
-        request: RAGChatRequest,
-        conversation_id: Optional[str] = None,
-        user_id: Optional[str] = None,
+        self, request: RAGChatRequest, conversation_id: Optional[str] = None
     ) -> RAGChatResponse:
 
         start_time = datetime.now()
 
         try:
-            logger.debug(
-                f"Attempting to retrieve documents for query: '{request.query}'"
-            )
-
-            if not hasattr(self.retriever, "retrieve_documents"):
+            logger.info(f"=== CHAT REQUEST ===")
+            logger.info(f"Query: '{request.query}'")
+            logger.info(f"Conversation ID: {conversation_id}")
+            
+            logger.info(f"Attempting to retrieve documents...")
+            
+            if not hasattr(self.retriever, 'retrieve_documents'):
                 logger.error("Retriever does not have retrieve_documents method!")
                 logger.info(f"Retriever type: {type(self.retriever)}")
                 logger.info(f"Retriever methods: {dir(self.retriever)}")
@@ -56,36 +55,29 @@ class RAGChatEngine:
             else:
                 try:
                     retrieved_docs = self.retriever.retrieve_documents(
-                        query=request.query,
-                        config=request.retrieval_config,
-                        user_id=user_id,
+                        query=request.query, config=request.retrieval_config
                     )
                 except Exception as retrieve_err:
-                    logger.error(
-                        f"Error retrieving documents: {retrieve_err}", exc_info=True
-                    )
+                    logger.error(f"Error retrieving documents: {retrieve_err}", exc_info=True)
                     retrieved_docs = []
-
-            logger.debug(
-                f"Retrieved {len(retrieved_docs)} documents for user {user_id}"
-            )
-
-            total_chunks = self.retriever.get_document_count(user_id=user_id)
-
+            
+            logger.info(f"Retrieved {len(retrieved_docs)} documents")
+            
+            total_chunks = self.retriever.get_document_count()
+            logger.info(f"Total documents available in system: {total_chunks}")
+            
             if len(retrieved_docs) == 0:
                 logger.warning(f"No documents retrieved for query: '{request.query}'")
                 logger.info(f"Retrieval config: {request.retrieval_config}")
                 logger.info("Trying fallback: search all documents...")
                 fallback_config = RetrievalConfig(top_k=10)
                 fallback_docs = self.retriever.retrieve_documents(
-                    query="document", config=fallback_config, user_id=user_id
+                    query="document", config=fallback_config
                 )
                 logger.info(f"Fallback search returned: {len(fallback_docs)} documents")
-                # Ensure retrieved_docs is updated with fallback results
-                retrieved_docs = fallback_docs
-
+            
             for i, doc in enumerate(retrieved_docs):
-                logger.debug(
+                logger.info(
                     f"  Doc {i+1}: {doc.topic} (score: {doc.similarity_score:.3f}, content_len: {len(doc.content)})"
                 )
 
@@ -110,9 +102,9 @@ class RAGChatEngine:
                 timestamp=start_time.isoformat(),
                 processing_time=(datetime.now() - start_time).total_seconds(),
                 retrieved_documents=[doc.model_dump() for doc in retrieved_docs],
-                sources=context.sources or [],
             )
 
+            logger.info(f"Chat processed in {response.processing_time:.2f}s")
             return response
 
         except Exception as e:
@@ -127,7 +119,6 @@ class RAGChatEngine:
                 timestamp=start_time.isoformat(),
                 processing_time=(datetime.now() - start_time).total_seconds(),
                 retrieved_documents=[],
-                sources=[],
             )
 
     def _build_context(
@@ -142,8 +133,6 @@ class RAGChatEngine:
         context_text_parts = []
 
         for doc in retrieved_docs[: config.max_context_docs]:
-            # Ensure content is never None
-            raw_content = getattr(doc, "chunk_text", doc.content) or ""
             sources.append(
                 {
                     "document_id": doc.document_id,
@@ -151,14 +140,14 @@ class RAGChatEngine:
                     "category": doc.category,
                     "similarity_score": doc.similarity_score,
                     "chunk_text": (
-                        raw_content[:200] + "..."
-                        if len(raw_content) > 200
-                        else raw_content
+                        getattr(doc, "chunk_text", doc.content or "")[:200] + "..."
+                        if len(getattr(doc, "chunk_text", doc.content or "")) > 200
+                        else getattr(doc, "chunk_text", doc.content or "")
                     ),
                 }
             )
 
-            chunk_text = raw_content
+            chunk_text = getattr(doc, "chunk_text", doc.content)
             context_text_parts.append(f"[{doc.topic}] {chunk_text}")
 
         return ConversationContext(
@@ -178,7 +167,7 @@ class RAGChatEngine:
 
         history = self.conversations[conversation_id]
 
-        recent_messages = history.messages[-6:]
+        recent_messages = history.messages[-6:] 
         formatted_history = []
         for msg in recent_messages:
             formatted_history.append({"role": msg["role"], "content": msg["content"]})
