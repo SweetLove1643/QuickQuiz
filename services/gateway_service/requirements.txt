@@ -1,0 +1,28 @@
+# QuickQuiz Gateway Service Dependencies
+
+# Django framework
+Django>=5.2.0,<6.0.0
+djangorestframework>=3.14.0
+
+# CORS handling for frontend integration
+django-cors-headers>=4.0.0
+
+# HTTP client library
+requests>=2.31.0
+urllib3>=2.0.0
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Production server (optional)
+gunicorn>=21.0.0
+uvicorn>=0.23.0
+
+# Development tools (optional)
+django-debug-toolbar>=4.0.0
+
+# Monitoring and health checks (future)
+django-health-check>=3.17.0
+
+# API documentation (future) 
+drf-spectacular>=0.26.0

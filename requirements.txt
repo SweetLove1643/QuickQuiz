@@ -1,0 +1,115 @@
+# Consolidated requirements for QuickQuiz
+
+# Django framework
+Django>=5.2.0,<6.0.0
+djangorestframework>=3.14.0
+django-cors-headers>=4.0.0
+djangorestframework-simplejwt>=5.3.0
+django-debug-toolbar>=4.0.0
+django-health-check>=3.17.0
+
+# API documentation
+drf-spectacular>=0.26.0
+
+# WSGI/ASGI servers
+gunicorn>=21.0.0
+uvicorn[standard]>=0.24.0
+
+# Async and HTTP
+requests>=2.31.0
+urllib3>=2.0.0
+httpx
+anyio
+h11
+starlette
+
+# FastAPI and related
+fastapi>=0.104.0
+pydantic
+pydantic_core
+
+# Database
+sqlalchemy>=2.0.0
+alembic>=1.13.0
+
+# Environment and configuration
+python-dotenv>=1.0.0
+PyYAML
+
+# Security
+bcrypt>=4.0.0
+PyJWT>=2.8.0
+
+# ML/AI/NLP
+accelerate
+einops
+huggingface-hub
+safetensors
+tiktoken
+tokenizers
+torch
+torchaudio
+torchvision
+transformers
+qwen-vl-utils
+
+# OCR and PDF processing
+PyMuPDF
+pillow
+
+# Jupyter/IPython and debugging
+ipykernel
+ipython
+ipython_pygments_lexers
+jupyter_client
+jupyter_core
+debugpy
+jedi
+prompt_toolkit
+Pygments
+
+# Other utilities
+annotated-doc
+annotated-types
+asttokens
+av
+certifi
+charset-normalizer
+click
+colorama
+comm
+decorator
+executing
+filelock
+fsspec
+idna
+Jinja2
+MarkupSafe
+matplotlib-inline
+mpmath
+nest-asyncio
+networkx
+numpy
+packaging
+parso
+platformdirs
+psutil
+pure_eval
+python-dateutil
+python-multipart
+regex
+six
+stack-data
+sympy
+tornado
+tqdm
+traitlets
+wcwidth
+python-docx
+google
+google-genai
+bitsandbytes
+peft
+exception
+py-exceptions
+reportlab
