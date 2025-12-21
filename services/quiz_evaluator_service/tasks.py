@@ -72,7 +72,7 @@ def evaluate_quiz(data: Dict[str, Any]) -> str:
         # Fix Pydantic v2 compatibility: model_dump_json không hỗ trợ ensure_ascii
         import json
 
-        return json.dumps(result.model_dump())
+        return json.dumps(result.model_dump(), default=str, ensure_ascii=False)
 
     except Exception as e:
         logger.error(f"Error evaluating quiz: {e}")
