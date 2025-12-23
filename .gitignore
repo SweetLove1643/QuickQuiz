@@ -12,15 +12,6 @@ venv/
 __pycache__/
 *.pyc
 
-# === Logs ===
-# Ignore log files and directories
-*.log
-
-# === Data & Databases ===
-# Ignore local database files
-*.db
-*.sqlite
-
 # === Node.js / Frontend ===
 # Ignore Node.js dependencies and build output
 node_modules/
