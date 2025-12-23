@@ -1,55 +1,32 @@
 
+# === Environments ===
+# Ignore virtual environment folders
 .venv/
 venv/
 
+# Ignore environment variable files
 .env
-.env.local
 
+# === Python ===
+# Ignore Python cache, compiled files, and shared objects
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-services/VRD_OCR/
-Services/VRD_OCR/
-*.log
-*/logs/
 
+# === Logs ===
+# Ignore log files and directories
+*.log
+
+# === Data & Databases ===
+# Ignore local database files
 *.db
 *.sqlite
-*.sqlite3
-db.sqlite3
 
-data/
-dataset/
-dataset_small/
-datata_small/
-archive/
-image_test/
-
-models/
-quickquiz/Models/
-DeepSeek-OCR/
-PaddleOCR/
-.cache/
-.huggingface/
-*.pt
-*.bin
-*.onnx
-
-.ipynb_checkpoints/
-
+# === Node.js / Frontend ===
+# Ignore Node.js dependencies and build output
 node_modules/
-frontend/node_modules/
-frontend/build/
 
-Thumbs.db
-.DS_Store
-
-staticfiles/
-migrations/
-
+# === Project Folders & Misc ===
+# Ignore generated documentation and test folders
 /test/
 /docs/
 
