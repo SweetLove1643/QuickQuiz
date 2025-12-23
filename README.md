@@ -12,9 +12,10 @@ Specialized Essay - AI-powered automated quiz creation and evaluation system.
 - User Management and Authentication (IAM)
 - Interactive user interface
 
-<!-- ## Demo
+## Demo
 
-- Update soon... -->
+[![Watch the video](https://img.youtube.com/vi/FouqV87yqoI/0.jpg)](https://www.youtube.com/watch?v=FouqV87yqoI)
+
 
 ## Architecture
 
@@ -101,5 +102,5 @@ This repo is under [MIT](LICENSE) license.
 
 ## Authors
 
-- [@oSweetLove1643](https://www.github.com/SweetLove1643)
+- [@SweetLove1643](https://www.github.com/SweetLove1643)
 - [@TrinhHuuTho](https://www.github.com/TrinhHuuTho)

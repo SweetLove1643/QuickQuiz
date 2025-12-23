@@ -202,6 +202,22 @@ def generate_quiz_job(job_id: str, request_payload: dict) -> dict:
                 opts = q.get("options")
                 if not isinstance(opts, list) or len(opts) == 0:
                     q["options"] = ["A", "B", "C", "D"]
+                
+                import re
+                cleaned_opts = []
+                for opt in q["options"]:
+                    cleaned_opts.append(re.sub(r'^[A-Za-z0-9][.)]\s+', '', str(opt)))
+
+                ans = q.get("answer")
+                if ans in q["options"]:
+                    idx = q["options"].index(ans)
+                    q["answer"] = cleaned_opts[idx]
+                elif isinstance(ans, str) and len(ans) == 1 and ans.upper() in "ABCDE":
+                    idx = ord(ans.upper()) - ord('A')
+                    if 0 <= idx < len(cleaned_opts):
+                        q["answer"] = cleaned_opts[idx]
+
+                q["options"] = cleaned_opts
                 ans = q.get("answer")
                 if ans and ans not in q["options"]:
                     q["answer"] = q["options"][0]
