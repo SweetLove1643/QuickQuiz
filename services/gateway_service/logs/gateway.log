@@ -1,0 +1,369 @@
+[INFO] 2025-12-24 00:26:27,568 django.utils.autoreload 6204 6640 Watching for file changes with StatReloader
+[INFO] 2025-12-24 00:28:09,354 django.utils.autoreload 11820 1432 Watching for file changes with StatReloader
+[INFO] 2025-12-24 00:28:13,764 django.server 11820 17364 "OPTIONS /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 0
+[INFO] 2025-12-24 00:28:13,764 django.server 11820 16264 "OPTIONS /api/documents/list/ HTTP/1.1" 200 0
+[DEBUG] 2025-12-24 00:28:13,786 api.service_clients 11820 17364 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-24 00:28:13,800 django.server 11820 16264 "GET /api/documents/list/ HTTP/1.1" 200 34
+[INFO] 2025-12-24 00:28:15,891 django.server 11820 17364 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 1129
+[ERROR] 2025-12-24 00:28:34,399 django.request 11820 17364 Internal Server Error: /api/summary/ocr_and_summarize/
+[ERROR] 2025-12-24 00:28:34,400 django.server 11820 17364 "POST /api/summary/ocr_and_summarize/ HTTP/1.1" 500 83
+[INFO] 2025-12-24 00:31:42,301 django.utils.autoreload 20468 15680 Watching for file changes with StatReloader
+[DEBUG] 2025-12-24 00:31:46,564 api.service_clients 20468 3728 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-24 00:31:46,569 django.server 20468 18796 "GET /api/documents/list/ HTTP/1.1" 200 34
+[INFO] 2025-12-24 00:31:48,649 django.server 20468 3728 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 1129
+[ERROR] 2025-12-24 00:37:50,587 api.views 20468 3728 [Gateway] Unexpected error: HTTPConnectionPool(host='localhost', port=8005): Read timed out. (read timeout=300)
+Traceback (most recent call last):
+  File "E:\QuickQuiz\.venv\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "E:\QuickQuiz\.venv\Lib\site-packages\urllib3\connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Thor\AppData\Local\Programs\Python\Python311\Lib\http\client.py", line 1390, in getresponse
+    response.begin()
+  File "C:\Users\Thor\AppData\Local\Programs\Python\Python311\Lib\http\client.py", line 325, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Thor\AppData\Local\Programs\Python\Python311\Lib\http\client.py", line 286, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Thor\AppData\Local\Programs\Python\Python311\Lib\socket.py", line 706, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\QuickQuiz\.venv\Lib\site-packages\requests\adapters.py", line 644, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "E:\QuickQuiz\.venv\Lib\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "E:\QuickQuiz\.venv\Lib\site-packages\urllib3\util\retry.py", line 474, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\QuickQuiz\.venv\Lib\site-packages\urllib3\util\util.py", line 39, in reraise
+    raise value
+  File "E:\QuickQuiz\.venv\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "E:\QuickQuiz\.venv\Lib\site-packages\urllib3\connectionpool.py", line 536, in _make_request
+    self._raise_timeout(err=e, url=url, timeout_value=read_timeout)
+  File "E:\QuickQuiz\.venv\Lib\site-packages\urllib3\connectionpool.py", line 367, in _raise_timeout
+    raise ReadTimeoutError(
+urllib3.exceptions.ReadTimeoutError: HTTPConnectionPool(host='localhost', port=8005): Read timed out. (read timeout=300)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\QuickQuiz\services\gateway_service\api\views.py", line 679, in ocr_and_summarize
+    resp = requests.post(summary_service_url, files=files, timeout=300)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\QuickQuiz\.venv\Lib\site-packages\requests\api.py", line 115, in post
+    return request("post", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\QuickQuiz\.venv\Lib\site-packages\requests\api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\QuickQuiz\.venv\Lib\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\QuickQuiz\.venv\Lib\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\QuickQuiz\.venv\Lib\site-packages\requests\adapters.py", line 690, in send
+    raise ReadTimeout(e, request=request)
+requests.exceptions.ReadTimeout: HTTPConnectionPool(host='localhost', port=8005): Read timed out. (read timeout=300)
+[ERROR] 2025-12-24 00:37:50,848 django.request 20468 3728 Internal Server Error: /api/summary/ocr_and_summarize/
+[ERROR] 2025-12-24 00:37:50,849 django.server 20468 3728 "POST /api/summary/ocr_and_summarize/ HTTP/1.1" 500 96
+[INFO] 2025-12-24 00:38:04,174 django.server 20468 3728 "OPTIONS /api/summary/summarize_text/ HTTP/1.1" 200 0
+[INFO] 2025-12-24 00:38:04,181 api.service_clients 20468 3728 [summary_service] Summarizing text: 371 characters
+[DEBUG] 2025-12-24 00:38:04,183 api.service_clients 20468 3728 [summary_service] POST http://localhost:8005/summarize_text
+[WARNING] 2025-12-24 00:38:12,618 api.service_clients 20468 3728 [summary_service] Slow request: 8.43s
+[INFO] 2025-12-24 00:38:12,620 django.server 20468 3728 "POST /api/summary/summarize_text/ HTTP/1.1" 200 393
+[INFO] 2025-12-24 00:38:21,474 django.server 20468 3728 "OPTIONS /api/documents/save/ HTTP/1.1" 200 0
+[INFO] 2025-12-24 00:38:21,477 api.views 20468 3728 Save document request:
+[INFO] 2025-12-24 00:38:21,478 api.views 20468 3728 Document ID: doc_1766511492624_zaqathi6v
+[INFO] 2025-12-24 00:38:21,479 api.views 20468 3728 File name: test_summary.txt
+[INFO] 2025-12-24 00:38:21,480 api.views 20468 3728 Extracted text length: 371
+[INFO] 2025-12-24 00:38:21,480 api.views 20468 3728 Summary length: 153
+[INFO] 2025-12-24 00:38:21,481 api.views 20468 3728 Inserting document to gateway DB: doc_1766511492624_zaqathi6v
+[INFO] 2025-12-24 00:38:21,497 api.views 20468 3728 Document saved to gateway DB successfully: doc_1766511492624_zaqathi6v
+[INFO] 2025-12-24 00:38:21,497 api.views 20468 3728 Syncing document to RAG service DB...
+[INFO] 2025-12-24 00:38:21,499 api.rag_sync_helper 20468 3728 Syncing document to RAG DB: doc_1766511492624_zaqathi6v
+[INFO] 2025-12-24 00:38:21,501 api.rag_sync_helper 20468 3728 RAG chunks table ready: E:\QuickQuiz\services\rag_chatbot_service\rag_chatbot.db
+[INFO] 2025-12-24 00:38:21,502 api.rag_sync_helper 20468 3728 Split into 1 chunks
+[INFO] 2025-12-24 00:38:21,508 api.rag_sync_helper 20468 3728 RAG DB insert: 1 chunks
+[INFO] 2025-12-24 00:38:21,508 api.views 20468 3728 Document synced to RAG service DB
+[INFO] 2025-12-24 00:38:21,509 api.views 20468 3728 Requesting RAG rebuild-index...
+[DEBUG] 2025-12-24 00:38:21,509 api.service_clients 20468 3728 [rag_chatbot_service] POST http://localhost:8006/admin/rebuild-index
+[INFO] 2025-12-24 00:38:23,695 api.views 20468 3728 RAG rebuild-index successful
+[INFO] 2025-12-24 00:38:23,697 django.server 20468 3728 "POST /api/documents/save/ HTTP/1.1" 200 153
+[INFO] 2025-12-24 00:39:28,073 django.utils.autoreload 19896 20068 Watching for file changes with StatReloader
+[DEBUG] 2025-12-24 00:39:32,105 api.service_clients 19896 17172 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-24 00:39:32,114 django.server 19896 4560 "GET /api/documents/list/ HTTP/1.1" 200 1319
+[INFO] 2025-12-24 00:39:34,205 django.server 19896 17172 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 1129
+[INFO] 2025-12-24 00:39:49,748 api.service_clients 19896 17172 [summary_service] Summarizing text: 371 characters
+[DEBUG] 2025-12-24 00:39:49,749 api.service_clients 19896 17172 [summary_service] POST http://localhost:8005/summarize_text
+[WARNING] 2025-12-24 00:39:57,629 api.service_clients 19896 17172 [summary_service] Slow request: 7.88s
+[INFO] 2025-12-24 00:39:57,630 django.server 19896 17172 "POST /api/summary/summarize_text/ HTTP/1.1" 200 393
+[INFO] 2025-12-24 00:40:00,918 api.views 19896 17172 Save document request:
+[INFO] 2025-12-24 00:40:00,918 api.views 19896 17172 Document ID: doc_1766511597634_52ibzekvp
+[INFO] 2025-12-24 00:40:00,919 api.views 19896 17172 File name: test_summary.txt
+[INFO] 2025-12-24 00:40:00,919 api.views 19896 17172 Extracted text length: 371
+[INFO] 2025-12-24 00:40:00,919 api.views 19896 17172 Summary length: 153
+[INFO] 2025-12-24 00:40:00,919 api.views 19896 17172 Inserting document to gateway DB: doc_1766511597634_52ibzekvp
+[INFO] 2025-12-24 00:40:00,936 api.views 19896 17172 Document saved to gateway DB successfully: doc_1766511597634_52ibzekvp
+[INFO] 2025-12-24 00:40:00,937 api.views 19896 17172 Syncing document to RAG service DB...
+[INFO] 2025-12-24 00:40:00,937 api.rag_sync_helper 19896 17172 Syncing document to RAG DB: doc_1766511597634_52ibzekvp
+[INFO] 2025-12-24 00:40:00,941 api.rag_sync_helper 19896 17172 RAG chunks table ready: E:\QuickQuiz\services\rag_chatbot_service\rag_chatbot.db
+[INFO] 2025-12-24 00:40:00,944 api.rag_sync_helper 19896 17172 Split into 1 chunks
+[INFO] 2025-12-24 00:40:00,950 api.rag_sync_helper 19896 17172 RAG DB insert: 1 chunks
+[INFO] 2025-12-24 00:40:00,950 api.views 19896 17172 Document synced to RAG service DB
+[INFO] 2025-12-24 00:40:00,951 api.views 19896 17172 Requesting RAG rebuild-index...
+[DEBUG] 2025-12-24 00:40:00,951 api.service_clients 19896 17172 [rag_chatbot_service] POST http://localhost:8006/admin/rebuild-index
+[INFO] 2025-12-24 00:40:03,064 api.views 19896 17172 RAG rebuild-index successful
+[INFO] 2025-12-24 00:40:03,066 django.server 19896 17172 "POST /api/documents/save/ HTTP/1.1" 200 153
+[INFO] 2025-12-24 00:40:08,177 django.server 19896 17172 "OPTIONS /api/quiz/generate/ HTTP/1.1" 200 0
+[INFO] 2025-12-24 00:40:08,180 api.views 19896 17172 Generating quiz: 1 sections, 5 questions
+[INFO] 2025-12-24 00:40:08,181 api.service_clients 19896 17172 [quiz_generator] Generating quiz: 1 sections, 5 questions
+[DEBUG] 2025-12-24 00:40:08,182 api.service_clients 19896 17172 [quiz_generator] POST http://localhost:8002/quiz/generate
+[WARNING] 2025-12-24 00:40:16,913 api.service_clients 19896 17172 [quiz_generator] Slow request: 8.73s
+[INFO] 2025-12-24 00:40:16,916 django.server 19896 17172 "POST /api/quiz/generate/ HTTP/1.1" 200 2105
+[INFO] 2025-12-24 00:40:22,188 django.server 19896 17172 "OPTIONS /api/quiz/save/ HTTP/1.1" 200 0
+[INFO] 2025-12-24 00:40:22,191 api.views 19896 17172 Saving quiz with 5 questions and title Quiz - test_summary.txt
+[DEBUG] 2025-12-24 00:40:22,191 api.service_clients 19896 17172 [quiz_generator] POST http://localhost:8002/quiz/save
+[INFO] 2025-12-24 00:40:24,280 django.server 19896 17172 "POST /api/quiz/save/ HTTP/1.1" 200 131
+[INFO] 2025-12-24 00:40:39,665 django.server 19896 17172 "OPTIONS /api/quiz/evaluate/ HTTP/1.1" 200 0
+[INFO] 2025-12-24 00:40:39,670 api.views 19896 17172 Evaluating quiz quiz-ea2c57a3
+[INFO] 2025-12-24 00:40:39,671 api.service_clients 19896 17172 [quiz_evaluator] Evaluating quiz quiz-ea2c57a3 with 5 questions
+[DEBUG] 2025-12-24 00:40:39,671 api.service_clients 19896 17172 [quiz_evaluator] POST http://localhost:8003/quiz/evaluate
+[WARNING] 2025-12-24 00:40:49,922 api.service_clients 19896 17172 [quiz_evaluator] Slow request: 10.25s
+[INFO] 2025-12-24 00:40:49,924 api.service_clients 19896 17172 [quiz_evaluator] Quiz quiz-ea2c57a3 evaluated: 40.0% (2/5)
+[INFO] 2025-12-24 00:40:49,928 django.server 19896 17172 "POST /api/quiz/evaluate/ HTTP/1.1" 200 3022
+[INFO] 2025-12-24 00:41:12,053 django.server 19896 17172 "POST /api/summary/ocr_and_summarize/ HTTP/1.1" 200 1507
+[INFO] 2025-12-24 00:43:32,397 django.server 19896 17172 "POST /api/summary/ocr_and_summarize/ HTTP/1.1" 200 2088
+[INFO] 2025-12-24 00:43:40,905 api.views 19896 17172 Save document request:
+[INFO] 2025-12-24 00:43:40,905 api.views 19896 17172 Document ID: doc_1766511812399_5gcoqvqhl
+[INFO] 2025-12-24 00:43:40,908 api.views 19896 17172 File name: test_ocr.jpg
+[INFO] 2025-12-24 00:43:40,908 api.views 19896 17172 Extracted text length: 734
+[INFO] 2025-12-24 00:43:40,908 api.views 19896 17172 Summary length: 187
+[INFO] 2025-12-24 00:43:40,909 api.views 19896 17172 Inserting document to gateway DB: doc_1766511812399_5gcoqvqhl
+[INFO] 2025-12-24 00:43:40,924 api.views 19896 17172 Document saved to gateway DB successfully: doc_1766511812399_5gcoqvqhl
+[INFO] 2025-12-24 00:43:40,928 api.views 19896 17172 Syncing document to RAG service DB...
+[INFO] 2025-12-24 00:43:40,928 api.rag_sync_helper 19896 17172 Syncing document to RAG DB: doc_1766511812399_5gcoqvqhl
+[INFO] 2025-12-24 00:43:40,933 api.rag_sync_helper 19896 17172 RAG chunks table ready: E:\QuickQuiz\services\rag_chatbot_service\rag_chatbot.db
+[INFO] 2025-12-24 00:43:40,934 api.rag_sync_helper 19896 17172 Split into 2 chunks
+[INFO] 2025-12-24 00:43:40,940 api.rag_sync_helper 19896 17172 RAG DB insert: 2 chunks
+[INFO] 2025-12-24 00:43:40,941 api.views 19896 17172 Document synced to RAG service DB
+[INFO] 2025-12-24 00:43:40,941 api.views 19896 17172 Requesting RAG rebuild-index...
+[DEBUG] 2025-12-24 00:43:40,942 api.service_clients 19896 17172 [rag_chatbot_service] POST http://localhost:8006/admin/rebuild-index
+[INFO] 2025-12-24 00:43:43,040 api.views 19896 17172 RAG rebuild-index successful
+[INFO] 2025-12-24 00:43:43,043 django.server 19896 17172 "POST /api/documents/save/ HTTP/1.1" 200 153
+[INFO] 2025-12-24 00:44:36,492 django.server 19896 17172 "GET /api/documents/list/ HTTP/1.1" 200 4794
+[DEBUG] 2025-12-24 00:44:36,495 api.service_clients 19896 17172 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-24 00:44:38,569 django.server 19896 17172 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 1342
+[INFO] 2025-12-24 00:47:19,628 django.server 19896 17172 "OPTIONS /api/rag/chat/ HTTP/1.1" 200 0
+[INFO] 2025-12-24 00:47:19,638 api.service_clients 19896 17172 [rag_chatbot_service] Processing chat query: NLP là gì...
+[DEBUG] 2025-12-24 00:47:19,640 api.service_clients 19896 17172 [rag_chatbot_service] POST http://localhost:8006/chat
+[WARNING] 2025-12-24 00:47:25,108 api.service_clients 19896 17172 [rag_chatbot_service] Slow request: 5.47s
+[INFO] 2025-12-24 00:47:25,109 api.views 19896 17172 Gateway returning 0 sources to frontend
+[INFO] 2025-12-24 00:47:25,112 django.server 19896 17172 "POST /api/rag/chat/ HTTP/1.1" 200 586
+[DEBUG] 2025-12-24 00:47:53,900 api.service_clients 19896 17172 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-24 00:47:54,216 django.server 19896 5900 "GET /api/documents/list/ HTTP/1.1" 200 4794
+[INFO] 2025-12-24 00:47:55,960 django.server 19896 17172 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 1342
+[DEBUG] 2025-12-24 00:48:22,753 api.service_clients 19896 17172 [rag_chatbot_service] POST http://localhost:8006/chat
+[WARNING] 2025-12-24 00:48:28,129 api.service_clients 19896 17172 [rag_chatbot_service] Slow request: 5.38s
+[INFO] 2025-12-24 00:48:28,130 api.views 19896 17172 Gateway returning 0 sources to frontend
+[INFO] 2025-12-24 00:48:28,133 django.server 19896 17172 "POST /api/rag/chat/ HTTP/1.1" 200 747
+[DEBUG] 2025-12-24 00:51:47,732 api.service_clients 19896 5900 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-24 00:51:47,738 django.server 19896 17172 "GET /api/documents/list/ HTTP/1.1" 200 4794
+[INFO] 2025-12-24 00:51:49,790 django.server 19896 5900 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 1342
+[INFO] 2025-12-24 00:52:06,057 api.service_clients 19896 5900 [rag_chatbot_service] Processing chat query: NLP là gì...
+[DEBUG] 2025-12-24 00:52:06,059 api.service_clients 19896 5900 [rag_chatbot_service] POST http://localhost:8006/chat
+[ERROR] 2025-12-24 00:52:53,126 api.service_clients 19896 5900 [rag_chatbot_service] Request timeout after 45s
+[ERROR] 2025-12-24 00:52:53,127 api.views 19896 5900 Chat message failed: Request timeout after 45s
+[ERROR] 2025-12-24 00:52:53,134 django.request 19896 5900 Internal Server Error: /api/rag/chat/
+[ERROR] 2025-12-24 00:52:53,136 django.server 19896 5900 "POST /api/rag/chat/ HTTP/1.1" 500 90
+[INFO] 2025-12-24 00:53:36,496 django.server 19896 8160 "POST /api/summary/ocr_and_summarize/ HTTP/1.1" 200 2264
+[INFO] 2025-12-24 00:53:44,613 api.views 19896 8160 Save document request:
+[INFO] 2025-12-24 00:53:44,613 api.views 19896 8160 Document ID: doc_1766512416498_ihrqjk8zl
+[INFO] 2025-12-24 00:53:44,619 api.views 19896 8160 File name: Quiz - Quiz - test-document.txt.pdf.pdf
+[INFO] 2025-12-24 00:53:44,619 api.views 19896 8160 Extracted text length: 871
+[INFO] 2025-12-24 00:53:44,620 api.views 19896 8160 Summary length: 228
+[INFO] 2025-12-24 00:53:44,620 api.views 19896 8160 Inserting document to gateway DB: doc_1766512416498_ihrqjk8zl
+[INFO] 2025-12-24 00:53:44,635 api.views 19896 8160 Document saved to gateway DB successfully: doc_1766512416498_ihrqjk8zl
+[INFO] 2025-12-24 00:53:44,637 api.views 19896 8160 Syncing document to RAG service DB...
+[INFO] 2025-12-24 00:53:44,637 api.rag_sync_helper 19896 8160 Syncing document to RAG DB: doc_1766512416498_ihrqjk8zl
+[INFO] 2025-12-24 00:53:44,639 api.rag_sync_helper 19896 8160 RAG chunks table ready: E:\QuickQuiz\services\rag_chatbot_service\rag_chatbot.db
+[INFO] 2025-12-24 00:53:44,639 api.rag_sync_helper 19896 8160 Split into 2 chunks
+[INFO] 2025-12-24 00:53:44,645 api.rag_sync_helper 19896 8160 RAG DB insert: 2 chunks
+[INFO] 2025-12-24 00:53:44,645 api.views 19896 8160 Document synced to RAG service DB
+[INFO] 2025-12-24 00:53:44,649 api.views 19896 8160 Requesting RAG rebuild-index...
+[DEBUG] 2025-12-24 00:53:44,649 api.service_clients 19896 8160 [rag_chatbot_service] POST http://localhost:8006/admin/rebuild-index
+[WARNING] 2025-12-24 00:55:02,741 api.service_clients 19896 8160 [rag_chatbot_service] Slow request: 78.09s
+[INFO] 2025-12-24 00:55:02,741 api.views 19896 8160 RAG rebuild-index successful
+[INFO] 2025-12-24 00:55:02,745 django.server 19896 8160 - Broken pipe from ('127.0.0.1', 58663)
+[INFO] 2025-12-24 00:59:03,042 django.utils.autoreload 17272 20060 Watching for file changes with StatReloader
+[DEBUG] 2025-12-24 00:59:07,368 api.service_clients 17272 20108 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-24 00:59:07,383 django.server 17272 18088 "GET /api/documents/list/ HTTP/1.1" 200 34
+[INFO] 2025-12-24 00:59:09,448 django.server 17272 20108 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 1342
+[DEBUG] 2025-12-24 00:59:19,723 api.service_clients 17272 20108 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-24 00:59:19,729 django.server 17272 18088 "GET /api/documents/list/ HTTP/1.1" 200 34
+[INFO] 2025-12-24 00:59:21,811 django.server 17272 20108 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 1342
+[INFO] 2025-12-24 00:59:30,448 django.server 17272 20108 "OPTIONS /api/documents/process/ HTTP/1.1" 200 0
+[INFO] 2025-12-24 00:59:30,453 api.views 17272 20108 Processing document: test.docx (type: docx)
+[INFO] 2025-12-24 00:59:30,454 api.views 17272 20108 Base64 decoded: 16065 bytes
+[INFO] 2025-12-24 00:59:30,454 api.views 17272 20108 Extracting text from DOCX...
+[INFO] 2025-12-24 00:59:30,475 api.views 17272 20108 DOCX extracted: 371 chars
+[INFO] 2025-12-24 00:59:30,476 api.views 17272 20108 Creating summary...
+[INFO] 2025-12-24 00:59:30,476 api.service_clients 17272 20108 [summary_service] Summarizing text: 371 characters
+[DEBUG] 2025-12-24 00:59:30,476 api.service_clients 17272 20108 [summary_service] POST http://localhost:8005/summarize_text
+[WARNING] 2025-12-24 00:59:38,315 api.service_clients 17272 20108 [summary_service] Slow request: 7.84s
+[INFO] 2025-12-24 00:59:38,315 api.views 17272 20108 Document processed successfully
+[INFO] 2025-12-24 00:59:38,318 api.views 17272 20108 Extracted: 371 chars
+[INFO] 2025-12-24 00:59:38,318 api.views 17272 20108 Summary: 153 chars
+[INFO] 2025-12-24 00:59:38,320 django.server 17272 20108 "POST /api/documents/process/ HTTP/1.1" 200 1174
+[INFO] 2025-12-24 00:59:41,941 api.views 17272 20108 Save document request:
+[INFO] 2025-12-24 00:59:41,942 api.views 17272 20108 Document ID: doc_1766512778323_16py19qj6
+[INFO] 2025-12-24 00:59:41,943 api.views 17272 20108 File name: test.docx
+[INFO] 2025-12-24 00:59:41,944 api.views 17272 20108 Extracted text length: 371
+[INFO] 2025-12-24 00:59:41,944 api.views 17272 20108 Summary length: 153
+[INFO] 2025-12-24 00:59:41,945 api.views 17272 20108 Inserting document to gateway DB: doc_1766512778323_16py19qj6
+[INFO] 2025-12-24 00:59:41,951 api.views 17272 20108 Document saved to gateway DB successfully: doc_1766512778323_16py19qj6
+[INFO] 2025-12-24 00:59:41,951 api.views 17272 20108 Syncing document to RAG service DB...
+[INFO] 2025-12-24 00:59:41,952 api.rag_sync_helper 17272 20108 Syncing document to RAG DB: doc_1766512778323_16py19qj6
+[INFO] 2025-12-24 00:59:41,954 api.rag_sync_helper 17272 20108 RAG chunks table ready: E:\QuickQuiz\services\rag_chatbot_service\rag_chatbot.db
+[INFO] 2025-12-24 00:59:41,954 api.rag_sync_helper 17272 20108 Split into 1 chunks
+[INFO] 2025-12-24 00:59:41,961 api.rag_sync_helper 17272 20108 RAG DB insert: 1 chunks
+[INFO] 2025-12-24 00:59:41,962 api.views 17272 20108 Document synced to RAG service DB
+[INFO] 2025-12-24 00:59:41,962 api.views 17272 20108 Requesting RAG rebuild-index...
+[DEBUG] 2025-12-24 00:59:41,963 api.service_clients 17272 20108 [rag_chatbot_service] POST http://localhost:8006/admin/rebuild-index
+[INFO] 2025-12-24 00:59:44,085 api.views 17272 20108 RAG rebuild-index successful
+[INFO] 2025-12-24 00:59:44,087 django.server 17272 20108 "POST /api/documents/save/ HTTP/1.1" 200 153
+[INFO] 2025-12-24 01:00:04,807 api.service_clients 17272 20108 [rag_chatbot_service] Processing chat query: NLP là gì?...
+[DEBUG] 2025-12-24 01:00:04,809 api.service_clients 17272 20108 [rag_chatbot_service] POST http://localhost:8006/chat
+[WARNING] 2025-12-24 01:00:10,712 api.service_clients 17272 20108 [rag_chatbot_service] Slow request: 5.90s
+[INFO] 2025-12-24 01:00:10,713 api.views 17272 20108 Gateway returning 0 sources to frontend
+[INFO] 2025-12-24 01:00:10,716 django.server 17272 20108 "POST /api/rag/chat/ HTTP/1.1" 200 762
+[INFO] 2025-12-24 01:02:30,146 django.utils.autoreload 19540 9896 Watching for file changes with StatReloader
+[DEBUG] 2025-12-24 01:02:34,425 api.service_clients 19540 18960 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-24 01:02:34,430 django.server 19540 18600 "GET /api/documents/list/ HTTP/1.1" 200 1375
+[INFO] 2025-12-24 01:02:36,530 django.server 19540 18960 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 1342
+[DEBUG] 2025-12-24 01:02:40,356 api.service_clients 19540 18960 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-24 01:02:40,362 django.server 19540 18600 "GET /api/documents/list/ HTTP/1.1" 200 1375
+[INFO] 2025-12-24 01:02:40,372 django.server 19540 18960 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 1342
+[INFO] 2025-12-24 01:03:12,462 api.service_clients 19540 18960 [rag_chatbot_service] Processing chat query: NLP là gì?...
+[DEBUG] 2025-12-24 01:03:12,462 api.service_clients 19540 18960 [rag_chatbot_service] POST http://localhost:8006/chat
+[ERROR] 2025-12-24 01:03:59,534 api.service_clients 19540 18960 [rag_chatbot_service] Request timeout after 45s
+[ERROR] 2025-12-24 01:03:59,536 api.views 19540 18960 Chat message failed: Request timeout after 45s
+[ERROR] 2025-12-24 01:03:59,538 django.request 19540 18960 Internal Server Error: /api/rag/chat/
+[ERROR] 2025-12-24 01:03:59,539 django.server 19540 18960 "POST /api/rag/chat/ HTTP/1.1" 500 90
+[INFO] 2025-12-24 01:04:11,898 api.service_clients 19540 18960 [rag_chatbot_service] Processing chat query: NLP là gì?...
+[DEBUG] 2025-12-24 01:04:11,899 api.service_clients 19540 18960 [rag_chatbot_service] POST http://localhost:8006/chat
+[ERROR] 2025-12-24 01:04:58,976 api.service_clients 19540 18960 [rag_chatbot_service] Request timeout after 45s
+[ERROR] 2025-12-24 01:04:58,977 api.views 19540 18960 Chat message failed: Request timeout after 45s
+[ERROR] 2025-12-24 01:04:58,978 django.request 19540 18960 Internal Server Error: /api/rag/chat/
+[ERROR] 2025-12-24 01:04:58,979 django.server 19540 18960 "POST /api/rag/chat/ HTTP/1.1" 500 90
+[DEBUG] 2025-12-24 01:05:07,113 api.service_clients 19540 18600 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-24 01:05:07,119 django.server 19540 18960 "GET /api/documents/list/ HTTP/1.1" 200 1375
+[INFO] 2025-12-24 01:05:09,172 django.server 19540 18600 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 1342
+[INFO] 2025-12-24 01:05:23,029 api.views 19540 18600 Processing document: test.docx (type: docx)
+[INFO] 2025-12-24 01:05:23,031 api.views 19540 18600 Base64 decoded: 16065 bytes
+[INFO] 2025-12-24 01:05:23,033 api.views 19540 18600 Extracting text from DOCX...
+[INFO] 2025-12-24 01:05:23,053 api.views 19540 18600 DOCX extracted: 371 chars
+[INFO] 2025-12-24 01:05:23,054 api.views 19540 18600 Creating summary...
+[INFO] 2025-12-24 01:05:23,054 api.service_clients 19540 18600 [summary_service] Summarizing text: 371 characters
+[DEBUG] 2025-12-24 01:05:23,055 api.service_clients 19540 18600 [summary_service] POST http://localhost:8005/summarize_text
+[WARNING] 2025-12-24 01:05:30,910 api.service_clients 19540 18600 [summary_service] Slow request: 7.85s
+[INFO] 2025-12-24 01:05:30,910 api.views 19540 18600 Document processed successfully
+[INFO] 2025-12-24 01:05:30,912 api.views 19540 18600 Extracted: 371 chars
+[INFO] 2025-12-24 01:05:30,912 api.views 19540 18600 Summary: 153 chars
+[INFO] 2025-12-24 01:05:30,914 django.server 19540 18600 "POST /api/documents/process/ HTTP/1.1" 200 1174
+[INFO] 2025-12-24 01:05:35,879 api.views 19540 18600 Save document request:
+[INFO] 2025-12-24 01:05:35,880 api.views 19540 18600 Document ID: doc_1766513130917_ugi2zo4us
+[INFO] 2025-12-24 01:05:35,880 api.views 19540 18600 File name: test.docx
+[INFO] 2025-12-24 01:05:35,882 api.views 19540 18600 Extracted text length: 371
+[INFO] 2025-12-24 01:05:35,882 api.views 19540 18600 Summary length: 153
+[INFO] 2025-12-24 01:05:35,883 api.views 19540 18600 Inserting document to gateway DB: doc_1766513130917_ugi2zo4us
+[INFO] 2025-12-24 01:05:35,898 api.views 19540 18600 Document saved to gateway DB successfully: doc_1766513130917_ugi2zo4us
+[INFO] 2025-12-24 01:05:35,899 api.views 19540 18600 Syncing document to RAG service DB...
+[INFO] 2025-12-24 01:05:35,899 api.rag_sync_helper 19540 18600 Syncing document to RAG DB: doc_1766513130917_ugi2zo4us
+[INFO] 2025-12-24 01:05:35,901 api.rag_sync_helper 19540 18600 RAG chunks table ready: E:\QuickQuiz\services\rag_chatbot_service\rag_chatbot.db
+[INFO] 2025-12-24 01:05:35,902 api.rag_sync_helper 19540 18600 Split into 1 chunks
+[INFO] 2025-12-24 01:05:35,908 api.rag_sync_helper 19540 18600 RAG DB insert: 1 chunks
+[INFO] 2025-12-24 01:05:35,910 api.views 19540 18600 Document synced to RAG service DB
+[INFO] 2025-12-24 01:05:35,911 api.views 19540 18600 Requesting RAG rebuild-index...
+[DEBUG] 2025-12-24 01:05:35,912 api.service_clients 19540 18600 [rag_chatbot_service] POST http://localhost:8006/admin/rebuild-index
+[INFO] 2025-12-24 01:06:39,679 django.server 19540 18960 "OPTIONS /api/auth/logout/ HTTP/1.1" 200 0
+[INFO] 2025-12-24 01:06:39,684 api.service_clients 19540 18960 [iam_service] Logging out user
+[DEBUG] 2025-12-24 01:06:39,685 api.service_clients 19540 18960 [iam_service] POST http://localhost:8001/api/users/logout/
+[ERROR] 2025-12-24 01:07:02,052 api.service_clients 19540 18960 [iam_service] Connection failed to iam_service: HTTPConnectionPool(host='localhost', port=8001): Max retries exceeded with url: /api/users/logout/ (Caused by NewConnectionError("HTTPConnection(host='localhost', port=8001): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+[ERROR] 2025-12-24 01:07:02,052 api.views 19540 18960 Logout failed: Connection failed to iam_service
+[WARNING] 2025-12-24 01:07:02,058 django.request 19540 18960 Bad Request: /api/auth/logout/
+[WARNING] 2025-12-24 01:07:02,059 django.server 19540 18960 "POST /api/auth/logout/ HTTP/1.1" 400 60
+[INFO] 2025-12-24 01:07:07,762 django.server 19540 18960 "OPTIONS /api/auth/login/ HTTP/1.1" 200 0
+[INFO] 2025-12-24 01:07:07,767 api.views 19540 18960 Login attempt for username: Student01
+[INFO] 2025-12-24 01:07:07,768 api.views 19540 18960 Calling IAM service to login user: Student01
+[INFO] 2025-12-24 01:07:07,768 api.service_clients 19540 18960 [iam_service] Login attempt for user: Student01
+[DEBUG] 2025-12-24 01:07:07,768 api.service_clients 19540 18960 [iam_service] POST http://localhost:8001/api/users/login/
+[ERROR] 2025-12-24 01:07:30,191 api.service_clients 19540 18960 [iam_service] Connection failed to iam_service: HTTPConnectionPool(host='localhost', port=8001): Max retries exceeded with url: /api/users/login/ (Caused by NewConnectionError("HTTPConnection(host='localhost', port=8001): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+[WARNING] 2025-12-24 01:07:30,192 api.service_clients 19540 18960 [iam_service] Login failed for user: Student01
+[ERROR] 2025-12-24 01:07:30,194 api.views 19540 18960 Login failed for Student01: Connection failed to iam_service
+[WARNING] 2025-12-24 01:07:30,195 django.request 19540 18960 Unauthorized: /api/auth/login/
+[WARNING] 2025-12-24 01:07:30,196 django.server 19540 18960 "POST /api/auth/login/ HTTP/1.1" 401 60
+[ERROR] 2025-12-24 01:07:37,979 api.service_clients 19540 18600 [rag_chatbot_service] Request timeout after 120s
+[WARNING] 2025-12-24 01:07:37,980 api.views 19540 18600 RAG rebuild-index returned error: Request timeout after 120s
+[INFO] 2025-12-24 01:07:37,983 django.server 19540 18600 - Broken pipe from ('127.0.0.1', 64102)
+[INFO] 2025-12-24 01:09:28,520 django.utils.autoreload 4404 19216 Watching for file changes with StatReloader
+[INFO] 2025-12-24 01:09:35,447 api.views 4404 21144 Login attempt for username: Student01
+[INFO] 2025-12-24 01:09:35,447 api.views 4404 21144 Calling IAM service to login user: Student01
+[INFO] 2025-12-24 01:09:35,447 api.service_clients 4404 21144 [iam_service] Login attempt for user: Student01
+[DEBUG] 2025-12-24 01:09:35,447 api.service_clients 4404 21144 [iam_service] POST http://localhost:8001/api/users/login/
+[INFO] 2025-12-24 01:09:40,261 api.service_clients 4404 21144 [iam_service] Login successful for user: Student01
+[INFO] 2025-12-24 01:09:40,262 api.views 4404 21144 User logged in successfully: Student01
+[INFO] 2025-12-24 01:09:40,264 django.server 4404 21144 "POST /api/auth/login/ HTTP/1.1" 200 1359
+[DEBUG] 2025-12-24 01:09:40,321 api.service_clients 4404 19632 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-24 01:09:40,330 django.server 4404 21144 "GET /api/documents/list/ HTTP/1.1" 200 2718
+[INFO] 2025-12-24 01:09:42,424 django.server 4404 19632 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 1342
+[INFO] 2025-12-24 01:09:54,925 api.service_clients 4404 19632 [summary_service] Summarizing text: 371 characters
+[DEBUG] 2025-12-24 01:09:54,927 api.service_clients 4404 19632 [summary_service] POST http://localhost:8005/summarize_text
+[WARNING] 2025-12-24 01:10:02,413 api.service_clients 4404 19632 [summary_service] Slow request: 7.49s
+[INFO] 2025-12-24 01:10:02,414 django.server 4404 19632 "POST /api/summary/summarize_text/ HTTP/1.1" 200 393
+[INFO] 2025-12-24 01:10:04,911 api.views 4404 19632 Save document request:
+[INFO] 2025-12-24 01:10:04,912 api.views 4404 19632 Document ID: doc_1766513402416_7s1m27vsu
+[INFO] 2025-12-24 01:10:04,913 api.views 4404 19632 File name: test_summary.txt
+[INFO] 2025-12-24 01:10:04,913 api.views 4404 19632 Extracted text length: 371
+[INFO] 2025-12-24 01:10:04,913 api.views 4404 19632 Summary length: 153
+[INFO] 2025-12-24 01:10:04,914 api.views 4404 19632 Inserting document to gateway DB: doc_1766513402416_7s1m27vsu
+[INFO] 2025-12-24 01:10:04,921 api.views 4404 19632 Document saved to gateway DB successfully: doc_1766513402416_7s1m27vsu
+[INFO] 2025-12-24 01:10:04,922 api.views 4404 19632 Syncing document to RAG service DB...
+[INFO] 2025-12-24 01:10:04,923 api.rag_sync_helper 4404 19632 Syncing document to RAG DB: doc_1766513402416_7s1m27vsu
+[INFO] 2025-12-24 01:10:04,927 api.rag_sync_helper 4404 19632 RAG chunks table ready: E:\QuickQuiz\services\rag_chatbot_service\rag_chatbot.db
+[INFO] 2025-12-24 01:10:04,927 api.rag_sync_helper 4404 19632 Split into 1 chunks
+[INFO] 2025-12-24 01:10:04,934 api.rag_sync_helper 4404 19632 RAG DB insert: 1 chunks
+[INFO] 2025-12-24 01:10:04,935 api.views 4404 19632 Document synced to RAG service DB
+[INFO] 2025-12-24 01:10:04,935 api.views 4404 19632 Requesting RAG rebuild-index...
+[DEBUG] 2025-12-24 01:10:04,936 api.service_clients 4404 19632 [rag_chatbot_service] POST http://localhost:8006/admin/rebuild-index
+[INFO] 2025-12-24 01:10:07,097 api.views 4404 19632 RAG rebuild-index successful
+[INFO] 2025-12-24 01:10:07,098 django.server 4404 19632 "POST /api/documents/save/ HTTP/1.1" 200 153
+[INFO] 2025-12-24 01:10:32,572 api.service_clients 4404 19632 [rag_chatbot_service] Processing chat query: NLP là gì?...
+[DEBUG] 2025-12-24 01:10:32,572 api.service_clients 4404 19632 [rag_chatbot_service] POST http://localhost:8006/chat
+[WARNING] 2025-12-24 01:10:40,474 api.service_clients 4404 19632 [rag_chatbot_service] Slow request: 7.90s
+[INFO] 2025-12-24 01:10:40,475 api.views 4404 19632 Gateway returning 2 sources to frontend
+[INFO] 2025-12-24 01:10:40,479 django.server 4404 19632 "POST /api/rag/chat/ HTTP/1.1" 200 7983
+[INFO] 2025-12-24 01:12:35,348 api.service_clients 4404 19632 [rag_chatbot_service] Processing chat query: Python là gì?...
+[DEBUG] 2025-12-24 01:12:35,349 api.service_clients 4404 19632 [rag_chatbot_service] POST http://localhost:8006/chat
+[WARNING] 2025-12-24 01:12:41,306 api.service_clients 4404 19632 [rag_chatbot_service] Slow request: 5.96s
+[INFO] 2025-12-24 01:12:41,307 api.views 4404 19632 Gateway returning 2 sources to frontend
+[INFO] 2025-12-24 01:12:41,310 django.server 4404 19632 "POST /api/rag/chat/ HTTP/1.1" 200 7543
+[DEBUG] 2025-12-24 01:12:51,066 api.service_clients 4404 19632 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-24 01:12:51,072 django.server 4404 21144 "GET /api/documents/list/ HTTP/1.1" 200 4005
+[INFO] 2025-12-24 01:12:53,148 django.server 4404 19632 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 1342
+[INFO] 2025-12-24 01:12:57,632 django.server 4404 19632 "GET /api/documents/list/ HTTP/1.1" 200 4005
+[DEBUG] 2025-12-24 01:12:58,937 api.service_clients 4404 21144 [quiz_generator] GET http://localhost:8002/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd
+[INFO] 2025-12-24 01:12:58,942 django.server 4404 19632 "GET /api/documents/list/ HTTP/1.1" 200 4005
+[INFO] 2025-12-24 01:13:01,008 django.server 4404 21144 "GET /api/quiz/user/41a2020e-542d-4672-a43e-bdd7939f8dfd/?limit=50&offset=0 HTTP/1.1" 200 1342
+[INFO] 2025-12-24 01:15:43,741 django.utils.autoreload 19160 2916 Watching for file changes with StatReloader
