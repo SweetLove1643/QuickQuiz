@@ -14,7 +14,9 @@ Specialized Essay - AI-powered automated quiz creation and evaluation system.
 
 ## Demo
 
-[![Watch the video](https://img.youtube.com/vi/FouqV87yqoI/0.jpg)](https://www.youtube.com/watch?v=FouqV87yqoI)
+- Click image below to watch the demo video.
+
+[![Watch the video](https://img.youtube.com/vi/bmW-smv9_dw/0.jpg)](https://www.youtube.com/watch?v=bmW-smv9_dw)
 
 
 ## Architecture
