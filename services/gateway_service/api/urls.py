@@ -53,6 +53,9 @@ urlpatterns = [
     path("documents/save/", views.save_document, name="save_document"),
     path("documents/list/", views.list_documents, name="list_documents"),
     path(
+        "documents/<str:doc_id>/", views.get_document_detail, name="get_document_detail"
+    ),
+    path(
         "documents/<str:doc_id>/update/", views.update_document, name="update_document"
     ),
     path(
