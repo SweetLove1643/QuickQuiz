@@ -41,7 +41,7 @@ app.add_middleware(
 
 init_db()
 
-CHECKPOINT_PATH = "./ViT5_checkpoint_epochs4"
+CHECKPOINT_PATH = "./checkpoint24"
 
 try:
     summary_processor = SummaryProcessor(checkpoint_path=CHECKPOINT_PATH)
