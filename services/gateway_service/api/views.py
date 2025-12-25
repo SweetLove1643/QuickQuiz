@@ -106,7 +106,7 @@ def fetch_documents(limit: int = 50):
         cur = conn.cursor()
         cur.execute(
             """
-            SELECT id, file_name, file_size, file_type, extracted_text, summary, created_at
+            SELECT id, file_name, file_size, file_type, extracted_text, summary, title, content, created_at, updated_at
             FROM documents
             ORDER BY datetime(created_at) DESC
             LIMIT ?
@@ -849,21 +849,25 @@ def chat_message(request):
         if result and isinstance(result, dict):
             # Ensure 'sources' key always exists and is a list
             if "sources" not in result or result["sources"] is None:
-                logger.warning(f"RAG response missing sources, injecting empty list. Keys: {result.keys()}")
+                logger.warning(
+                    f"RAG response missing sources, injecting empty list. Keys: {result.keys()}"
+                )
                 result["sources"] = []
             else:
-                logger.info(f"Gateway returning {len(result['sources'])} sources to frontend")
+                logger.info(
+                    f"Gateway returning {len(result['sources'])} sources to frontend"
+                )
         # ----------------------------------------------
 
         # Initialize response with empty sources to guarantee it exists
         response_data = {
-            "success": True, 
-            "data": result, 
-            "error": None, 
+            "success": True,
+            "data": result,
+            "error": None,
             "status_code": 200,
-            "sources": [] 
+            "sources": [],
         }
-        
+
         # Compatibility: Lift 'sources' to top level if frontend expects it there
         if result and isinstance(result, dict) and result.get("sources"):
             response_data["sources"] = result["sources"]
@@ -1300,9 +1304,12 @@ def list_documents(request):
                 "file_name": d.get("file_name"),
                 "file_size": d.get("file_size"),
                 "file_type": d.get("file_type"),
+                "title": d.get("title") or d.get("file_name"),
+                "content": d.get("content") or "",
                 "extracted_text": d.get("extracted_text") or "",
-                "summary": (d.get("summary") or d.get("extracted_text") or "")[:400],
+                "summary": d.get("summary") or d.get("extracted_text") or "",
                 "created_at": d.get("created_at"),
+                "updated_at": d.get("updated_at"),
             }
             for d in docs
         ]
@@ -1311,6 +1318,57 @@ def list_documents(request):
 
     except Exception as e:
         logger.error(f"Document list failed: {str(e)}")
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_document_detail(request, doc_id):
+    """Return full document detail including extracted_text/content"""
+    try:
+        ensure_document_table()
+
+        with closing(sqlite3.connect(DOCUMENT_DB_PATH)) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                SELECT id, file_name, file_size, file_type, title, summary, content, extracted_text, created_at, updated_at
+                FROM documents
+                WHERE id = ?
+                """,
+                (doc_id,),
+            )
+            row = cursor.fetchone()
+
+        if not row:
+            logger.warning(f"Document not found: {doc_id}")
+            return JsonResponse(
+                {"success": False, "error": "Document not found"}, status=404
+            )
+
+        doc = dict(row)
+
+        return JsonResponse(
+            {
+                "success": True,
+                "document": {
+                    "document_id": doc.get("id"),
+                    "file_name": doc.get("file_name"),
+                    "file_size": doc.get("file_size"),
+                    "file_type": doc.get("file_type"),
+                    "title": doc.get("title") or doc.get("file_name"),
+                    "summary": doc.get("summary") or doc.get("extracted_text") or "",
+                    "content": doc.get("content") or "",
+                    "extracted_text": doc.get("extracted_text") or "",
+                    "created_at": doc.get("created_at"),
+                    "updated_at": doc.get("updated_at"),
+                },
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"Get document detail failed: {e}", exc_info=True)
         return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 

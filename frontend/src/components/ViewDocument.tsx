@@ -4,7 +4,7 @@ import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { quizAPI } from "../api/quizAPI";
 
 interface ViewDocumentProps {
@@ -14,35 +14,64 @@ interface ViewDocumentProps {
 }
 
 export function ViewDocument({ document, onBack, onSave }: ViewDocumentProps) {
+  const [resolvedDoc, setResolvedDoc] = useState(document);
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(
     document?.title || document?.file_name || ""
   );
   const [editedSummary, setEditedSummary] = useState(
-    document?.summary ||
-      "Đây là bản tóm tắt tài liệu. Bạn có thể chỉnh sửa nội dung này để phù hợp với nhu cầu học tập của mình."
+    document?.summary || document?.extracted_text || ""
   );
   const [editedContent, setEditedContent] = useState(
-    document?.content ||
-      `# ${document?.title || "Nội dung tài liệu"}
-
-## Giới thiệu
-Đây là nội dung chi tiết của tài liệu. Trong môi trường thực tế, nội dung này sẽ được trích xuất tự động từ file PDF hoặc các định dạng khác mà người dùng upload.
-
-## Nội dung chính
-
-### Phần 1: Khái niệm cơ bản
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-
-### Phần 2: Phân tích chi tiết
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-### Phần 3: Tổng kết
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
-
-## Kết luận
-Tài liệu này cung cấp một cái nhìn tổng quan về chủ đề. Người học có thể sử dụng nội dung này làm tài liệu tham khảo cho quá trình học tập của mình.`
+    document?.content || document?.extracted_text || ""
   );
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  // Sync incoming document and fetch detail if content is missing
+  useEffect(() => {
+    if (!document) return;
+
+    setResolvedDoc(document);
+
+    const baseTitle =
+      document.title || document.file_name || document.document_name || "";
+    const baseContent = document.content || document.extracted_text || "";
+    const baseSummary = document.summary || baseContent;
+
+    setEditedTitle(baseTitle);
+    setEditedSummary(baseSummary || "");
+    setEditedContent(baseContent || "");
+
+    if (document.document_id && !document.content && !document.extracted_text) {
+      const fetchDetail = async () => {
+        setIsLoadingDetail(true);
+        setLoadError(null);
+        try {
+          const res = await quizAPI.getDocumentById(document.document_id);
+          if (res.success && res.document) {
+            setResolvedDoc(res.document);
+            const doc = res.document;
+            const title = doc.title || doc.file_name || "";
+            const content = doc.content || doc.extracted_text || "";
+            const summary = doc.summary || content;
+            setEditedTitle(title);
+            setEditedSummary(summary || "");
+            setEditedContent(content || "");
+          } else {
+            setLoadError(res.error || "Không thể tải chi tiết tài liệu");
+          }
+        } catch (err) {
+          console.error("Failed to load document detail", err);
+          setLoadError("Không thể tải chi tiết tài liệu");
+        } finally {
+          setIsLoadingDetail(false);
+        }
+      };
+
+      fetchDetail();
+    }
+  }, [document]);
 
   const handleDownload = () => {
     const content = `${editedTitle}\n\n${editedSummary}\n\n${editedContent}`;
@@ -66,16 +95,18 @@ Tài liệu này cung cấp một cái nhìn tổng quan về chủ đề. Ngư�
       };
 
       const result = await quizAPI.updateDocument(
-        document.document_id || document.id,
+        resolvedDoc?.document_id || resolvedDoc?.id,
         updatedDocument
       );
 
       if (result.success) {
-        onSave?.({
-          ...document,
+        const merged = {
+          ...resolvedDoc,
           ...updatedDocument,
           updated_at: result.updated_at,
-        });
+        };
+        setResolvedDoc(merged);
+        onSave?.(merged);
         setIsEditing(false);
       }
     } catch (error) {
@@ -85,9 +116,18 @@ Tài liệu này cung cấp một cái nhìn tổng quan về chủ đề. Ngư�
   };
 
   const handleCancel = () => {
-    setEditedTitle(document?.title || "");
-    setEditedSummary(document?.summary || "");
-    setEditedContent(document?.content || "");
+    const baseTitle =
+      resolvedDoc?.title ||
+      resolvedDoc?.file_name ||
+      resolvedDoc?.document_name ||
+      "";
+    const baseContent =
+      resolvedDoc?.content || resolvedDoc?.extracted_text || "";
+    const baseSummary = resolvedDoc?.summary || baseContent;
+
+    setEditedTitle(baseTitle);
+    setEditedSummary(baseSummary || "");
+    setEditedContent(baseContent || "");
     setIsEditing(false);
   };
 
@@ -96,7 +136,7 @@ Tài liệu này cung cấp một cái nhìn tổng quan về chủ đề. Ngư�
 
     try {
       const result = await quizAPI.deleteDocument(
-        document.document_id || document.id
+        resolvedDoc?.document_id || resolvedDoc?.id
       );
       if (result.success) {
         onBack?.();
@@ -127,22 +167,29 @@ Tài liệu này cung cấp một cái nhìn tổng quan về chủ đề. Ngư�
               />
             ) : (
               <h1 className="text-slate-900 mb-2">
-                {document?.title || "Tài liệu"}
+                {resolvedDoc?.title || resolvedDoc?.file_name || "Tài liệu"}
               </h1>
             )}
             <div className="flex items-center gap-4 text-slate-600">
               <div className="flex items-center gap-2">
                 <Calendar className="size-4" />
                 <span>
-                  {document?.created_at
-                    ? new Date(document.created_at).toLocaleDateString("vi-VN")
+                  {resolvedDoc?.created_at
+                    ? new Date(resolvedDoc.created_at).toLocaleDateString(
+                        "vi-VN"
+                      )
                     : "Hôm nay"}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <FileText className="size-4" />
-                <span>{document?.file_type || "Tài liệu"}</span>
+                <span>{resolvedDoc?.file_type || "Tài liệu"}</span>
               </div>
+              {isLoadingDetail && (
+                <span className="text-xs text-slate-500">
+                  Đang tải nội dung...
+                </span>
+              )}
             </div>
           </div>
 
@@ -179,6 +226,7 @@ Tài liệu này cung cấp một cái nhìn tổng quan về chủ đề. Ngư�
 
       {/* Content */}
       <div className="space-y-6">
+        {loadError && <div className="text-sm text-red-600">{loadError}</div>}
         {/* Summary Section */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">

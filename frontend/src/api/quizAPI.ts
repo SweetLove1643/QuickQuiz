@@ -464,12 +464,37 @@ class QuizAPI {
       file_name: string;
       file_type: string;
       file_size: number;
+      title?: string;
+      content?: string;
       extracted_text: string;
       summary: string;
       created_at: string;
+      updated_at?: string | null;
     }>;
   }> {
     return this.makeRequest("/documents/list/", {
+      method: "GET",
+    });
+  }
+
+  // Get document detail by id
+  async getDocumentById(documentId: string): Promise<{
+    success: boolean;
+    document?: {
+      document_id: string;
+      file_name: string;
+      file_size: number;
+      file_type: string;
+      title?: string;
+      summary?: string;
+      content?: string;
+      extracted_text?: string;
+      created_at?: string;
+      updated_at?: string;
+    };
+    error?: string;
+  }> {
+    return this.makeRequest(`/documents/${documentId}/`, {
       method: "GET",
     });
   }

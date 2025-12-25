@@ -49,10 +49,12 @@ class SummaryProcessor:
 
         try:
             # Sử dụng tiền tố chuẩn của ViT5 để tránh mô hình lặp lại câu lệnh
-            input_text = (
-                "Nhiệm vụ: Tóm tắt nội dung sau thành một đoạn văn đầy đủ, chi tiết, có thể dùng để học tập:\n"
-                + text.strip()
-            )
+            # input_text = (
+            #     "Nhiệm vụ: Tóm tắt nội dung sau thành một đoạn văn đầy đủ, chi tiết, có thể dùng để học tập:\n"
+            #     + text.strip()
+            # )
+
+            input_text = "tóm tắt:" + text.strip()
 
             word_count = len(text.split())
             min_tokens = min(200, int(word_count * 0.3))
